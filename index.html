@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Scan Barcode WMS</title>
+
+<!-- ============================================================
+     LIBRARIES
+     ============================================================ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/firebase-app-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/firebase-firestore-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+  :root{
+    --bg:#0f1417;
+    --panel:#161d22;
+    --panel-2:#1c252b;
+    --border:#28333a;
+    --text:#e7edf0;
+    --muted:#8ba0aa;
+    --accent:#ff9f1c;
+    --accent-dim:#4d3413;
+    --good:#3ddc84;
+    --good-dim:#123322;
+    --bad:#ff5d5d;
+    --bad-dim:#3a1414;
+    --mono: 'SF Mono', 'Consolas', 'Menlo', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    -webkit-tap-highlight-color:transparent;}
+  body{padding-bottom:70px;}
+
+  header{
+    position:sticky;top:0;z-index:20;
+    background:linear-gradient(180deg,#141b1f,#10161a);
+    border-bottom:1px solid var(--border);
+    padding:14px 16px 12px;
+  }
+  header h1{margin:0;font-size:16px;letter-spacing:.03em;font-weight:700;}
+  header h1 span{color:var(--accent);}
+  header .sub{font-size:11px;color:var(--muted);margin-top:2px;font-family:var(--mono);}
+
+  .status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;background:var(--bad);}
+  .status-dot.on{background:var(--good);box-shadow:0 0 6px var(--good);}
+
+  main{max-width:720px;margin:0 auto;padding:14px;}
+
+  .tabbar{
+    display:flex;gap:6px;position:fixed;bottom:0;left:0;right:0;z-index:30;
+    background:#0d1215;border-top:1px solid var(--border);padding:8px;
+  }
+  .tabbar button{
+    flex:1;padding:10px 4px;border:none;border-radius:10px;background:transparent;
+    color:var(--muted);font-size:11px;font-weight:600;letter-spacing:.02em;
+  }
+  .tabbar button.active{background:var(--accent-dim);color:var(--accent);}
+
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px;}
+  .card h2{font-size:13px;margin:0 0 12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
+
+  input[type=text], input[type=file]{
+    width:100%;background:var(--panel-2);border:1px solid var(--border);color:var(--text);
+    padding:12px;border-radius:10px;font-size:15px;font-family:var(--mono);
+  }
+  input[type=text]:focus{outline:none;border-color:var(--accent);}
+
+  .scan-input{font-size:20px;padding:16px;text-align:center;letter-spacing:.05em;}
+
+  button.btn{
+    border:none;border-radius:10px;padding:12px 16px;font-weight:700;font-size:13px;
+    cursor:pointer;letter-spacing:.02em;
+  }
+  .btn-accent{background:var(--accent);color:#1a1200;}
+  .btn-ghost{background:var(--panel-2);color:var(--text);border:1px solid var(--border);}
+  .btn-danger{background:var(--bad-dim);color:var(--bad);border:1px solid #5a2323;}
+  .btn-good{background:var(--good-dim);color:var(--good);border:1px solid #1f5c3c;}
+  .btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+  button:disabled{opacity:.4;}
+
+  .result{margin-top:14px;padding:14px;border-radius:12px;border:1px solid var(--border);background:var(--panel-2);}
+  .result.found{border-color:#1f5c3c;background:var(--good-dim);}
+  .result.notfound{border-color:#5a2323;background:var(--bad-dim);}
+  .result .sku{font-family:var(--mono);color:var(--muted);font-size:12px;}
+  .result .nama{font-size:16px;font-weight:700;margin-top:4px;}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--border);}
+  th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;}
+  td.sku{font-family:var(--mono);color:var(--muted);white-space:nowrap;}
+  .scroll-table{max-height:320px;overflow-y:auto;}
+
+  .progress-wrap{background:var(--panel-2);border-radius:8px;overflow:hidden;height:8px;margin-top:10px;}
+  .progress-bar{height:100%;background:var(--accent);width:0%;transition:width .2s;}
+
+  .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;}
+  .badge.good{background:var(--good-dim);color:var(--good);}
+  .badge.bad{background:var(--bad-dim);color:var(--bad);}
+  .badge.muted{background:var(--panel-2);color:var(--muted);}
+
+  .stat-row{display:flex;gap:10px;}
+  .stat{flex:1;background:var(--panel-2);border-radius:10px;padding:10px;text-align:center;}
+  .stat .num{font-size:20px;font-weight:800;color:var(--accent);}
+  .stat .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;}
+
+  .toast{
+    position:fixed;top:14px;left:50%;transform:translateX(-50%);
+    background:#1c252b;border:1px solid var(--border);color:var(--text);
+    padding:10px 16px;border-radius:10px;font-size:13px;z-index:99;
+    opacity:0;pointer-events:none;transition:opacity .25s, top .25s;
+  }
+  .toast.show{opacity:1;top:20px;}
+  .toast.good{border-color:#1f5c3c;color:var(--good);}
+  .toast.bad{border-color:#5a2323;color:var(--bad);}
+
+  .hint{font-size:11px;color:var(--muted);line-height:1.5;}
+  .hidden{display:none !important;}
+  a{color:var(--accent);}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>SCAN<span>·</span>WMS</h1>
+  <div class="sub"><span id="connDot" class="status-dot"></span><span id="connText">menghubungkan ke Firestore...</span></div>
+</header>
+
+<div id="toast" class="toast"></div>
+
+<main>
+
+  <!-- ============================ TAB: SCAN ============================ -->
+  <section id="tab-scan">
+    <div class="card">
+      <h2>Scan Barcode</h2>
+      <input id="scanInput" class="scan-input" type="text" placeholder="Tembak barcode..." autocomplete="off" autofocus>
+      <div class="hint" style="margin-top:8px;">Scanner USB otomatis mengetik + Enter. Fokus otomatis kembali ke kolom ini.</div>
+
+      <div id="scanResult"></div>
+
+      <div class="stat-row" style="margin-top:14px;">
+        <div class="stat"><div class="num" id="statTotal">0</div><div class="lbl">Total Scan</div></div>
+        <div class="stat"><div class="num" id="statFound">0</div><div class="lbl">Ditemukan</div></div>
+        <div class="stat"><div class="num" id="statNotFound">0</div><div class="lbl">Tidak Ada</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Riwayat Scan (sesi ini)</h2>
+      <div class="scroll-table">
+        <table>
+          <thead><tr><th>Jam</th><th>SKU</th><th>Nama Barang</th></tr></thead>
+          <tbody id="scanLogBody"></tbody>
+        </table>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" id="btnSyncScan">☁️ Sync Hasil Scan ke Firestore</button>
+        <button class="btn btn-ghost" id="btnExportScan">⬇️ Export Excel</button>
+        <button class="btn btn-danger" id="btnClearScan">Kosongkan</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ TAB: MASTER ============================ -->
+  <section id="tab-master" class="hidden">
+    <div class="card">
+      <h2>Cache Master Produk (Lokal)</h2>
+      <div class="stat-row">
+        <div class="stat"><div class="num" id="statMasterLocal">0</div><div class="lbl">Tersimpan Lokal</div></div>
+        <div class="stat"><div class="num" id="statMasterCloud">-</div><div class="lbl">Di Firestore</div></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" id="btnPullMaster">⬇️ Tarik Master dari Firestore ke Lokal</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Upload Master Produk (.xlsx / .csv)</h2>
+      <div class="hint">Kolom wajib: <b>SKU</b> dan <b>Nama Barang</b> (header di baris pertama). Data akan menimpa (upsert) produk dengan SKU yang sama.</div>
+      <div style="margin-top:10px;">
+        <input type="file" id="fileMaster" accept=".xlsx,.xls,.csv">
+      </div>
+      <div id="masterPreviewInfo" class="hint" style="margin-top:10px;"></div>
+      <div class="progress-wrap"><div class="progress-bar" id="masterProgress"></div></div>
+      <div class="btn-row">
+        <button class="btn btn-accent" id="btnUploadMaster" disabled>🚀 Simpan ke Firestore</button>
+        <button class="btn btn-ghost" id="btnClearFile">Batal</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Preview Data</h2>
+      <div class="scroll-table">
+        <table>
+          <thead><tr><th>SKU</th><th>Nama Barang</th></tr></thead>
+          <tbody id="masterPreviewBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div class="tabbar">
+  <button id="navScan" class="active">📷 Scan</button>
+  <button id="navMaster">📦 Master Produk</button>
+</div>
+
+<script>
+/* ============================================================
+   1) KONFIGURASI FIREBASE
+   Ganti dengan config project Firestore kamu sendiri
+   (Firebase Console -> Project Settings -> General -> Your apps -> SDK config)
+   ============================================================ */
+const firebaseConfig = {
+  apiKey: "AIzaSyATHrEKneLilCcYwnRgzbPZoFH2R9o9AR4",
+  authDomain: "tools-marves.firebaseapp.com",
+  projectId: "tools-marves",
+  storageBucket: "tools-marves.firebasestorage.app",
+  messagingSenderId: "495279296896",
+  appId: "1:495279296896:web:995bc769a5e90e8adc7165"
+};
+
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+/* Nama koleksi Firestore */
+const COL_MASTER = "master_produk";   // doc id = SKU
+const COL_SCAN    = "scan_results";   // hasil scan (auto id)
+
+/* ============================================================
+   2) INDEXEDDB (cache lokal, offline-first)
+   ============================================================ */
+let idb;
+const IDB_NAME = "scan_wms_db";
+const IDB_VERSION = 1;
+
+function openIDB(){
+  return new Promise((resolve, reject)=>{
+    const req = indexedDB.open(IDB_NAME, IDB_VERSION);
+    req.onupgradeneeded = (e)=>{
+      const database = e.target.result;
+      if(!database.objectStoreNames.contains("master")){
+        database.createObjectStore("master", { keyPath: "sku" });
+      }
+      if(!database.objectStoreNames.contains("scanlog")){
+        database.createObjectStore("scanlog", { keyPath: "id", autoIncrement: true });
+      }
+    };
+    req.onsuccess = (e)=>resolve(e.target.result);
+    req.onerror = (e)=>reject(e);
+  });
+}
+
+function idbPutMasterBulk(items){
+  return new Promise((resolve, reject)=>{
+    const tx = idb.transaction("master", "readwrite");
+    const store = tx.objectStore("master");
+    items.forEach(it=>store.put(it));
+    tx.oncomplete = ()=>resolve();
+    tx.onerror = (e)=>reject(e);
+  });
+}
+
+function idbGetMaster(sku){
+  return new Promise((resolve, reject)=>{
+    const tx = idb.transaction("master", "readonly");
+    const req = tx.objectStore("master").get(sku);
+    req.onsuccess = ()=>resolve(req.result || null);
+    req.onerror = (e)=>reject(e);
+  });
+}
+
+function idbCountMaster(){
+  return new Promise((resolve, reject)=>{
+    const tx = idb.transaction("master", "readonly");
+    const req = tx.objectStore("master").count();
+    req.onsuccess = ()=>resolve(req.result);
+    req.onerror = (e)=>reject(e);
+  });
+}
+
+function idbClearMaster(){
+  return new Promise((resolve, reject)=>{
+    const tx = idb.transaction("master", "readwrite");
+    tx.objectStore("master").clear();
+    tx.oncomplete = ()=>resolve();
+  });
+}
+
+function idbAddScan(entry){
+  return new Promise((resolve, reject)=>{
+    const tx = idb.transaction("scanlog", "readwrite");
+    tx.objectStore("scanlog").add(entry);
+    tx.oncomplete = ()=>resolve();
+  });
+}
+
+function idbGetAllScans(){
+  return new Promise((resolve, reject)=>{
+    const tx = idb.transaction("scanlog", "readonly");
+    const req = tx.objectStore("scanlog").getAll();
+    req.onsuccess = ()=>resolve(req.result || []);
+  });
+}
+
+function idbClearScans(){
+  return new Promise((resolve, reject)=>{
+    const tx = idb.transaction("scanlog", "readwrite");
+    tx.objectStore("scanlog").clear();
+    tx.oncomplete = ()=>resolve();
+  });
+}
+
+/* ============================================================
+   3) UI HELPERS
+   ============================================================ */
+function toast(msg, type=""){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "toast show " + type;
+  setTimeout(()=>t.className = "toast " + type, 2200);
+}
+
+function setConn(ok, text){
+  document.getElementById("connDot").className = "status-dot" + (ok ? " on" : "");
+  document.getElementById("connText").textContent = text;
+}
+
+/* Tab switching */
+const tabScan = document.getElementById("tab-scan");
+const tabMaster = document.getElementById("tab-master");
+const navScan = document.getElementById("navScan");
+const navMaster = document.getElementById("navMaster");
+
+navScan.onclick = ()=>{
+  tabScan.classList.remove("hidden"); tabMaster.classList.add("hidden");
+  navScan.classList.add("active"); navMaster.classList.remove("active");
+  document.getElementById("scanInput").focus();
+};
+navMaster.onclick = ()=>{
+  tabMaster.classList.remove("hidden"); tabScan.classList.add("hidden");
+  navMaster.classList.add("active"); navScan.classList.remove("active");
+  refreshMasterStats();
+};
+
+/* ============================================================
+   4) SCAN LOGIC
+   ============================================================ */
+let sessionStats = { total:0, found:0, notfound:0 };
+
+const scanInput = document.getElementById("scanInput");
+scanInput.addEventListener("keydown", async (e)=>{
+  if(e.key !== "Enter") return;
+  const raw = scanInput.value.trim();
+  scanInput.value = "";
+  if(!raw) return;
+  await handleScan(raw);
+});
+
+// Jaga fokus tetap di kolom scan (khas scanner USB / keyboard wedge)
+document.addEventListener("click", (e)=>{
+  if(!tabScan.classList.contains("hidden") && e.target.tagName !== "INPUT" && e.target.tagName !== "BUTTON"){
+    scanInput.focus();
+  }
+});
+
+async function handleScan(sku){
+  let product = await idbGetMaster(sku);
+
+  // fallback ke Firestore kalau belum ada di cache lokal
+  if(!product){
+    try{
+      const doc = await db.collection(COL_MASTER).doc(sku).get();
+      if(doc.exists){
+        product = { sku, nama: doc.data().nama || "" };
+        await idbPutMasterBulk([product]); // simpan ke cache biar scan berikutnya cepat
+      }
+    }catch(err){
+      console.error(err);
+    }
+  }
+
+  const resultBox = document.getElementById("scanResult");
+  sessionStats.total++;
+  if(product){
+    sessionStats.found++;
+    resultBox.innerHTML = `<div class="result found">
+      <div class="sku">${sku}</div>
+      <div class="nama">${product.nama}</div>
+      <span class="badge good">DITEMUKAN</span>
+    </div>`;
+  }else{
+    sessionStats.notfound++;
+    resultBox.innerHTML = `<div class="result notfound">
+      <div class="sku">${sku}</div>
+      <div class="nama">SKU tidak ditemukan di master produk</div>
+      <span class="badge bad">TIDAK ADA</span>
+    </div>`;
+  }
+  updateStats();
+
+  const entry = {
+    sku,
+    nama: product ? product.nama : null,
+    found: !!product,
+    ts: new Date().toISOString(),
+    synced: false
+  };
+  await idbAddScan(entry);
+  prependScanRow(entry);
+  scanInput.focus();
+}
+
+function updateStats(){
+  document.getElementById("statTotal").textContent = sessionStats.total;
+  document.getElementById("statFound").textContent = sessionStats.found;
+  document.getElementById("statNotFound").textContent = sessionStats.notfound;
+}
+
+function prependScanRow(entry){
+  const tbody = document.getElementById("scanLogBody");
+  const tr = document.createElement("tr");
+  const jam = new Date(entry.ts).toLocaleTimeString("id-ID");
+  tr.innerHTML = `<td>${jam}</td><td class="sku">${entry.sku}</td>
+    <td>${entry.found ? entry.nama : '<span class="badge bad">N/A</span>'}</td>`;
+  tbody.prepend(tr);
+}
+
+async function loadScanLogFromIDB(){
+  const rows = await idbGetAllScans();
+  sessionStats = { total: rows.length, found: rows.filter(r=>r.found).length, notfound: rows.filter(r=>!r.found).length };
+  updateStats();
+  const tbody = document.getElementById("scanLogBody");
+  tbody.innerHTML = "";
+  rows.slice().reverse().forEach(prependScanRowFromExisting);
+  function prependScanRowFromExisting(e){ prependScanRow(e); }
+}
+
+/* Sync hasil scan ke Firestore */
+document.getElementById("btnSyncScan").onclick = async ()=>{
+  const rows = (await idbGetAllScans()).filter(r=>!r.synced);
+  if(rows.length === 0){ toast("Tidak ada data baru untuk disinkron", ""); return; }
+  toast(`Menyinkron ${rows.length} data...`);
+  let batch = db.batch();
+  let count = 0;
+  for(const r of rows){
+    const ref = db.collection(COL_SCAN).doc();
+    batch.set(ref, { sku: r.sku, nama: r.nama, found: r.found, ts: r.ts });
+    count++;
+    if(count % 450 === 0){ await batch.commit(); batch = db.batch(); }
+  }
+  await batch.commit();
+  toast(`✅ ${rows.length} hasil scan tersinkron ke Firestore`, "good");
+};
+
+document.getElementById("btnExportScan").onclick = async ()=>{
+  const rows = await idbGetAllScans();
+  if(rows.length === 0){ toast("Belum ada data scan", ""); return; }
+  const ws = XLSX.utils.json_to_sheet(rows.map(r=>({
+    Waktu: new Date(r.ts).toLocaleString("id-ID"),
+    SKU: r.sku,
+    "Nama Barang": r.nama || "",
+    Status: r.found ? "Ditemukan" : "Tidak Ada"
+  })));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Hasil Scan");
+  XLSX.writeFile(wb, `hasil_scan_${Date.now()}.xlsx`);
+};
+
+document.getElementById("btnClearScan").onclick = async ()=>{
+  if(!confirm("Kosongkan riwayat scan sesi ini?")) return;
+  await idbClearScans();
+  document.getElementById("scanLogBody").innerHTML = "";
+  sessionStats = { total:0, found:0, notfound:0 };
+  updateStats();
+  document.getElementById("scanResult").innerHTML = "";
+};
+
+/* ============================================================
+   5) MASTER PRODUK: UPLOAD & SYNC
+   ============================================================ */
+let parsedMaster = []; // [{sku, nama}]
+
+document.getElementById("fileMaster").addEventListener("change", (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (evt)=>{
+    const wb = XLSX.read(evt.target.result, { type: "array" });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, { defval: "" });
+
+    // Deteksi otomatis nama kolom (SKU / Nama Barang, case-insensitive)
+    parsedMaster = rows.map(r=>{
+      const keys = Object.keys(r);
+      const skuKey = keys.find(k=>k.trim().toLowerCase() === "sku") || keys[0];
+      const namaKey = keys.find(k=>k.trim().toLowerCase().includes("nama")) || keys[1];
+      return {
+        sku: String(r[skuKey]).trim(),
+        nama: String(r[namaKey]).trim()
+      };
+    }).filter(r=>r.sku);
+
+    document.getElementById("masterPreviewInfo").textContent =
+      `${parsedMaster.length} baris siap diupload dari file "${file.name}"`;
+
+    const tbody = document.getElementById("masterPreviewBody");
+    tbody.innerHTML = "";
+    parsedMaster.slice(0, 50).forEach(r=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td class="sku">${r.sku}</td><td>${r.nama}</td>`;
+      tbody.appendChild(tr);
+    });
+    if(parsedMaster.length > 50){
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="2" class="hint">... dan ${parsedMaster.length - 50} baris lainnya</td>`;
+      tbody.appendChild(tr);
+    }
+
+    document.getElementById("btnUploadMaster").disabled = parsedMaster.length === 0;
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+document.getElementById("btnClearFile").onclick = ()=>{
+  parsedMaster = [];
+  document.getElementById("fileMaster").value = "";
+  document.getElementById("masterPreviewInfo").textContent = "";
+  document.getElementById("masterPreviewBody").innerHTML = "";
+  document.getElementById("btnUploadMaster").disabled = true;
+  document.getElementById("masterProgress").style.width = "0%";
+};
+
+document.getElementById("btnUploadMaster").onclick = async ()=>{
+  if(parsedMaster.length === 0) return;
+  const btn = document.getElementById("btnUploadMaster");
+  btn.disabled = true;
+  const progress = document.getElementById("masterProgress");
+
+  const CHUNK = 450; // batas aman Firestore batch (max 500 operasi)
+  let done = 0;
+
+  try{
+    for(let i = 0; i < parsedMaster.length; i += CHUNK){
+      const chunk = parsedMaster.slice(i, i + CHUNK);
+      const batch = db.batch();
+      chunk.forEach(item=>{
+        const docId = item.sku.replace(/[\/]/g, "-"); // Firestore doc id tidak boleh mengandung "/"
+        const ref = db.collection(COL_MASTER).doc(docId);
+        batch.set(ref, { nama: item.nama, sku: item.sku, updatedAt: new Date().toISOString() }, { merge: true });
+      });
+      await batch.commit();
+      done += chunk.length;
+      progress.style.width = Math.round((done / parsedMaster.length) * 100) + "%";
+
+      // simpan juga ke cache lokal
+      await idbPutMasterBulk(chunk.map(c=>({ sku: c.sku, nama: c.nama })));
+    }
+    toast(`✅ ${parsedMaster.length} produk tersimpan ke Firestore`, "good");
+    refreshMasterStats();
+  }catch(err){
+    console.error(err);
+    toast("❌ Gagal upload: " + err.message, "bad");
+  }finally{
+    btn.disabled = false;
+  }
+};
+
+document.getElementById("btnPullMaster").onclick = async ()=>{
+  toast("Menarik master produk dari Firestore...");
+  try{
+    await idbClearMaster();
+    let count = 0;
+    let lastDoc = null;
+    const PAGE = 500;
+    while(true){
+      let q = db.collection(COL_MASTER).orderBy(firebase.firestore.FieldPath.documentId()).limit(PAGE);
+      if(lastDoc) q = q.startAfter(lastDoc);
+      const snap = await q.get();
+      if(snap.empty) break;
+      const items = snap.docs.map(d=>({ sku: d.data().sku || d.id, nama: d.data().nama || "" }));
+      await idbPutMasterBulk(items);
+      count += items.length;
+      lastDoc = snap.docs[snap.docs.length - 1];
+      if(snap.docs.length < PAGE) break;
+    }
+    toast(`✅ ${count} produk ditarik ke cache lokal`, "good");
+    refreshMasterStats();
+  }catch(err){
+    console.error(err);
+    toast("❌ Gagal menarik data: " + err.message, "bad");
+  }
+};
+
+async function refreshMasterStats(){
+  const local = await idbCountMaster();
+  document.getElementById("statMasterLocal").textContent = local;
+  try{
+    const snap = await db.collection(COL_MASTER).count().get();
+    document.getElementById("statMasterCloud").textContent = snap.data().count;
+  }catch(e){
+    document.getElementById("statMasterCloud").textContent = "-";
+  }
+}
+
+/* ============================================================
+   6) INIT
+   ============================================================ */
+(async function init(){
+  idb = await openIDB();
+  await loadScanLogFromIDB();
+
+  db.collection(COL_MASTER).limit(1).get()
+    .then(()=>setConn(true, "Terhubung ke Firestore"))
+    .catch((e)=>setConn(false, "Gagal konek Firestore — cek firebaseConfig"));
+
+  scanInput.focus();
+})();
+</script>
+</body>
+</html>
