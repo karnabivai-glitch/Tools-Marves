@@ -2,218 +2,432 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Scan Barcode WMS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enterprise WMS - Barcode Scanner</title>
 
 <!-- ============================================================
      LIBRARIES
      ============================================================ -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/firebase-app-compat.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/firebase-firestore-compat.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 
 <style>
-  :root{
-    --bg:#0f1417;
-    --panel:#161d22;
-    --panel-2:#1c252b;
-    --border:#28333a;
-    --text:#e7edf0;
-    --muted:#8ba0aa;
-    --accent:#ff9f1c;
-    --accent-dim:#4d3413;
-    --good:#3ddc84;
-    --good-dim:#123322;
-    --bad:#ff5d5d;
-    --bad-dim:#3a1414;
-    --mono: 'SF Mono', 'Consolas', 'Menlo', monospace;
+  :root {
+    /* Color Palette - Professional Dark Dashboard */
+    --bg-app: #0f172a;
+    --bg-sidebar: #1e293b;
+    --bg-card: #1e293b;
+    --bg-input: #0f172a;
+    --bg-hover: #334155;
+    
+    --border: #334155;
+    --border-light: #475569;
+    
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --accent-glow: rgba(59, 130, 246, 0.5);
+    
+    --success: #10b981;
+    --success-dim: rgba(16, 185, 129, 0.15);
+    --danger: #ef4444;
+    --danger-dim: rgba(239, 68, 68, 0.15);
+    --warning: #f59e0b;
+    
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
-    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-    -webkit-tap-highlight-color:transparent;}
-  body{padding-bottom:70px;}
 
-  header{
-    position:sticky;top:0;z-index:20;
-    background:linear-gradient(180deg,#141b1f,#10161a);
-    border-bottom:1px solid var(--border);
-    padding:14px 16px 12px;
+  * { box-sizing: border-box; }
+  
+  body {
+    margin: 0; padding: 0; 
+    background-color: var(--bg-app); 
+    color: var(--text-main);
+    font-family: var(--font-sans);
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
   }
-  header h1{margin:0;font-size:16px;letter-spacing:.03em;font-weight:700;}
-  header h1 span{color:var(--accent);}
-  header .sub{font-size:11px;color:var(--muted);margin-top:2px;font-family:var(--mono);}
 
-  .status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;background:var(--bad);}
-  .status-dot.on{background:var(--good);box-shadow:0 0 6px var(--good);}
-
-  main{max-width:720px;margin:0 auto;padding:14px;}
-
-  .tabbar{
-    display:flex;gap:6px;position:fixed;bottom:0;left:0;right:0;z-index:30;
-    background:#0d1215;border-top:1px solid var(--border);padding:8px;
+  /* ============================
+     LAYOUT: SIDEBAR & MAIN
+     ============================ */
+  .app-container {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
   }
-  .tabbar button{
-    flex:1;padding:10px 4px;border:none;border-radius:10px;background:transparent;
-    color:var(--muted);font-size:11px;font-weight:600;letter-spacing:.02em;
+
+  .sidebar {
+    width: 260px;
+    background-color: var(--bg-sidebar);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
   }
-  .tabbar button.active{background:var(--accent-dim);color:var(--accent);}
 
-  .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px;}
-  .card h2{font-size:13px;margin:0 0 12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
-
-  input[type=text], input[type=file]{
-    width:100%;background:var(--panel-2);border:1px solid var(--border);color:var(--text);
-    padding:12px;border-radius:10px;font-size:15px;font-family:var(--mono);
+  .sidebar-header {
+    padding: 24px;
+    border-bottom: 1px solid var(--border);
   }
-  input[type=text]:focus{outline:none;border-color:var(--accent);}
 
-  .scan-input{font-size:20px;padding:16px;text-align:center;letter-spacing:.05em;}
-
-  button.btn{
-    border:none;border-radius:10px;padding:12px 16px;font-weight:700;font-size:13px;
-    cursor:pointer;letter-spacing:.02em;
+  .sidebar-header h1 {
+    margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.5px;
+    color: var(--text-main);
+    display: flex; align-items: center; gap: 8px;
   }
-  .btn-accent{background:var(--accent);color:#1a1200;}
-  .btn-ghost{background:var(--panel-2);color:var(--text);border:1px solid var(--border);}
-  .btn-danger{background:var(--bad-dim);color:var(--bad);border:1px solid #5a2323;}
-  .btn-good{background:var(--good-dim);color:var(--good);border:1px solid #1f5c3c;}
-  .btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
-  button:disabled{opacity:.4;}
 
-  .result{margin-top:14px;padding:14px;border-radius:12px;border:1px solid var(--border);background:var(--panel-2);}
-  .result.found{border-color:#1f5c3c;background:var(--good-dim);}
-  .result.notfound{border-color:#5a2323;background:var(--bad-dim);}
-  .result .sku{font-family:var(--mono);color:var(--muted);font-size:12px;}
-  .result .nama{font-size:16px;font-weight:700;margin-top:4px;}
+  .sidebar-header h1 span { color: var(--accent); }
 
-  table{width:100%;border-collapse:collapse;font-size:13px;}
-  th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--border);}
-  th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;}
-  td.sku{font-family:var(--mono);color:var(--muted);white-space:nowrap;}
-  .scroll-table{max-height:320px;overflow-y:auto;}
-
-  .progress-wrap{background:var(--panel-2);border-radius:8px;overflow:hidden;height:8px;margin-top:10px;}
-  .progress-bar{height:100%;background:var(--accent);width:0%;transition:width .2s;}
-
-  .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;}
-  .badge.good{background:var(--good-dim);color:var(--good);}
-  .badge.bad{background:var(--bad-dim);color:var(--bad);}
-  .badge.muted{background:var(--panel-2);color:var(--muted);}
-
-  .stat-row{display:flex;gap:10px;}
-  .stat{flex:1;background:var(--panel-2);border-radius:10px;padding:10px;text-align:center;}
-  .stat .num{font-size:20px;font-weight:800;color:var(--accent);}
-  .stat .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;}
-
-  .toast{
-    position:fixed;top:14px;left:50%;transform:translateX(-50%);
-    background:#1c252b;border:1px solid var(--border);color:var(--text);
-    padding:10px 16px;border-radius:10px;font-size:13px;z-index:99;
-    opacity:0;pointer-events:none;transition:opacity .25s, top .25s;
+  .nav-menu {
+    flex: 1;
+    padding: 20px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
   }
-  .toast.show{opacity:1;top:20px;}
-  .toast.good{border-color:#1f5c3c;color:var(--good);}
-  .toast.bad{border-color:#5a2323;color:var(--bad);}
 
-  .hint{font-size:11px;color:var(--muted);line-height:1.5;}
-  .hidden{display:none !important;}
-  a{color:var(--accent);}
+  .nav-item {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    padding: 14px 16px;
+    border-radius: 8px;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .nav-item:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-main);
+  }
+
+  .nav-item.active {
+    background-color: var(--accent);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 4px 12px var(--accent-glow);
+  }
+
+  .sidebar-footer {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+  }
+
+  .status-dot {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%; 
+    margin-right: 8px; background: var(--danger);
+  }
+  .status-dot.on { background: var(--success); box-shadow: 0 0 8px var(--success); }
+
+  .content-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px;
+    background-color: var(--bg-app);
+  }
+
+  /* ============================
+     COMPONENTS: CARDS, FORMS, TABLES
+     ============================ */
+  .section-container { max-width: 1200px; margin: 0 auto; height: 100%; display: flex; flex-direction: column; }
+  
+  .card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+  }
+
+  .card-header {
+    font-size: 14px; font-weight: 600; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 1px; margin: 0 0 16px 0;
+  }
+
+  /* Inputs */
+  input[type=text], input[type=file] {
+    width: 100%; background: var(--bg-input); border: 1px solid var(--border);
+    color: var(--text-main); padding: 14px; border-radius: 8px;
+    font-size: 15px; font-family: var(--font-mono); transition: border-color 0.2s;
+  }
+  input[type=text]:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+  
+  .scan-input { font-size: 24px; padding: 20px; text-align: center; letter-spacing: 2px; font-weight: bold;}
+  .bin-input { margin-bottom: 16px; }
+
+  /* Buttons */
+  .btn {
+    border: none; border-radius: 8px; padding: 12px 20px; font-weight: 600; font-size: 14px;
+    cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-accent { background: var(--accent); color: #fff; }
+  .btn-accent:hover:not(:disabled) { background: var(--accent-hover); }
+  .btn-ghost { background: transparent; color: var(--text-main); border: 1px solid var(--border-light); }
+  .btn-ghost:hover:not(:disabled) { background: var(--bg-hover); }
+  .btn-danger { background: var(--danger-dim); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
+  .btn-danger:hover:not(:disabled) { background: rgba(239,68,68,0.25); }
+  
+  .btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+
+  .btn-copy {
+    background: transparent; border: 1px solid var(--accent); color: var(--accent);
+    border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer; margin-left: 8px;
+    text-transform: uppercase; font-weight: 700;
+  }
+  .btn-copy:hover { background: var(--accent); color: #fff; }
+
+  .btn-delete {
+    background: transparent; border: none; color: var(--danger); cursor: pointer;
+    font-size: 16px; padding: 4px; border-radius: 4px; transition: background 0.2s; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; margin: 0 auto;
+  }
+  .btn-delete:hover { background: var(--danger-dim); }
+
+  /* Result Box */
+  .result { margin-top: 16px; padding: 20px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-input); display: flex; flex-direction: column; gap: 8px;}
+  .result.found { border-color: var(--success); background: var(--success-dim); }
+  .result.notfound { border-color: var(--danger); background: var(--danger-dim); }
+  .result .sku { font-family: var(--font-mono); color: var(--text-muted); font-size: 13px; }
+  .result .nama { font-size: 18px; font-weight: 700; }
+
+  /* Tables */
+  /* Penyesuaian max-height dinamis agar tidak terlalu panjang ke bawah */
+  .scroll-table { max-height: calc(100vh - 340px); overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead { position: sticky; top: 0; background-color: var(--bg-hover); z-index: 2; }
+  th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  th { color: var(--text-muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  tbody tr:hover { background-color: rgba(255,255,255,0.02); }
+  td.sku { font-family: var(--font-mono); color: var(--text-muted); white-space: nowrap; }
+
+  /* Badges */
+  .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  .badge.good { background: var(--success-dim); color: var(--success); border: 1px solid rgba(16,185,129,0.3); }
+  .badge.bad { background: var(--danger-dim); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
+
+  /* Stats Row */
+  .stat-row { display: flex; gap: 16px; margin-bottom: 20px; }
+  .stat { flex: 1; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start;}
+  .stat .num { font-size: 28px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; }
+  .stat .lbl { font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;}
+  .stat.highlight .num { color: var(--accent); }
+
+  /* Helpers */
+  .progress-wrap { background: var(--bg-input); border-radius: 4px; overflow: hidden; height: 6px; margin-top: 12px; }
+  .progress-bar { height: 100%; background: var(--accent); width: 0%; transition: width 0.2s; }
+  .hint { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+  .hidden { display: none !important; }
+
+  /* Toast Notification */
+  .toast {
+    position: fixed; top: 24px; right: 24px; 
+    background: var(--bg-card); border: 1px solid var(--border); color: var(--text-main);
+    padding: 16px 24px; border-radius: 8px; font-size: 14px; font-weight: 500;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); z-index: 9999;
+    opacity: 0; transform: translateY(-20px); pointer-events: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.good { border-left: 4px solid var(--success); }
+  .toast.bad { border-left: 4px solid var(--danger); }
 </style>
 </head>
 <body>
 
-<header>
-  <h1>SCAN<span>·</span>WMS</h1>
-  <div class="sub"><span id="connDot" class="status-dot"></span><span id="connText">menghubungkan ke Firestore...</span></div>
-</header>
-
-<div id="toast" class="toast"></div>
-
-<main>
-
-  <!-- ============================ TAB: SCAN ============================ -->
-  <section id="tab-scan">
-    <div class="card">
-      <h2>Scan Barcode</h2>
-      <input id="scanInput" class="scan-input" type="text" placeholder="Tembak barcode..." autocomplete="off" autofocus>
-      <div class="hint" style="margin-top:8px;">Scanner USB otomatis mengetik + Enter. Fokus otomatis kembali ke kolom ini.</div>
-
-      <div id="scanResult"></div>
-
-      <div class="stat-row" style="margin-top:14px;">
-        <div class="stat"><div class="num" id="statTotal">0</div><div class="lbl">Total Scan</div></div>
-        <div class="stat"><div class="num" id="statFound">0</div><div class="lbl">Ditemukan</div></div>
-        <div class="stat"><div class="num" id="statNotFound">0</div><div class="lbl">Tidak Ada</div></div>
-      </div>
+<div class="app-container">
+  
+  <!-- SIDEBAR NAVIGATION -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h1>SCAN<span>WMS</span></h1>
     </div>
-
-    <div class="card">
-      <h2>Riwayat Scan (sesi ini)</h2>
-      <div class="scroll-table">
-        <table>
-          <thead><tr><th>Jam</th><th>SKU</th><th>Nama Barang</th></tr></thead>
-          <tbody id="scanLogBody"></tbody>
-        </table>
-      </div>
-      <div class="btn-row">
-        <button class="btn btn-ghost" id="btnSyncScan">☁️ Sync Hasil Scan ke Firestore</button>
-        <button class="btn btn-ghost" id="btnExportScan">⬇️ Export Excel</button>
-        <button class="btn btn-danger" id="btnClearScan">Kosongkan</button>
-      </div>
+    <div class="nav-menu">
+      <button class="nav-item active" id="navScan">📷 Scan & Entry</button>
+      <button class="nav-item" id="navPivot">📊 Rekap Pivot</button>
+      <button class="nav-item" id="navAllScan">🌍 Semua Riwayat</button>
+      <button class="nav-item" id="navMaster">📦 Master Produk</button>
     </div>
-  </section>
-
-  <!-- ============================ TAB: MASTER ============================ -->
-  <section id="tab-master" class="hidden">
-    <div class="card">
-      <h2>Cache Master Produk (Lokal)</h2>
-      <div class="stat-row">
-        <div class="stat"><div class="num" id="statMasterLocal">0</div><div class="lbl">Tersimpan Lokal</div></div>
-        <div class="stat"><div class="num" id="statMasterCloud">-</div><div class="lbl">Di Firestore</div></div>
-      </div>
-      <div class="btn-row">
-        <button class="btn btn-ghost" id="btnPullMaster">⬇️ Tarik Master dari Firestore ke Lokal</button>
-      </div>
+    <div class="sidebar-footer">
+      <span id="connDot" class="status-dot"></span><span id="connText">Memeriksa koneksi...</span>
     </div>
+  </aside>
 
-    <div class="card">
-      <h2>Upload Master Produk (.xlsx / .csv)</h2>
-      <div class="hint">Kolom wajib: <b>SKU</b> dan <b>Nama Barang</b> (header di baris pertama). Data akan menimpa (upsert) produk dengan SKU yang sama.</div>
-      <div style="margin-top:10px;">
-        <input type="file" id="fileMaster" accept=".xlsx,.xls,.csv">
-      </div>
-      <div id="masterPreviewInfo" class="hint" style="margin-top:10px;"></div>
-      <div class="progress-wrap"><div class="progress-bar" id="masterProgress"></div></div>
-      <div class="btn-row">
-        <button class="btn btn-accent" id="btnUploadMaster" disabled>🚀 Simpan ke Firestore</button>
-        <button class="btn btn-ghost" id="btnClearFile">Batal</button>
-      </div>
+  <!-- TOAST ALERTS -->
+  <div id="toast" class="toast"></div>
+
+  <!-- MAIN CONTENT AREA -->
+  <main class="content-area">
+    <div class="section-container">
+
+      <!-- ============================ TAB: SCAN ============================ -->
+      <section id="tab-scan">
+        <div class="stat-row">
+          <div class="stat highlight"><div class="num" id="statTotal">0</div><div class="lbl">Total Scan Sesi Ini</div></div>
+          <div class="stat"><div class="num" id="statFound">0</div><div class="lbl">Ditemukan</div></div>
+          <div class="stat"><div class="num" id="statNotFound">0</div><div class="lbl">Tidak Dikenali</div></div>
+        </div>
+
+        <div style="display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap;">
+          <!-- Kiri: Input Area -->
+          <div style="flex: 1; min-width: 300px;">
+            <div class="card">
+              <h3 class="card-header">Panel Pemindaian</h3>
+              <input id="binInput" class="bin-input" type="text" placeholder="Masukkan Lokasi Bin (Opsional)" autocomplete="off">
+              <input id="scanInput" class="scan-input" type="text" placeholder="Tembak barcode..." autocomplete="off" autofocus>
+              <div class="hint" style="margin-top:12px;">Scanner USB otomatis mengetik + Enter. Fokus akan otomatis kembali ke kolom barcode setelah scan.</div>
+              
+              <div id="scanResult"></div>
+            </div>
+          </div>
+
+          <!-- Kanan: Log Area -->
+          <div style="flex: 1.5; min-width: 400px;">
+            <div class="card" style="display: flex; flex-direction: column; height: 100%;">
+              <h3 class="card-header">Log Scan Terbaru</h3>
+              
+              <!-- Tombol Dipindahkan Ke Atas Agar Tidak Tertutup -->
+              <div class="btn-row">
+                <button class="btn btn-accent" id="btnSyncScan">☁️ Sync Hasil ke Cloud</button>
+                <button class="btn btn-danger" id="btnClearScan">🗑️ Tutup & Kosongkan Sesi</button>
+              </div>
+
+              <!-- Tabel Scroll -->
+              <div class="scroll-table" style="flex: 1;">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Jam</th>
+                      <th>Bin</th>
+                      <th>SKU</th>
+                      <th>Nama Barang</th>
+                      <th style="text-align: center;">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody id="scanLogBody"></tbody>
+                </table>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ TAB: PIVOT (REKAP) ============================ -->
+      <section id="tab-pivot" class="hidden">
+        <div class="card">
+          <h3 class="card-header">Akumulasi Data Scan</h3>
+          
+          <div class="btn-row">
+            <button class="btn btn-accent" id="btnExportPivot">⬇️ Export Laporan Pivot (Format Rapi)</button>
+          </div>
+          
+          <div class="scroll-table">
+            <table>
+              <thead><tr><th>Bin</th><th>SKU</th><th>Nama Barang</th><th>Total Qty</th></tr></thead>
+              <tbody id="pivotBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ TAB: SEMUA SCAN (LOKAL) ======================== -->
+      <section id="tab-allscan" class="hidden">
+        <div class="card">
+          <h3 class="card-header">Database Riwayat Offline</h3>
+          
+          <div class="stat-row" style="margin-bottom:20px;">
+            <div class="stat highlight" style="flex: none; width: 300px;">
+              <div class="num" id="statAllScanQty">0</div>
+              <div class="lbl">Total Item Keseluruhan (Offline DB)</div>
+            </div>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn-accent" id="btnExportAllScan">⬇️ Export Excel Seluruh Data</button>
+            <button class="btn btn-danger" id="btnClearAllScan">🗑️ Hapus Bersih Database Lokal</button>
+          </div>
+          
+          <div class="scroll-table">
+            <table>
+              <thead><tr><th>Waktu</th><th>Bin</th><th>SKU</th><th>Nama Barang</th></tr></thead>
+              <tbody id="allScanBody">
+                <tr><td colspan="4" class="hint" style="text-align:center;">Memuat data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ TAB: MASTER ============================ -->
+      <section id="tab-master" class="hidden">
+        <div class="stat-row">
+          <div class="stat"><div class="num" id="statMasterLocal">0</div><div class="lbl">Tersimpan di Cache Lokal</div></div>
+          <div class="stat"><div class="num" id="statMasterCloud">-</div><div class="lbl">Total di Database Cloud</div></div>
+        </div>
+
+        <div style="display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 350px;">
+            <div class="card">
+              <h3 class="card-header">Sinkronisasi Cloud</h3>
+              <div class="hint" style="margin-bottom: 16px;">Tarik data master produk terbaru dari Firestore ke dalam penyimpanan lokal perangkat agar proses scan dapat dilakukan tanpa internet (Offline-first).</div>
+              <button class="btn btn-ghost" style="width:100%" id="btnPullMaster">⬇️ Tarik Master Data Cloud ke Lokal</button>
+            </div>
+            
+            <div class="card">
+              <h3 class="card-header">Upload Master Baru (Excel/CSV)</h3>
+              <div class="hint">Kolom wajib: <b>SKU</b> dan <b>Nama Barang</b>. Data akan menimpa (upsert) produk dengan SKU yang sama di database.</div>
+              <div style="margin-top:16px;">
+                <input type="file" id="fileMaster" accept=".xlsx,.xls,.csv">
+              </div>
+              <div id="masterPreviewInfo" class="hint" style="margin-top:12px; font-weight: 600;"></div>
+              <div class="progress-wrap"><div class="progress-bar" id="masterProgress"></div></div>
+              <div class="btn-row" style="margin-top: 16px;">
+                <button class="btn btn-accent" id="btnUploadMaster" disabled>🚀 Simpan ke Cloud</button>
+                <button class="btn btn-ghost" id="btnClearFile">Batal</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="flex: 1.5; min-width: 400px;">
+            <div class="card">
+              <h3 class="card-header">Preview Data Upload</h3>
+              <div class="scroll-table">
+                <table>
+                  <thead><tr><th>SKU</th><th>Nama Barang</th></tr></thead>
+                  <tbody id="masterPreviewBody">
+                    <tr><td colspan="2" class="hint" style="text-align:center;">Pilih file excel untuk mempratinjau data</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </div>
-
-    <div class="card">
-      <h2>Preview Data</h2>
-      <div class="scroll-table">
-        <table>
-          <thead><tr><th>SKU</th><th>Nama Barang</th></tr></thead>
-          <tbody id="masterPreviewBody"></tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
-</main>
-
-<div class="tabbar">
-  <button id="navScan" class="active">📷 Scan</button>
-  <button id="navMaster">📦 Master Produk</button>
+  </main>
 </div>
 
 <script>
 /* ============================================================
    1) KONFIGURASI FIREBASE
-   Ganti dengan config project Firestore kamu sendiri
-   (Firebase Console -> Project Settings -> General -> Your apps -> SDK config)
    ============================================================ */
 const firebaseConfig = {
   apiKey: "AIzaSyATHrEKneLilCcYwnRgzbPZoFH2R9o9AR4",
@@ -224,13 +438,11 @@ const firebaseConfig = {
   appId: "1:495279296896:web:995bc769a5e90e8adc7165"
 };
 
-
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-/* Nama koleksi Firestore */
-const COL_MASTER = "master_produk";   // doc id = SKU
-const COL_SCAN    = "scan_results";   // hasil scan (auto id)
+const COL_MASTER = "master_produk";
+const COL_SCAN   = "scan_results";
 
 /* ============================================================
    2) INDEXEDDB (cache lokal, offline-first)
@@ -248,6 +460,7 @@ function openIDB(){
         database.createObjectStore("master", { keyPath: "sku" });
       }
       if(!database.objectStoreNames.contains("scanlog")){
+        // Auto-increment ID agar bisa dihapus secara individual
         database.createObjectStore("scanlog", { keyPath: "id", autoIncrement: true });
       }
     };
@@ -295,8 +508,19 @@ function idbClearMaster(){
 function idbAddScan(entry){
   return new Promise((resolve, reject)=>{
     const tx = idb.transaction("scanlog", "readwrite");
-    tx.objectStore("scanlog").add(entry);
+    const req = tx.objectStore("scanlog").add(entry);
+    req.onsuccess = (e) => { entry.id = e.target.result; }; // Simpan ID yang terbuat
     tx.oncomplete = ()=>resolve();
+    tx.onerror = (e)=>reject(e);
+  });
+}
+
+function idbDeleteScan(id){
+  return new Promise((resolve, reject)=>{
+    const tx = idb.transaction("scanlog", "readwrite");
+    tx.objectStore("scanlog").delete(id);
+    tx.oncomplete = ()=>resolve();
+    tx.onerror = (e)=>reject(e);
   });
 }
 
@@ -316,14 +540,30 @@ function idbClearScans(){
   });
 }
 
+function idbClearSession(){
+  return new Promise(async (resolve, reject)=>{
+    const rows = await idbGetAllScans();
+    const tx = idb.transaction("scanlog", "readwrite");
+    const store = tx.objectStore("scanlog");
+    rows.forEach(r => {
+      if (r.sessionActive !== false) {
+         r.sessionActive = false; 
+         store.put(r);
+      }
+    });
+    tx.oncomplete = ()=>resolve();
+    tx.onerror = (e)=>reject(e);
+  });
+}
+
 /* ============================================================
-   3) UI HELPERS
+   3) UI HELPERS & TABS
    ============================================================ */
 function toast(msg, type=""){
   const t = document.getElementById("toast");
   t.textContent = msg;
   t.className = "toast show " + type;
-  setTimeout(()=>t.className = "toast " + type, 2200);
+  setTimeout(()=>t.className = "toast " + type, 2500);
 }
 
 function setConn(ok, text){
@@ -331,29 +571,46 @@ function setConn(ok, text){
   document.getElementById("connText").textContent = text;
 }
 
-/* Tab switching */
-const tabScan = document.getElementById("tab-scan");
-const tabMaster = document.getElementById("tab-master");
-const navScan = document.getElementById("navScan");
-const navMaster = document.getElementById("navMaster");
+window.copyToClipboard = function(text) {
+  navigator.clipboard.writeText(text).then(()=>{
+    toast("✓ SKU berhasil disalin: " + text, "good");
+  }).catch(err=>{
+    toast("Gagal menyalin SKU", "bad");
+  });
+};
 
-navScan.onclick = ()=>{
-  tabScan.classList.remove("hidden"); tabMaster.classList.add("hidden");
-  navScan.classList.add("active"); navMaster.classList.remove("active");
-  document.getElementById("scanInput").focus();
-};
-navMaster.onclick = ()=>{
-  tabMaster.classList.remove("hidden"); tabScan.classList.add("hidden");
-  navMaster.classList.add("active"); navScan.classList.remove("active");
-  refreshMasterStats();
-};
+const tabNames = [
+  { id: "scan", nav: "navScan", tab: "tab-scan" },
+  { id: "pivot", nav: "navPivot", tab: "tab-pivot" },
+  { id: "allscan", nav: "navAllScan", tab: "tab-allscan" },
+  { id: "master", nav: "navMaster", tab: "tab-master" }
+];
+
+function switchTab(activeId) {
+  tabNames.forEach(t => {
+    document.getElementById(t.tab).classList.toggle("hidden", t.id !== activeId);
+    document.getElementById(t.nav).classList.toggle("active", t.id === activeId);
+  });
+  
+  if(activeId === "scan") document.getElementById("scanInput").focus();
+  if(activeId === "pivot") loadPivot();
+  if(activeId === "allscan") loadAllScan();
+  if(activeId === "master") refreshMasterStats();
+}
+
+document.getElementById("navScan").onclick = () => switchTab("scan");
+document.getElementById("navPivot").onclick = () => switchTab("pivot");
+document.getElementById("navAllScan").onclick = () => switchTab("allscan");
+document.getElementById("navMaster").onclick = () => switchTab("master");
 
 /* ============================================================
-   4) SCAN LOGIC
+   4) SCAN LOGIC (HANYA SESI AKTIF)
    ============================================================ */
 let sessionStats = { total:0, found:0, notfound:0 };
 
 const scanInput = document.getElementById("scanInput");
+const binInput = document.getElementById("binInput");
+
 scanInput.addEventListener("keydown", async (e)=>{
   if(e.key !== "Enter") return;
   const raw = scanInput.value.trim();
@@ -362,57 +619,65 @@ scanInput.addEventListener("keydown", async (e)=>{
   await handleScan(raw);
 });
 
-// Jaga fokus tetap di kolom scan (khas scanner USB / keyboard wedge)
 document.addEventListener("click", (e)=>{
-  if(!tabScan.classList.contains("hidden") && e.target.tagName !== "INPUT" && e.target.tagName !== "BUTTON"){
-    scanInput.focus();
+  if(!document.getElementById("tab-scan").classList.contains("hidden")) {
+    if(e.target.tagName !== "INPUT" && e.target.tagName !== "BUTTON"){
+      scanInput.focus();
+    }
   }
 });
+
+async function getActiveSessionScans() {
+  const rows = await idbGetAllScans();
+  return rows.filter(r => r.sessionActive !== false);
+}
 
 async function handleScan(sku){
   let product = await idbGetMaster(sku);
 
-  // fallback ke Firestore kalau belum ada di cache lokal
   if(!product){
     try{
       const doc = await db.collection(COL_MASTER).doc(sku).get();
       if(doc.exists){
         product = { sku, nama: doc.data().nama || "" };
-        await idbPutMasterBulk([product]); // simpan ke cache biar scan berikutnya cepat
+        await idbPutMasterBulk([product]); 
       }
     }catch(err){
       console.error(err);
     }
   }
 
+  const binValue = binInput.value.trim().toUpperCase() || "-";
   const resultBox = document.getElementById("scanResult");
-  sessionStats.total++;
+  
   if(product){
-    sessionStats.found++;
     resultBox.innerHTML = `<div class="result found">
-      <div class="sku">${sku}</div>
+      <div class="sku"><span class="badge muted">BIN: ${binValue}</span> ${sku}</div>
       <div class="nama">${product.nama}</div>
-      <span class="badge good">DITEMUKAN</span>
+      <div style="margin-top:4px"><span class="badge good">✓ DITEMUKAN</span></div>
     </div>`;
   }else{
-    sessionStats.notfound++;
     resultBox.innerHTML = `<div class="result notfound">
-      <div class="sku">${sku}</div>
-      <div class="nama">SKU tidak ditemukan di master produk</div>
-      <span class="badge bad">TIDAK ADA</span>
+      <div class="sku"><span class="badge muted">BIN: ${binValue}</span> ${sku}</div>
+      <div class="nama">SKU tidak ditemukan di database</div>
+      <div style="margin-top:4px"><span class="badge bad">⚠ TIDAK DIKENALI</span></div>
     </div>`;
   }
-  updateStats();
 
   const entry = {
     sku,
     nama: product ? product.nama : null,
     found: !!product,
+    bin: binValue,
     ts: new Date().toISOString(),
-    synced: false
+    synced: false,
+    sessionActive: true 
   };
+  
   await idbAddScan(entry);
-  prependScanRow(entry);
+  
+  // Refresh tabel dan statistik agar akurat
+  await loadScanLogFromIDB();
   scanInput.focus();
 }
 
@@ -426,65 +691,257 @@ function prependScanRow(entry){
   const tbody = document.getElementById("scanLogBody");
   const tr = document.createElement("tr");
   const jam = new Date(entry.ts).toLocaleTimeString("id-ID");
-  tr.innerHTML = `<td>${jam}</td><td class="sku">${entry.sku}</td>
-    <td>${entry.found ? entry.nama : '<span class="badge bad">N/A</span>'}</td>`;
+  tr.innerHTML = `
+    <td>${jam}</td>
+    <td><span style="color:var(--accent); font-weight:bold;">${entry.bin || '-'}</span></td>
+    <td class="sku">${entry.sku}</td>
+    <td>${entry.found ? entry.nama : '<span class="badge bad">N/A</span>'}</td>
+    <td><button class="btn-delete" onclick="deleteScan(${entry.id})" title="Hapus Scan">🗑️</button></td>
+  `;
   tbody.prepend(tr);
 }
 
 async function loadScanLogFromIDB(){
-  const rows = await idbGetAllScans();
+  const rows = await getActiveSessionScans();
   sessionStats = { total: rows.length, found: rows.filter(r=>r.found).length, notfound: rows.filter(r=>!r.found).length };
   updateStats();
   const tbody = document.getElementById("scanLogBody");
   tbody.innerHTML = "";
-  rows.slice().reverse().forEach(prependScanRowFromExisting);
-  function prependScanRowFromExisting(e){ prependScanRow(e); }
+  rows.slice().reverse().forEach(prependScanRow);
 }
 
-/* Sync hasil scan ke Firestore */
-document.getElementById("btnSyncScan").onclick = async ()=>{
-  const rows = (await idbGetAllScans()).filter(r=>!r.synced);
-  if(rows.length === 0){ toast("Tidak ada data baru untuk disinkron", ""); return; }
-  toast(`Menyinkron ${rows.length} data...`);
-  let batch = db.batch();
-  let count = 0;
-  for(const r of rows){
-    const ref = db.collection(COL_SCAN).doc();
-    batch.set(ref, { sku: r.sku, nama: r.nama, found: r.found, ts: r.ts });
-    count++;
-    if(count % 450 === 0){ await batch.commit(); batch = db.batch(); }
+// FUNGSI HAPUS DATA INDIVIDUAL
+window.deleteScan = async function(id) {
+  if(!confirm("Anda yakin ingin menghapus data scan ini?")) return;
+  
+  await idbDeleteScan(id);
+  
+  // Update tabel sesi ini
+  await loadScanLogFromIDB();
+  
+  // Jika tab pivot terbuka, update juga pivotnya
+  if(!document.getElementById("tab-pivot").classList.contains("hidden")) {
+    loadPivot();
   }
-  await batch.commit();
-  toast(`✅ ${rows.length} hasil scan tersinkron ke Firestore`, "good");
-};
-
-document.getElementById("btnExportScan").onclick = async ()=>{
-  const rows = await idbGetAllScans();
-  if(rows.length === 0){ toast("Belum ada data scan", ""); return; }
-  const ws = XLSX.utils.json_to_sheet(rows.map(r=>({
-    Waktu: new Date(r.ts).toLocaleString("id-ID"),
-    SKU: r.sku,
-    "Nama Barang": r.nama || "",
-    Status: r.found ? "Ditemukan" : "Tidak Ada"
-  })));
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Hasil Scan");
-  XLSX.writeFile(wb, `hasil_scan_${Date.now()}.xlsx`);
-};
-
-document.getElementById("btnClearScan").onclick = async ()=>{
-  if(!confirm("Kosongkan riwayat scan sesi ini?")) return;
-  await idbClearScans();
-  document.getElementById("scanLogBody").innerHTML = "";
-  sessionStats = { total:0, found:0, notfound:0 };
-  updateStats();
-  document.getElementById("scanResult").innerHTML = "";
+  
+  toast("✓ Data scan berhasil dihapus", "good");
+  document.getElementById("scanInput").focus();
 };
 
 /* ============================================================
-   5) MASTER PRODUK: UPLOAD & SYNC
+   5) PIVOT LOGIC (HANYA SESI AKTIF)
    ============================================================ */
-let parsedMaster = []; // [{sku, nama}]
+async function loadPivot(){
+  const rows = await getActiveSessionScans(); 
+  const pivotMap = {};
+
+  rows.forEach(r => {
+    const binVal = r.bin || "-";
+    const key = `${r.sku}_${binVal}`;
+    if(pivotMap[key]){
+      pivotMap[key].qty += 1;
+    } else {
+      pivotMap[key] = {
+        bin: binVal,
+        sku: r.sku,
+        nama: r.nama || "Tidak Dikenali",
+        qty: 1
+      };
+    }
+  });
+
+  const pivotArray = Object.values(pivotMap).sort((a,b) => b.qty - a.qty);
+  const tbody = document.getElementById("pivotBody");
+  tbody.innerHTML = "";
+
+  if(pivotArray.length === 0){
+     tbody.innerHTML = `<tr><td colspan="4" class="hint" style="text-align:center; padding: 24px;">Belum ada data scan di sesi ini.</td></tr>`;
+     return;
+  }
+
+  pivotArray.forEach(p => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td style="color:var(--accent); font-weight:bold;">${p.bin}</td>
+      <td class="sku">
+        ${p.sku} 
+        <button class="btn-copy" onclick="copyToClipboard('${p.sku}')">Salin</button>
+      </td>
+      <td>${p.nama}</td>
+      <td style="font-weight:bold; color:var(--accent); font-size: 16px; background-color: rgba(59, 130, 246, 0.05);">${p.qty}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+document.getElementById("btnExportPivot").onclick = async ()=>{
+  const rows = await getActiveSessionScans();
+  if(rows.length === 0){ toast("Belum ada data untuk di-export", ""); return; }
+
+  const pivotMap = {};
+  rows.forEach(r => {
+    const binVal = r.bin || "-";
+    const key = `${r.sku}_${binVal}`;
+    if(pivotMap[key]){
+      pivotMap[key].qty += 1;
+    } else {
+      pivotMap[key] = { bin: binVal, sku: r.sku, nama: r.nama || "TIDAK DIKENALI", qty: 1 };
+    }
+  });
+
+  const wsData = Object.values(pivotMap).map(p => ({
+    "Lokasi Bin": p.bin,
+    "SKU": p.sku,
+    "Nama Barang": p.nama,
+    "Total Qty": p.qty
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(wsData);
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  
+  for(let C = range.s.c; C <= range.e.c; ++C) {
+    const address = XLSX.utils.encode_cell({c:C, r:0});
+    if(!ws[address]) continue;
+    ws[address].s = {
+      fill: { fgColor: { rgb: "2563EB" } }, // Tema Biru
+      font: { bold: true, color: { rgb: "FFFFFF" } },
+      alignment: { vertical: "center", horizontal: "center" }
+    };
+  }
+
+  for(let R = 1; R <= range.e.r; ++R) {
+    const address = XLSX.utils.encode_cell({c:3, r:R}); 
+    if(ws[address]) {
+      ws[address].s = {
+        font: { bold: true, color: { rgb: "000000" } },
+        fill: { fgColor: { rgb: "E2E8F0" } },
+        alignment: { vertical: "center", horizontal: "center" }
+      };
+    }
+  }
+
+  ws['!cols'] = [{wch: 15}, {wch: 20}, {wch: 40}, {wch: 15}];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Rekap Pivot");
+  XLSX.writeFile(wb, `Laporan_Pivot_WMS_${Date.now()}.xlsx`);
+  toast("✓ File Excel berhasil diunduh", "good");
+};
+
+/* ============================================================
+   6) RIWAYAT ALL SCAN (LOKAL - MENGAMBIL SELURUH DATA OFFLINE)
+   ============================================================ */
+async function loadAllScan(){
+  const rows = await idbGetAllScans();
+  const tbody = document.getElementById("allScanBody");
+  
+  document.getElementById("statAllScanQty").textContent = rows.length;
+  tbody.innerHTML = "";
+
+  if(rows.length === 0){
+     tbody.innerHTML = `<tr><td colspan="4" class="hint" style="text-align:center; padding: 24px;">Database lokal kosong. Belum ada riwayat scan sama sekali.</td></tr>`;
+     return;
+  }
+
+  rows.slice().reverse().forEach(r => {
+    const tr = document.createElement("tr");
+    const jam = new Date(r.ts).toLocaleString("id-ID");
+    tr.innerHTML = `
+      <td>${jam}</td>
+      <td style="color:var(--accent); font-weight:bold;">${r.bin || '-'}</td>
+      <td class="sku">${r.sku}</td>
+      <td>${r.found ? r.nama : '<span class="badge bad">N/A</span>'}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+document.getElementById("btnExportAllScan").onclick = async ()=>{
+  const rows = await idbGetAllScans();
+  if(rows.length === 0){ toast("Tidak ada data untuk diexport", ""); return; }
+  
+  const wsData = rows.map(r=>({
+    "Waktu Scan": new Date(r.ts).toLocaleString("id-ID"),
+    "Lokasi Bin": r.bin || "-",
+    "SKU": r.sku,
+    "Nama Barang": r.nama || "TIDAK DIKENALI",
+    "Status Sinkronisasi": r.synced ? "Tersinkron Cloud" : "Offline / Pending"
+  }));
+  
+  const ws = XLSX.utils.json_to_sheet(wsData);
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  
+  for(let C = range.s.c; C <= range.e.c; ++C) {
+    const address = XLSX.utils.encode_cell({c:C, r:0});
+    if(!ws[address]) continue;
+    ws[address].s = {
+      fill: { fgColor: { rgb: "1E293B" } },
+      font: { bold: true, color: { rgb: "F8FAFC" } }
+    };
+  }
+  
+  ws['!cols'] = [{wch: 20}, {wch: 15}, {wch: 20}, {wch: 40}, {wch: 25}];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Database Offline");
+  XLSX.writeFile(wb, `Database_Lokal_WMS_${Date.now()}.xlsx`);
+  toast("✓ Ekspor riwayat keseluruhan berhasil", "good");
+};
+
+/* ============================================================
+   7) SINKRONISASI & MANAJEMEN SESI
+   ============================================================ */
+document.getElementById("btnSyncScan").onclick = async ()=>{
+  const rows = (await idbGetAllScans()).filter(r=>!r.synced);
+  if(rows.length === 0){ toast("Semua data sudah tersinkron dengan Cloud", "good"); return; }
+  toast(`Menyinkronisasi ${rows.length} antrean data...`);
+  
+  let batch = db.batch();
+  let count = 0;
+  try {
+    for(const r of rows){
+      const ref = db.collection(COL_SCAN).doc();
+      batch.set(ref, { sku: r.sku, nama: r.nama, found: r.found, bin: r.bin || '-', ts: r.ts });
+      count++;
+      if(count % 450 === 0){ await batch.commit(); batch = db.batch(); }
+    }
+    await batch.commit();
+    
+    const tx = idb.transaction("scanlog", "readwrite");
+    const store = tx.objectStore("scanlog");
+    rows.forEach(r => {
+      r.synced = true;
+      store.put(r);
+    });
+    
+    toast(`✓ ${rows.length} hasil scan berhasil di-sync ke Cloud`, "good");
+  } catch(e) {
+    toast(`Gagal melakukan sinkronisasi: ${e.message}`, "bad");
+  }
+};
+
+document.getElementById("btnClearScan").onclick = async ()=>{
+  if(!confirm("Anda yakin ingin menutup & mengosongkan sesi scan saat ini? (Riwayat akan tetap aman tersimpan di tab 'Semua Riwayat')")) return;
+  await idbClearSession(); 
+  await loadScanLogFromIDB();
+  document.getElementById("scanResult").innerHTML = "";
+  if(!document.getElementById("tab-pivot").classList.contains("hidden")) loadPivot();
+  toast("✓ Sesi saat ini berhasil dibersihkan", "good");
+};
+
+document.getElementById("btnClearAllScan").onclick = async ()=>{
+  if(!confirm("⚠️ PERINGATAN KRITIS: Apakah Anda yakin ingin menghapus SELURUH riwayat scan dari penyimpanan perangkat ini secara permanen?")) return;
+  await idbClearScans();
+  await loadAllScan();
+  await loadScanLogFromIDB(); 
+  document.getElementById("scanResult").innerHTML = "";
+  toast("✓ Database lokal berhasil dihapus bersih", "good");
+};
+
+/* ============================================================
+   8) MASTER PRODUK: UPLOAD & PULL
+   ============================================================ */
+let parsedMaster = [];
 
 document.getElementById("fileMaster").addEventListener("change", (e)=>{
   const file = e.target.files[0];
@@ -495,7 +952,6 @@ document.getElementById("fileMaster").addEventListener("change", (e)=>{
     const ws = wb.Sheets[wb.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(ws, { defval: "" });
 
-    // Deteksi otomatis nama kolom (SKU / Nama Barang, case-insensitive)
     parsedMaster = rows.map(r=>{
       const keys = Object.keys(r);
       const skuKey = keys.find(k=>k.trim().toLowerCase() === "sku") || keys[0];
@@ -507,7 +963,7 @@ document.getElementById("fileMaster").addEventListener("change", (e)=>{
     }).filter(r=>r.sku);
 
     document.getElementById("masterPreviewInfo").textContent =
-      `${parsedMaster.length} baris siap diupload dari file "${file.name}"`;
+      `Berhasil membaca ${parsedMaster.length} baris data dari file "${file.name}"`;
 
     const tbody = document.getElementById("masterPreviewBody");
     tbody.innerHTML = "";
@@ -518,7 +974,7 @@ document.getElementById("fileMaster").addEventListener("change", (e)=>{
     });
     if(parsedMaster.length > 50){
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="2" class="hint">... dan ${parsedMaster.length - 50} baris lainnya</td>`;
+      tr.innerHTML = `<td colspan="2" class="hint" style="text-align:center;">... menampilkan 50 dari ${parsedMaster.length} baris</td>`;
       tbody.appendChild(tr);
     }
 
@@ -531,7 +987,7 @@ document.getElementById("btnClearFile").onclick = ()=>{
   parsedMaster = [];
   document.getElementById("fileMaster").value = "";
   document.getElementById("masterPreviewInfo").textContent = "";
-  document.getElementById("masterPreviewBody").innerHTML = "";
+  document.getElementById("masterPreviewBody").innerHTML = `<tr><td colspan="2" class="hint" style="text-align:center;">Pilih file excel untuk mempratinjau data</td></tr>`;
   document.getElementById("btnUploadMaster").disabled = true;
   document.getElementById("masterProgress").style.width = "0%";
 };
@@ -542,7 +998,7 @@ document.getElementById("btnUploadMaster").onclick = async ()=>{
   btn.disabled = true;
   const progress = document.getElementById("masterProgress");
 
-  const CHUNK = 450; // batas aman Firestore batch (max 500 operasi)
+  const CHUNK = 450; 
   let done = 0;
 
   try{
@@ -550,29 +1006,27 @@ document.getElementById("btnUploadMaster").onclick = async ()=>{
       const chunk = parsedMaster.slice(i, i + CHUNK);
       const batch = db.batch();
       chunk.forEach(item=>{
-        const docId = item.sku.replace(/[\/]/g, "-"); // Firestore doc id tidak boleh mengandung "/"
+        const docId = item.sku.replace(/[\/]/g, "-"); 
         const ref = db.collection(COL_MASTER).doc(docId);
         batch.set(ref, { nama: item.nama, sku: item.sku, updatedAt: new Date().toISOString() }, { merge: true });
       });
       await batch.commit();
       done += chunk.length;
       progress.style.width = Math.round((done / parsedMaster.length) * 100) + "%";
-
-      // simpan juga ke cache lokal
       await idbPutMasterBulk(chunk.map(c=>({ sku: c.sku, nama: c.nama })));
     }
-    toast(`✅ ${parsedMaster.length} produk tersimpan ke Firestore`, "good");
+    toast(`✓ ${parsedMaster.length} produk tersimpan ke Firestore & Lokal`, "good");
     refreshMasterStats();
   }catch(err){
     console.error(err);
-    toast("❌ Gagal upload: " + err.message, "bad");
+    toast("Gagal mengupload: " + err.message, "bad");
   }finally{
     btn.disabled = false;
   }
 };
 
 document.getElementById("btnPullMaster").onclick = async ()=>{
-  toast("Menarik master produk dari Firestore...");
+  toast("Sedang menarik master produk dari Cloud...");
   try{
     await idbClearMaster();
     let count = 0;
@@ -589,11 +1043,11 @@ document.getElementById("btnPullMaster").onclick = async ()=>{
       lastDoc = snap.docs[snap.docs.length - 1];
       if(snap.docs.length < PAGE) break;
     }
-    toast(`✅ ${count} produk ditarik ke cache lokal`, "good");
+    toast(`✓ ${count} produk berhasil di-cache ke lokal`, "good");
     refreshMasterStats();
   }catch(err){
     console.error(err);
-    toast("❌ Gagal menarik data: " + err.message, "bad");
+    toast("Gagal menarik data: " + err.message, "bad");
   }
 };
 
@@ -609,15 +1063,18 @@ async function refreshMasterStats(){
 }
 
 /* ============================================================
-   6) INIT
+   9) INIT
    ============================================================ */
 (async function init(){
   idb = await openIDB();
   await loadScanLogFromIDB();
 
   db.collection(COL_MASTER).limit(1).get()
-    .then(()=>setConn(true, "Terhubung ke Firestore"))
-    .catch((e)=>setConn(false, "Gagal konek Firestore — cek firebaseConfig"));
+    .then(()=>{
+      setConn(true, "Terhubung ke Firestore");
+      refreshMasterStats();
+    })
+    .catch((e)=>setConn(false, "Gagal konek Firestore / Mode Offline Aktif"));
 
   scanInput.focus();
 })();
