@@ -54,6 +54,32 @@
   }
 
   /* ============================
+     CUSTOM SCROLLBAR (Modern & Professional)
+     ============================ */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent; 
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--border-light); 
+    border-radius: 10px;
+    border: 2px solid var(--bg-app); /* Padding effect */
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--text-muted); 
+  }
+
+  .scroll-table::-webkit-scrollbar-thumb {
+    border: 2px solid var(--bg-card);
+  }
+  .nav-menu::-webkit-scrollbar-thumb {
+    border: 2px solid var(--bg-sidebar);
+  }
+
+  /* ============================
      LAYOUT: SIDEBAR & MAIN
      ============================ */
   .app-container {
@@ -171,7 +197,9 @@
   input[type=text]:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
   
   .scan-input { font-size: 24px; padding: 20px; text-align: center; letter-spacing: 2px; font-weight: bold;}
-  .bin-input { margin-bottom: 16px; }
+  
+  /* Update Bin Input: Otomatis huruf kapital saat diketik */
+  .bin-input { margin-bottom: 16px; text-transform: uppercase; }
 
   /* Buttons */
   .btn {
@@ -183,8 +211,12 @@
   .btn-accent:hover:not(:disabled) { background: var(--accent-hover); }
   .btn-ghost { background: transparent; color: var(--text-main); border: 1px solid var(--border-light); }
   .btn-ghost:hover:not(:disabled) { background: var(--bg-hover); }
+  
   .btn-danger { background: var(--danger-dim); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
   .btn-danger:hover:not(:disabled) { background: rgba(239,68,68,0.25); }
+  
+  .btn-warning { background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
+  .btn-warning:hover:not(:disabled) { background: rgba(245, 158, 11, 0.25); }
   
   .btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
 
@@ -209,7 +241,6 @@
   .result .nama { font-size: 18px; font-weight: 700; }
 
   /* Tables */
-  /* Penyesuaian max-height dinamis agar tidak terlalu panjang ke bawah */
   .scroll-table { max-height: calc(100vh - 340px); overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; }
   table { width: 100%; border-collapse: collapse; font-size: 14px; }
   thead { position: sticky; top: 0; background-color: var(--bg-hover); z-index: 2; }
@@ -247,6 +278,35 @@
   .toast.show { opacity: 1; transform: translateY(0); }
   .toast.good { border-left: 4px solid var(--success); }
   .toast.bad { border-left: 4px solid var(--danger); }
+  .toast.warning { border-left: 4px solid var(--warning); }
+
+  /* Modal Styles */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  .modal-overlay.show { opacity: 1; pointer-events: auto; }
+  .modal-content {
+    background: var(--bg-card); width: 90%; max-width: 800px;
+    border-radius: 12px; border: 1px solid var(--border);
+    display: flex; flex-direction: column; max-height: 85vh;
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+    transform: translateY(20px); transition: transform 0.2s;
+  }
+  .modal-overlay.show .modal-content { transform: translateY(0); }
+  .modal-header {
+    padding: 20px 24px; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .modal-header h3 { margin: 0; color: var(--text-main); font-size: 18px; }
+  .btn-close {
+    background: transparent; border: none; color: var(--text-muted);
+    font-size: 24px; cursor: pointer; line-height: 1; padding: 0;
+  }
+  .btn-close:hover { color: var(--danger); }
+  .modal-body { padding: 24px; overflow-y: auto; flex: 1; }
 </style>
 </head>
 <body>
@@ -272,20 +332,93 @@
   <!-- TOAST ALERTS -->
   <div id="toast" class="toast"></div>
 
+  <!-- SEARCH MODAL -->
+  <div class="modal-overlay" id="searchModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>🔍 Pencarian Cepat (Pivot Data Keseluruhan)</h3>
+        <button class="btn-close" id="btnCloseSearch">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="text" id="modalSearchInput" placeholder="Ketik SKU atau Nama Barang..." autocomplete="off" style="margin-bottom: 16px;">
+        <div class="scroll-table" style="max-height: 400px;">
+          <table>
+            <thead><tr><th>Bin</th><th>SKU</th><th>Nama Barang</th><th>Total Qty</th></tr></thead>
+            <tbody id="modalSearchBody">
+              <tr><td colspan="4" class="hint" style="text-align:center;">Ketik untuk mencari barang...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BIN MANAGEMENT MODAL -->
+  <div class="modal-overlay" id="binModal">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3>🚫 Manajemen Status Bin</h3>
+        <button class="btn-close" id="btnCloseBin">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="hint" style="margin-bottom: 16px;">Bin yang dinonaktifkan (kosong) tidak akan dimunculkan pada hasil pencarian pivot. Anda dapat mengaktifkannya kembali jika bin tersebut diisi ulang.</div>
+        <div class="scroll-table" style="max-height: 400px;">
+          <table>
+            <thead><tr><th>Lokasi Bin</th><th>Status</th><th style="text-align: center;">Aksi</th></tr></thead>
+            <tbody id="binModalBody">
+              <tr><td colspan="3" class="hint" style="text-align:center;">Memuat data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- MAIN CONTENT AREA -->
   <main class="content-area">
     <div class="section-container">
 
       <!-- ============================ TAB: SCAN ============================ -->
       <section id="tab-scan">
-        <div class="stat-row">
-          <div class="stat highlight"><div class="num" id="statTotal">0</div><div class="lbl">Total Scan Sesi Ini</div></div>
-          <div class="stat"><div class="num" id="statFound">0</div><div class="lbl">Ditemukan</div></div>
-          <div class="stat"><div class="num" id="statNotFound">0</div><div class="lbl">Tidak Dikenali</div></div>
+        
+        <!-- Header Cards (3 Left, 1 Right) -->
+        <div style="display: flex; gap: 24px; align-items: stretch; flex-wrap: wrap; margin-bottom: 24px;">
+           <!-- Kiri: 3 Stats (Lebar Sejajar Panel Pemindaian) -->
+           <div style="flex: 1; min-width: 300px; display: flex; gap: 12px;">
+              <div class="stat highlight" style="padding: 16px; margin: 0; align-items: center; text-align: center;">
+                <div class="num" id="statTotal" style="font-size: 24px;">0</div>
+                <div class="lbl" style="font-size: 10px;">Total Scan</div>
+              </div>
+              <div class="stat" style="padding: 16px; margin: 0; align-items: center; text-align: center;">
+                <div class="num" id="statFound" style="font-size: 24px;">0</div>
+                <div class="lbl" style="font-size: 10px;">Ditemukan</div>
+              </div>
+              <div class="stat" style="padding: 16px; margin: 0; align-items: center; text-align: center;">
+                <div class="num" id="statNotFound" style="font-size: 24px;">0</div>
+                <div class="lbl" style="font-size: 10px;">Tidak Dikenali</div>
+              </div>
+           </div>
+           
+           <!-- Kanan: 1 Stat Alamat & Waktu (Lebar Sejajar Log Scan) -->
+           <div style="flex: 1.5; min-width: 400px; display: flex;">
+              <div class="stat" style="flex: 1; margin: 0; flex-direction: row; justify-content: space-between; align-items: center; text-align: left; padding: 16px 24px;">
+                  <div>
+                      <div style="font-weight: 700; color: var(--text-main); font-size: 14px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                          <span style="color:var(--accent); font-size: 16px;">📍</span> Marves Gudang RTS
+                      </div>
+                      <div style="font-size: 12px; color: var(--text-muted); line-height: 1.6;">
+                          Jl.Raya Kresek No.25 RT 1 RW 12, Duri Kosambi,<br>Cengkareng, Jakarta Barat, 11750
+                      </div>
+                  </div>
+                  <div style="text-align: right; border-left: 1px solid var(--border); padding-left: 20px; min-width: 140px;">
+                      <div id="liveTime" style="font-size: 26px; font-weight: 800; color: var(--text-main); font-family: var(--font-mono); letter-spacing: 1px;">00:00:00</div>
+                      <div id="liveDate" style="font-size: 11px; color: var(--accent); text-transform: uppercase; font-weight: 700; margin-top: 6px;">-</div>
+                  </div>
+              </div>
+           </div>
         </div>
 
         <div style="display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap;">
-          <!-- Kiri: Input Area -->
           <div style="flex: 1; min-width: 300px;">
             <div class="card">
               <h3 class="card-header">Panel Pemindaian</h3>
@@ -297,18 +430,16 @@
             </div>
           </div>
 
-          <!-- Kanan: Log Area -->
           <div style="flex: 1.5; min-width: 400px;">
             <div class="card" style="display: flex; flex-direction: column; height: 100%;">
               <h3 class="card-header">Log Scan Terbaru</h3>
               
-              <!-- Tombol Dipindahkan Ke Atas Agar Tidak Tertutup -->
               <div class="btn-row">
-                <button class="btn btn-accent" id="btnSyncScan">☁️ Sync Hasil ke Cloud</button>
-                <button class="btn btn-danger" id="btnClearScan">🗑️ Tutup & Kosongkan Sesi</button>
+                <button class="btn btn-accent" id="btnSyncScan">☁️ Sync Cloud</button>
+                <button class="btn btn-warning" id="btnCycleCount">🔄 Cycle Count Bin</button>
+                <button class="btn btn-danger" id="btnClearScan">🗑️ Clear Data</button>
               </div>
 
-              <!-- Tabel Scroll -->
               <div class="scroll-table" style="flex: 1;">
                 <table>
                   <thead>
@@ -323,7 +454,6 @@
                   <tbody id="scanLogBody"></tbody>
                 </table>
               </div>
-
             </div>
           </div>
         </div>
@@ -332,8 +462,6 @@
       <!-- ============================ TAB: PIVOT (REKAP) ============================ -->
       <section id="tab-pivot" class="hidden">
         <div class="card">
-          <h3 class="card-header">Akumulasi Data Scan</h3>
-          
           <div class="btn-row">
             <button class="btn btn-accent" id="btnExportPivot">⬇️ Export Laporan Pivot (Format Rapi)</button>
           </div>
@@ -350,8 +478,6 @@
       <!-- ============================ TAB: SEMUA SCAN (LOKAL) ======================== -->
       <section id="tab-allscan" class="hidden">
         <div class="card">
-          <h3 class="card-header">Database Riwayat Offline</h3>
-          
           <div class="stat-row" style="margin-bottom:20px;">
             <div class="stat highlight" style="flex: none; width: 300px;">
               <div class="num" id="statAllScanQty">0</div>
@@ -360,8 +486,10 @@
           </div>
 
           <div class="btn-row">
-            <button class="btn btn-accent" id="btnExportAllScan">⬇️ Export Excel Seluruh Data</button>
-            <button class="btn btn-danger" id="btnClearAllScan">🗑️ Hapus Bersih Database Lokal</button>
+            <button class="btn btn-ghost" id="btnOpenSearch">🔍 Cari Barang (Pivot)</button>
+            <button class="btn btn-warning" id="btnManageBin">🚫 Non Aktif Bin</button>
+            <button class="btn btn-accent" id="btnExportAllScan">⬇️ Export Excel</button>
+            <button class="btn btn-danger" id="btnClearAllScan">🗑️ Clear Data</button>
           </div>
           
           <div class="scroll-table">
@@ -407,7 +535,6 @@
 
           <div style="flex: 1.5; min-width: 400px;">
             <div class="card">
-              <h3 class="card-header">Preview Data Upload</h3>
               <div class="scroll-table">
                 <table>
                   <thead><tr><th>SKU</th><th>Nama Barang</th></tr></thead>
@@ -426,6 +553,19 @@
 </div>
 
 <script>
+/* ============================================================
+   0) WAKTU REAL-TIME UNTUK KARTU ALAMAT GUDANG
+   ============================================================ */
+function updateClock() {
+  const now = new Date();
+  const timeString = now.toLocaleTimeString("id-ID", { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const dateString = now.toLocaleDateString("id-ID", { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
+  document.getElementById("liveTime").textContent = timeString;
+  document.getElementById("liveDate").textContent = dateString;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
 /* ============================================================
    1) KONFIGURASI FIREBASE
    ============================================================ */
@@ -460,7 +600,6 @@ function openIDB(){
         database.createObjectStore("master", { keyPath: "sku" });
       }
       if(!database.objectStoreNames.contains("scanlog")){
-        // Auto-increment ID agar bisa dihapus secara individual
         database.createObjectStore("scanlog", { keyPath: "id", autoIncrement: true });
       }
     };
@@ -509,7 +648,7 @@ function idbAddScan(entry){
   return new Promise((resolve, reject)=>{
     const tx = idb.transaction("scanlog", "readwrite");
     const req = tx.objectStore("scanlog").add(entry);
-    req.onsuccess = (e) => { entry.id = e.target.result; }; // Simpan ID yang terbuat
+    req.onsuccess = (e) => { entry.id = e.target.result; }; 
     tx.oncomplete = ()=>resolve();
     tx.onerror = (e)=>reject(e);
   });
@@ -604,7 +743,7 @@ document.getElementById("navAllScan").onclick = () => switchTab("allscan");
 document.getElementById("navMaster").onclick = () => switchTab("master");
 
 /* ============================================================
-   4) SCAN LOGIC (HANYA SESI AKTIF)
+   4) SCAN LOGIC & CYCLE COUNT
    ============================================================ */
 let sessionStats = { total:0, found:0, notfound:0 };
 
@@ -621,7 +760,7 @@ scanInput.addEventListener("keydown", async (e)=>{
 
 document.addEventListener("click", (e)=>{
   if(!document.getElementById("tab-scan").classList.contains("hidden")) {
-    if(e.target.tagName !== "INPUT" && e.target.tagName !== "BUTTON"){
+    if(e.target.tagName !== "INPUT" && e.target.tagName !== "BUTTON" && !e.target.closest('.btn-close') && !e.target.closest('.btn-delete') && !e.target.closest('.modal-content')){
       scanInput.focus();
     }
   }
@@ -675,8 +814,6 @@ async function handleScan(sku){
   };
   
   await idbAddScan(entry);
-  
-  // Refresh tabel dan statistik agar akurat
   await loadScanLogFromIDB();
   scanInput.focus();
 }
@@ -696,7 +833,7 @@ function prependScanRow(entry){
     <td><span style="color:var(--accent); font-weight:bold;">${entry.bin || '-'}</span></td>
     <td class="sku">${entry.sku}</td>
     <td>${entry.found ? entry.nama : '<span class="badge bad">N/A</span>'}</td>
-    <td><button class="btn-delete" onclick="deleteScan(${entry.id})" title="Hapus Scan">🗑️</button></td>
+    <td style="text-align:center;"><button class="btn-delete" onclick="deleteScan(${entry.id})" title="Hapus Scan">🗑️</button></td>
   `;
   tbody.prepend(tr);
 }
@@ -710,22 +847,54 @@ async function loadScanLogFromIDB(){
   rows.slice().reverse().forEach(prependScanRow);
 }
 
-// FUNGSI HAPUS DATA INDIVIDUAL
 window.deleteScan = async function(id) {
   if(!confirm("Anda yakin ingin menghapus data scan ini?")) return;
-  
   await idbDeleteScan(id);
-  
-  // Update tabel sesi ini
   await loadScanLogFromIDB();
-  
-  // Jika tab pivot terbuka, update juga pivotnya
-  if(!document.getElementById("tab-pivot").classList.contains("hidden")) {
-    loadPivot();
-  }
-  
+  if(!document.getElementById("tab-pivot").classList.contains("hidden")) { loadPivot(); }
   toast("✓ Data scan berhasil dihapus", "good");
   document.getElementById("scanInput").focus();
+};
+
+/* --- CYCLE COUNT LOGIC --- */
+document.getElementById("btnCycleCount").onclick = async () => {
+  const activeScans = await getActiveSessionScans();
+  if(activeScans.length === 0){
+     toast("Sesi scan masih kosong", "bad");
+     return;
+  }
+  
+  const uniqueBins = [...new Set(activeScans.map(r => r.bin))];
+  
+  if(!confirm(`Yakin ingin melakukan Cycle Count untuk Bin:\n${uniqueBins.join(", ")}\n\nSeluruh riwayat data lama pada bin tersebut akan dihapus dan diganti dengan data sesi ini.`)) return;
+
+  const rows = await idbGetAllScans();
+  const tx = idb.transaction("scanlog", "readwrite");
+  const store = tx.objectStore("scanlog");
+  
+  let deletedCount = 0;
+  
+  rows.forEach(r => {
+    if (r.sessionActive === false && uniqueBins.includes(r.bin)) {
+      store.delete(r.id);
+      deletedCount++;
+    } 
+    else if (r.sessionActive !== false) {
+      r.sessionActive = false;
+      store.put(r);
+    }
+  });
+  
+  tx.oncomplete = async () => {
+    await loadScanLogFromIDB();
+    if(!document.getElementById("tab-pivot").classList.contains("hidden")) loadPivot();
+    document.getElementById("scanResult").innerHTML = "";
+    toast(`✓ Cycle Count berhasil. ${deletedCount} data lama diganti & sesi otomatis ditutup.`, "good");
+  };
+  tx.onerror = (e) => {
+    toast("Terjadi kesalahan saat Cycle Count", "bad");
+    console.error(e);
+  };
 };
 
 /* ============================================================
@@ -755,7 +924,7 @@ async function loadPivot(){
   tbody.innerHTML = "";
 
   if(pivotArray.length === 0){
-     tbody.innerHTML = `<tr><td colspan="4" class="hint" style="text-align:center; padding: 24px;">Belum ada data scan di sesi ini.</td></tr>`;
+     tbody.innerHTML = `<tr><td colspan="4" class="hint" style="text-align:center; padding: 24px;">Belum ada data scan di sesi ini. Mulai scanning untuk melihat rekap pivot.</td></tr>`;
      return;
   }
 
@@ -803,7 +972,7 @@ document.getElementById("btnExportPivot").onclick = async ()=>{
     const address = XLSX.utils.encode_cell({c:C, r:0});
     if(!ws[address]) continue;
     ws[address].s = {
-      fill: { fgColor: { rgb: "2563EB" } }, // Tema Biru
+      fill: { fgColor: { rgb: "2563EB" } }, 
       font: { bold: true, color: { rgb: "FFFFFF" } },
       alignment: { vertical: "center", horizontal: "center" }
     };
@@ -829,8 +998,72 @@ document.getElementById("btnExportPivot").onclick = async ()=>{
 };
 
 /* ============================================================
-   6) RIWAYAT ALL SCAN (LOKAL - MENGAMBIL SELURUH DATA OFFLINE)
+   6) RIWAYAT ALL SCAN, SEARCH MODAL & BIN MANAGEMENT
    ============================================================ */
+
+// --- BIN MANAGEMENT LOGIC ---
+let deactivatedBins = JSON.parse(localStorage.getItem('deactivatedBins') || '[]');
+
+function saveDeactivatedBins() {
+  localStorage.setItem('deactivatedBins', JSON.stringify(deactivatedBins));
+}
+
+async function loadBinManagement() {
+  const rows = await idbGetAllScans();
+  const uniqueBins = [...new Set(rows.map(r => r.bin || '-'))].sort();
+  const tbody = document.getElementById("binModalBody");
+  tbody.innerHTML = "";
+
+  if(uniqueBins.length === 0){
+    tbody.innerHTML = `<tr><td colspan="3" class="hint" style="text-align:center; padding: 24px;">Belum ada data bin di riwayat.</td></tr>`;
+    return;
+  }
+
+  uniqueBins.forEach(bin => {
+    const isDeactivated = deactivatedBins.includes(bin);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td style="font-weight:bold; color:var(--text-main);">${bin}</td>
+      <td>${isDeactivated ? '<span class="badge bad">NON-AKTIF</span>' : '<span class="badge good">AKTIF</span>'}</td>
+      <td style="text-align: center;">
+        <button class="btn ${isDeactivated ? 'btn-accent' : 'btn-danger'}" style="padding: 6px 12px; font-size: 11px;" onclick="toggleBinStatus('${bin}')">
+          ${isDeactivated ? 'Aktifkan Kembali' : 'Nonaktifkan'}
+        </button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+window.toggleBinStatus = function(bin) {
+  if(deactivatedBins.includes(bin)) {
+    deactivatedBins = deactivatedBins.filter(b => b !== bin);
+    toast(`✓ Bin ${bin} diaktifkan kembali`, "good");
+  } else {
+    deactivatedBins.push(bin);
+    toast(`🚫 Bin ${bin} dinonaktifkan`, "warning");
+  }
+  saveDeactivatedBins();
+  loadBinManagement(); 
+};
+
+document.getElementById("btnManageBin").onclick = () => {
+  loadBinManagement();
+  document.getElementById("binModal").classList.add("show");
+};
+
+document.getElementById("btnCloseBin").onclick = () => {
+  document.getElementById("binModal").classList.remove("show");
+};
+
+document.getElementById("binModal").addEventListener("click", (e) => {
+  if (e.target.id === "binModal") {
+    document.getElementById("binModal").classList.remove("show");
+  }
+});
+
+
+// --- ALL SCAN LIST LOGIC ---
 async function loadAllScan(){
   const rows = await idbGetAllScans();
   const tbody = document.getElementById("allScanBody");
@@ -888,6 +1121,93 @@ document.getElementById("btnExportAllScan").onclick = async ()=>{
   toast("✓ Ekspor riwayat keseluruhan berhasil", "good");
 };
 
+// --- MODAL PENCARIAN BARANG LOGIC ---
+let allPivotedSearchData = [];
+
+async function prepareSearchData() {
+  const rows = await idbGetAllScans();
+  const pivotMap = {};
+
+  rows.forEach(r => {
+    const binVal = r.bin || "-";
+    
+    // SKIP/SEMBUNYIKAN BIN YANG DINONAKTIFKAN
+    if(deactivatedBins.includes(binVal)) return;
+
+    const key = `${r.sku}_${binVal}`;
+    if(pivotMap[key]){
+      pivotMap[key].qty += 1;
+    } else {
+      pivotMap[key] = {
+        bin: binVal,
+        sku: r.sku,
+        nama: r.nama || "Tidak Dikenali",
+        qty: 1
+      };
+    }
+  });
+
+  allPivotedSearchData = Object.values(pivotMap).sort((a,b) => b.qty - a.qty);
+}
+
+function renderSearchResults(query) {
+  const tbody = document.getElementById("modalSearchBody");
+  tbody.innerHTML = "";
+  const q = query.toLowerCase().trim();
+  
+  let filtered = allPivotedSearchData;
+  if (q) {
+    filtered = allPivotedSearchData.filter(item => 
+      item.sku.toLowerCase().includes(q) || 
+      item.nama.toLowerCase().includes(q)
+    );
+  }
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" class="hint" style="text-align:center; padding: 24px;">Tidak ada barang yang cocok dengan pencarian Anda. (Atau mungkin Bin sedang dinonaktifkan)</td></tr>`;
+    return;
+  }
+
+  filtered.forEach(p => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td style="color:var(--accent); font-weight:bold;">${p.bin}</td>
+      <td class="sku">
+        ${p.sku} 
+        <button class="btn-copy" onclick="copyToClipboard('${p.sku}')">Salin</button>
+      </td>
+      <td>${p.nama}</td>
+      <td style="font-weight:bold; color:var(--accent); font-size: 16px; background-color: rgba(59, 130, 246, 0.05);">${p.qty}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+document.getElementById("btnOpenSearch").onclick = async () => {
+  await prepareSearchData();
+  const inputSearch = document.getElementById("modalSearchInput");
+  inputSearch.value = "";
+  renderSearchResults("");
+  
+  document.getElementById("searchModal").classList.add("show");
+  setTimeout(() => { inputSearch.focus(); }, 100);
+};
+
+document.getElementById("btnCloseSearch").onclick = () => {
+  document.getElementById("searchModal").classList.remove("show");
+};
+
+document.getElementById("searchModal").addEventListener("click", (e) => {
+  if (e.target.id === "searchModal") {
+    document.getElementById("searchModal").classList.remove("show");
+  }
+});
+
+document.getElementById("modalSearchInput").addEventListener("input", (e) => {
+  renderSearchResults(e.target.value);
+});
+
+
 /* ============================================================
    7) SINKRONISASI & MANAJEMEN SESI
    ============================================================ */
@@ -921,12 +1241,12 @@ document.getElementById("btnSyncScan").onclick = async ()=>{
 };
 
 document.getElementById("btnClearScan").onclick = async ()=>{
-  if(!confirm("Anda yakin ingin menutup & mengosongkan sesi scan saat ini? (Riwayat akan tetap aman tersimpan di tab 'Semua Riwayat')")) return;
+  if(!confirm("Anda yakin ingin meng-clear data (menutup sesi) saat ini? (Riwayat akan tetap aman tersimpan di tab 'Semua Riwayat')")) return;
   await idbClearSession(); 
   await loadScanLogFromIDB();
   document.getElementById("scanResult").innerHTML = "";
   if(!document.getElementById("tab-pivot").classList.contains("hidden")) loadPivot();
-  toast("✓ Sesi saat ini berhasil dibersihkan", "good");
+  toast("✓ Sesi saat ini berhasil di-clear", "good");
 };
 
 document.getElementById("btnClearAllScan").onclick = async ()=>{
