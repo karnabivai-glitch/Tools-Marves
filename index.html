@@ -14,29 +14,23 @@
 
 <style>
   :root {
-    /* Color Palette - Professional Dark Dashboard */
     --bg-app: #0f172a;
     --bg-sidebar: #1e293b;
     --bg-card: #1e293b;
     --bg-input: #0f172a;
     --bg-hover: #334155;
-    
     --border: #334155;
     --border-light: #475569;
-    
     --text-main: #f8fafc;
     --text-muted: #94a3b8;
-    
     --accent: #3b82f6;
     --accent-hover: #2563eb;
     --accent-glow: rgba(59, 130, 246, 0.5);
-    
     --success: #10b981;
     --success-dim: rgba(16, 185, 129, 0.15);
     --danger: #ef4444;
     --danger-dim: rgba(239, 68, 68, 0.15);
     --warning: #f59e0b;
-    
     --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   }
@@ -44,204 +38,87 @@
   * { box-sizing: border-box; }
   
   body {
-    margin: 0; padding: 0; 
-    background-color: var(--bg-app); 
-    color: var(--text-main);
-    font-family: var(--font-sans);
-    height: 100vh;
-    display: flex;
-    overflow: hidden;
+    margin: 0; padding: 0; background-color: var(--bg-app); color: var(--text-main);
+    font-family: var(--font-sans); height: 100vh; display: flex; overflow: hidden;
   }
 
-  /* ============================
-     CUSTOM SCROLLBAR (Modern & Professional)
-     ============================ */
-  ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-  }
-  ::-webkit-scrollbar-track {
-    background: transparent; 
-  }
-  ::-webkit-scrollbar-thumb {
-    background-color: var(--border-light); 
-    border-radius: 10px;
-    border: 2px solid var(--bg-app); /* Padding effect */
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background-color: var(--text-muted); 
-  }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background-color: var(--border-light); border-radius: 10px; border: 2px solid var(--bg-app); }
+  ::-webkit-scrollbar-thumb:hover { background-color: var(--text-muted); }
+  .scroll-table::-webkit-scrollbar-thumb { border: 2px solid var(--bg-card); }
+  .nav-menu::-webkit-scrollbar-thumb { border: 2px solid var(--bg-sidebar); }
 
-  .scroll-table::-webkit-scrollbar-thumb {
-    border: 2px solid var(--bg-card);
-  }
-  .nav-menu::-webkit-scrollbar-thumb {
-    border: 2px solid var(--bg-sidebar);
-  }
-
-  /* ============================
-     LAYOUT: SIDEBAR & MAIN
-     ============================ */
-  .app-container {
-    display: flex;
-    width: 100vw;
-    height: 100vh;
-  }
+  .app-container { display: flex; width: 100vw; height: 100vh; }
 
   .sidebar {
-    width: 260px;
-    background-color: var(--bg-sidebar);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    z-index: 10;
+    width: 260px; background-color: var(--bg-sidebar); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; z-index: 10;
   }
-
-  .sidebar-header {
-    padding: 24px;
-    border-bottom: 1px solid var(--border);
-  }
-
+  .sidebar-header { padding: 24px; border-bottom: 1px solid var(--border); }
   .sidebar-header h1 {
     margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.5px;
-    color: var(--text-main);
-    display: flex; align-items: center; gap: 8px;
+    color: var(--text-main); display: flex; align-items: center; gap: 8px;
   }
-
   .sidebar-header h1 span { color: var(--accent); }
 
-  .nav-menu {
-    flex: 1;
-    padding: 20px 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    overflow-y: auto;
-  }
-
+  .nav-menu { flex: 1; padding: 20px 12px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
   .nav-item {
-    background: transparent;
-    border: none;
-    color: var(--text-muted);
-    padding: 14px 16px;
-    border-radius: 8px;
-    text-align: left;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    background: transparent; border: none; color: var(--text-muted);
+    padding: 14px 16px; border-radius: 8px; text-align: left; font-size: 14px;
+    font-weight: 500; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 12px;
   }
+  .nav-item:hover { background-color: var(--bg-hover); color: var(--text-main); }
+  .nav-item.active { background-color: var(--accent); color: #ffffff; font-weight: 600; box-shadow: 0 4px 12px var(--accent-glow); }
+  .nav-item.locked { color: var(--warning); }
 
-  .nav-item:hover {
-    background-color: var(--bg-hover);
-    color: var(--text-main);
-  }
+  .sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-muted); display: flex; align-items: center; }
 
-  .nav-item.active {
-    background-color: var(--accent);
-    color: #ffffff;
-    font-weight: 600;
-    box-shadow: 0 4px 12px var(--accent-glow);
-  }
-
-  .sidebar-footer {
-    padding: 16px 20px;
-    border-top: 1px solid var(--border);
-    font-size: 12px;
-    color: var(--text-muted);
-    display: flex;
-    align-items: center;
-  }
-
-  .status-dot {
-    display: inline-block; width: 8px; height: 8px; border-radius: 50%; 
-    margin-right: 8px; background: var(--danger);
-  }
+  .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; background: var(--danger); }
   .status-dot.on { background: var(--success); box-shadow: 0 0 8px var(--success); }
 
-  .content-area {
-    flex: 1;
-    overflow-y: auto;
-    padding: 32px;
-    background-color: var(--bg-app);
-  }
+  .content-area { flex: 1; overflow-y: auto; padding: 32px; background-color: var(--bg-app); }
 
-  /* ============================
-     COMPONENTS: CARDS, FORMS, TABLES
-     ============================ */
   .section-container { max-width: 1200px; margin: 0 auto; height: 100%; display: flex; flex-direction: column; }
   
   .card {
-    background-color: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 24px;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+    background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
   }
+  .card-header { font-size: 14px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin: 0 0 16px 0; }
 
-  .card-header {
-    font-size: 14px; font-weight: 600; color: var(--text-muted);
-    text-transform: uppercase; letter-spacing: 1px; margin: 0 0 16px 0;
-  }
-
-  /* Inputs */
   input[type=text], input[type=file] {
-    width: 100%; background: var(--bg-input); border: 1px solid var(--border);
-    color: var(--text-main); padding: 14px; border-radius: 8px;
-    font-size: 15px; font-family: var(--font-mono); transition: border-color 0.2s;
+    width: 100%; background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); 
+    padding: 14px; border-radius: 8px; font-size: 15px; font-family: var(--font-mono); transition: border-color 0.2s;
   }
   input[type=text]:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
-  
   .scan-input { font-size: 24px; padding: 20px; text-align: center; letter-spacing: 2px; font-weight: bold;}
-  
-  /* Update Bin Input: Otomatis huruf kapital saat diketik */
   .bin-input { margin-bottom: 16px; text-transform: uppercase; }
 
-  /* Buttons */
-  .btn {
-    border: none; border-radius: 8px; padding: 12px 20px; font-weight: 600; font-size: 14px;
-    cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  }
+  .btn { border: none; border-radius: 8px; padding: 12px 20px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
   .btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .btn-accent { background: var(--accent); color: #fff; }
   .btn-accent:hover:not(:disabled) { background: var(--accent-hover); }
   .btn-ghost { background: transparent; color: var(--text-main); border: 1px solid var(--border-light); }
   .btn-ghost:hover:not(:disabled) { background: var(--bg-hover); }
-  
   .btn-danger { background: var(--danger-dim); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
   .btn-danger:hover:not(:disabled) { background: rgba(239,68,68,0.25); }
-  
   .btn-warning { background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
   .btn-warning:hover:not(:disabled) { background: rgba(245, 158, 11, 0.25); }
-  
   .btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
 
-  .btn-copy {
-    background: transparent; border: 1px solid var(--accent); color: var(--accent);
-    border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer; margin-left: 8px;
-    text-transform: uppercase; font-weight: 700;
-  }
+  .btn-copy { background: transparent; border: 1px solid var(--accent); color: var(--accent); border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer; margin-left: 8px; text-transform: uppercase; font-weight: 700; }
   .btn-copy:hover { background: var(--accent); color: #fff; }
-
-  .btn-delete {
-    background: transparent; border: none; color: var(--danger); cursor: pointer;
-    font-size: 16px; padding: 4px; border-radius: 4px; transition: background 0.2s; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; margin: 0 auto;
-  }
+  .btn-delete { background: transparent; border: none; color: var(--danger); cursor: pointer; font-size: 16px; padding: 4px; border-radius: 4px; transition: background 0.2s; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; margin: 0 auto; }
   .btn-delete:hover { background: var(--danger-dim); }
 
-  /* Result Box */
   .result { margin-top: 16px; padding: 20px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-input); display: flex; flex-direction: column; gap: 8px;}
   .result.found { border-color: var(--success); background: var(--success-dim); }
   .result.notfound { border-color: var(--danger); background: var(--danger-dim); }
   .result .sku { font-family: var(--font-mono); color: var(--text-muted); font-size: 13px; }
   .result .nama { font-size: 18px; font-weight: 700; }
 
-  /* Tables */
-  .scroll-table { max-height: calc(100vh - 340px); overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; }
+  .scroll-table { max-height: calc(100vh - 300px); overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; }
   table { width: 100%; border-collapse: collapse; font-size: 14px; }
   thead { position: sticky; top: 0; background-color: var(--bg-hover); z-index: 2; }
   th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--border); }
@@ -249,25 +126,23 @@
   tbody tr:hover { background-color: rgba(255,255,255,0.02); }
   td.sku { font-family: var(--font-mono); color: var(--text-muted); white-space: nowrap; }
 
-  /* Badges */
   .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
   .badge.good { background: var(--success-dim); color: var(--success); border: 1px solid rgba(16,185,129,0.3); }
   .badge.bad { background: var(--danger-dim); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
+  .badge.warning { background: rgba(245,158,11,0.15); color: var(--warning); border: 1px solid rgba(245,158,11,0.3); }
 
-  /* Stats Row */
   .stat-row { display: flex; gap: 16px; margin-bottom: 20px; }
   .stat { flex: 1; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start;}
   .stat .num { font-size: 28px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; }
   .stat .lbl { font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;}
   .stat.highlight .num { color: var(--accent); }
+  .stat.danger .num { color: var(--danger); }
 
-  /* Helpers */
   .progress-wrap { background: var(--bg-input); border-radius: 4px; overflow: hidden; height: 6px; margin-top: 12px; }
   .progress-bar { height: 100%; background: var(--accent); width: 0%; transition: width 0.2s; }
   .hint { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
   .hidden { display: none !important; }
 
-  /* Toast Notification */
   .toast {
     position: fixed; top: 24px; right: 24px; 
     background: var(--bg-card); border: 1px solid var(--border); color: var(--text-main);
@@ -280,40 +155,43 @@
   .toast.bad { border-left: 4px solid var(--danger); }
   .toast.warning { border-left: 4px solid var(--warning); }
 
-  /* Modal Styles */
   .modal-overlay {
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.2s;
   }
   .modal-overlay.show { opacity: 1; pointer-events: auto; }
   .modal-content {
-    background: var(--bg-card); width: 90%; max-width: 800px;
-    border-radius: 12px; border: 1px solid var(--border);
-    display: flex; flex-direction: column; max-height: 85vh;
-    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+    background: var(--bg-card); width: 90%; max-width: 800px; border-radius: 12px; border: 1px solid var(--border);
+    display: flex; flex-direction: column; max-height: 85vh; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
     transform: translateY(20px); transition: transform 0.2s;
   }
   .modal-overlay.show .modal-content { transform: translateY(0); }
-  .modal-header {
-    padding: 20px 24px; border-bottom: 1px solid var(--border);
-    display: flex; justify-content: space-between; align-items: center;
-  }
+  .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
   .modal-header h3 { margin: 0; color: var(--text-main); font-size: 18px; }
-  .btn-close {
-    background: transparent; border: none; color: var(--text-muted);
-    font-size: 24px; cursor: pointer; line-height: 1; padding: 0;
-  }
+  .btn-close { background: transparent; border: none; color: var(--text-muted); font-size: 24px; cursor: pointer; line-height: 1; padding: 0; }
   .btn-close:hover { color: var(--danger); }
   .modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+
+  /* Style for Bin Badge in Search Stats */
+  .bin-stat-badge {
+    background: var(--bg-hover);
+    border: 1px solid var(--border-light);
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: 8px;
+    margin-bottom: 8px;
+  }
+  .bin-stat-badge .b-name { font-weight: bold; color: var(--text-main); font-size: 13px; }
+  .bin-stat-badge .b-qty { background: var(--accent); color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; }
 </style>
 </head>
 <body>
 
 <div class="app-container">
   
-  <!-- SIDEBAR NAVIGATION -->
   <aside class="sidebar">
     <div class="sidebar-header">
       <h1>SCAN<span>WMS</span></h1>
@@ -321,7 +199,8 @@
     <div class="nav-menu">
       <button class="nav-item active" id="navScan">📷 Scan & Entry</button>
       <button class="nav-item" id="navPivot">📊 Rekap Pivot</button>
-      <button class="nav-item" id="navAllScan">🌍 Semua Riwayat</button>
+      <button class="nav-item" id="navSearchTab">🔎 Pencarian Riwayat</button>
+      <button class="nav-item locked" id="navAllScan">🔒 Semua Riwayat</button>
       <button class="nav-item" id="navMaster">📦 Master Produk</button>
     </div>
     <div class="sidebar-footer">
@@ -329,29 +208,7 @@
     </div>
   </aside>
 
-  <!-- TOAST ALERTS -->
   <div id="toast" class="toast"></div>
-
-  <!-- SEARCH MODAL -->
-  <div class="modal-overlay" id="searchModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>🔍 Pencarian Cepat (Pivot Data Keseluruhan)</h3>
-        <button class="btn-close" id="btnCloseSearch">&times;</button>
-      </div>
-      <div class="modal-body">
-        <input type="text" id="modalSearchInput" placeholder="Ketik SKU atau Nama Barang..." autocomplete="off" style="margin-bottom: 16px;">
-        <div class="scroll-table" style="max-height: 400px;">
-          <table>
-            <thead><tr><th>Bin</th><th>SKU</th><th>Nama Barang</th><th>Total Qty</th></tr></thead>
-            <tbody id="modalSearchBody">
-              <tr><td colspan="4" class="hint" style="text-align:center;">Ketik untuk mencari barang...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <!-- BIN MANAGEMENT MODAL -->
   <div class="modal-overlay" id="binModal">
@@ -374,16 +231,12 @@
     </div>
   </div>
 
-  <!-- MAIN CONTENT AREA -->
   <main class="content-area">
     <div class="section-container">
 
       <!-- ============================ TAB: SCAN ============================ -->
       <section id="tab-scan">
-        
-        <!-- Header Cards (3 Left, 1 Right) -->
         <div style="display: flex; gap: 24px; align-items: stretch; flex-wrap: wrap; margin-bottom: 24px;">
-           <!-- Kiri: 3 Stats (Lebar Sejajar Panel Pemindaian) -->
            <div style="flex: 1; min-width: 300px; display: flex; gap: 12px;">
               <div class="stat highlight" style="padding: 16px; margin: 0; align-items: center; text-align: center;">
                 <div class="num" id="statTotal" style="font-size: 24px;">0</div>
@@ -399,7 +252,6 @@
               </div>
            </div>
            
-           <!-- Kanan: 1 Stat Alamat & Waktu (Lebar Sejajar Log Scan) -->
            <div style="flex: 1.5; min-width: 400px; display: flex;">
               <div class="stat" style="flex: 1; margin: 0; flex-direction: row; justify-content: space-between; align-items: center; text-align: left; padding: 16px 24px;">
                   <div>
@@ -424,22 +276,18 @@
               <h3 class="card-header">Panel Pemindaian</h3>
               <input id="binInput" class="bin-input" type="text" placeholder="Masukkan Lokasi Bin (Opsional)" autocomplete="off">
               <input id="scanInput" class="scan-input" type="text" placeholder="Tembak barcode..." autocomplete="off" autofocus>
-              <div class="hint" style="margin-top:12px;">Scanner USB otomatis mengetik + Enter. Fokus akan otomatis kembali ke kolom barcode setelah scan.</div>
-              
+              <div class="hint" style="margin-top:12px;">Scanner USB otomatis mengetik + Enter. Fokus otomatis kembali.</div>
               <div id="scanResult"></div>
             </div>
           </div>
 
           <div style="flex: 1.5; min-width: 400px;">
             <div class="card" style="display: flex; flex-direction: column; height: 100%;">
-              <h3 class="card-header">Log Scan Terbaru</h3>
-              
+              <h3 class="card-header">Log Sesi Ini</h3>
               <div class="btn-row">
-                <button class="btn btn-accent" id="btnSyncScan">☁️ Sync Cloud</button>
                 <button class="btn btn-warning" id="btnCycleCount">🔄 Cycle Count Bin</button>
-                <button class="btn btn-danger" id="btnClearScan">🗑️ Clear Data</button>
+                <button class="btn btn-danger" id="btnClearScan">🗑️ Tutup Sesi (Clear)</button>
               </div>
-
               <div class="scroll-table" style="flex: 1;">
                 <table>
                   <thead>
@@ -461,12 +309,11 @@
 
       <!-- ============================ TAB: PIVOT (REKAP) ============================ -->
       <section id="tab-pivot" class="hidden">
-        <div class="card">
+        <div class="card" style="height: 100%; display: flex; flex-direction: column;">
           <div class="btn-row">
             <button class="btn btn-accent" id="btnExportPivot">⬇️ Export Laporan Pivot (Format Rapi)</button>
           </div>
-          
-          <div class="scroll-table">
+          <div class="scroll-table" style="flex: 1;">
             <table>
               <thead><tr><th>Bin</th><th>SKU</th><th>Nama Barang</th><th>Total Qty</th></tr></thead>
               <tbody id="pivotBody"></tbody>
@@ -475,30 +322,75 @@
         </div>
       </section>
 
+      <!-- ============================ TAB: PENCARIAN RIWAYAT ========================= -->
+      <section id="tab-search" class="hidden" style="height: 100%;">
+        <div class="card" style="display: flex; flex-direction: column; height: 100%;">
+          <h3 class="card-header">Pencarian Riwayat Lengkap</h3>
+          <div class="hint" style="margin-bottom: 16px;">Ketik SKU, Nama, atau Bin untuk melacak spesifik jam/waktu barang di-scan. Pencarian ini membaca seluruh riwayat database Anda.</div>
+          
+          <div style="display: flex; gap: 16px; margin-bottom: 16px; align-items: stretch; flex-wrap: wrap;">
+              <input type="text" id="advSearchInput" placeholder="Mulai ketik pencarian..." autocomplete="off" style="flex:1; min-width: 250px;">
+              <div class="stat" style="margin:0; padding: 12px 24px; min-width: 150px; flex: none; justify-content: center;">
+                  <div class="num" id="advSearchQty" style="font-size: 20px;">0</div>
+                  <div class="lbl">Item Ditemukan</div>
+              </div>
+          </div>
+          
+          <!-- CARD STATISTIK QTY PER BIN -->
+          <div style="margin-bottom: 20px; padding: 16px; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border);">
+              <div class="lbl" style="font-size: 11px; margin-bottom: 10px; color: var(--text-muted); font-weight: bold; letter-spacing: 0.5px;">📊 SEBARAN QTY PER BIN</div>
+              <div id="advSearchBinStats">
+                  <span class="hint">Mulai pencarian untuk melihat sebaran Bin...</span>
+              </div>
+          </div>
+          
+          <div class="scroll-table" style="flex: 1;">
+            <table>
+              <thead><tr><th>Waktu Scan / Jam</th><th>Bin</th><th>SKU</th><th>Nama Barang</th></tr></thead>
+              <tbody id="advSearchBody">
+                <tr><td colspan="4" class="hint" style="text-align:center;">Gunakan kolom pencarian di atas</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
       <!-- ============================ TAB: SEMUA SCAN (LOKAL) ======================== -->
-      <section id="tab-allscan" class="hidden">
-        <div class="card">
-          <div class="stat-row" style="margin-bottom:20px;">
+      <section id="tab-allscan" class="hidden" style="height: 100%;">
+        <div class="card" style="display: flex; flex-direction: column; height: 100%;">
+          
+          <div class="stat-row" style="margin-bottom:16px;">
             <div class="stat highlight" style="flex: none; width: 300px;">
               <div class="num" id="statAllScanQty">0</div>
-              <div class="lbl">Total Item Keseluruhan (Offline DB)</div>
+              <div class="lbl">Total Database Lokal (Semua)</div>
+            </div>
+            <div class="stat danger" style="flex: none; width: 300px;">
+              <div class="num" id="statPendingSync">0</div>
+              <div class="lbl">Belum di-Sync ke Cloud</div>
             </div>
           </div>
 
-          <div class="btn-row">
-            <button class="btn btn-ghost" id="btnOpenSearch">🔍 Cari Barang (Pivot)</button>
-            <button class="btn btn-warning" id="btnManageBin">🚫 Non Aktif Bin</button>
-            <button class="btn btn-accent" id="btnExportAllScan">⬇️ Export Excel</button>
-            <button class="btn btn-danger" id="btnClearAllScan">🗑️ Clear Data</button>
+          <div class="btn-row" style="margin-bottom: 20px;">
+            <button class="btn btn-warning" id="btnManageBin" title="Manajemen Status Bin">🚫 Bin</button>
+            <input type="file" id="fileUploadScan" accept=".xlsx,.xls,.csv" class="hidden">
+            <button class="btn btn-ghost" onclick="document.getElementById('fileUploadScan').click()" title="Upload File Gabungan Scan">⬆️ Upload</button>
+            <button class="btn btn-accent" id="btnPullCloudScans" title="Tarik Data dari Cloud ke Device Ini">☁️ Tarik Cloud</button>
+            <button class="btn btn-accent" id="btnSyncAllScan" title="Sinkronisasi Manual ke Cloud">☁️ Sync Cloud</button>
+            <button class="btn btn-accent" id="btnExportAllScan" title="Export Excel Seluruh Data">⬇️ Export</button>
+            <button class="btn btn-danger" id="btnClearAllScan" title="Hapus Bersih Database Lokal">🗑️ Clear</button>
           </div>
           
-          <div class="scroll-table">
+          <div class="scroll-table" style="flex: 1;">
             <table>
-              <thead><tr><th>Waktu</th><th>Bin</th><th>SKU</th><th>Nama Barang</th></tr></thead>
+              <thead><tr><th>Waktu Scan</th><th>Bin</th><th>SKU</th><th>Nama Barang</th><th>Status Sync</th><th style="text-align:center;">Aksi</th></tr></thead>
               <tbody id="allScanBody">
-                <tr><td colspan="4" class="hint" style="text-align:center;">Memuat data...</td></tr>
+                <tr><td colspan="6" class="hint" style="text-align:center;">Memuat data...</td></tr>
               </tbody>
             </table>
+            <!-- TOMBOL LOAD MORE UNTUK MENCEGAH LEMOT -->
+            <div id="allScanLoadMoreContainer" style="text-align:center; padding: 16px; display:none;">
+              <button class="btn btn-ghost" id="btnLoadMoreAllScan">Tampilkan Lebih Banyak Data ↓</button>
+            </div>
           </div>
         </div>
       </section>
@@ -514,7 +406,7 @@
           <div style="flex: 1; min-width: 350px;">
             <div class="card">
               <h3 class="card-header">Sinkronisasi Cloud</h3>
-              <div class="hint" style="margin-bottom: 16px;">Tarik data master produk terbaru dari Firestore ke dalam penyimpanan lokal perangkat agar proses scan dapat dilakukan tanpa internet (Offline-first).</div>
+              <div class="hint" style="margin-bottom: 16px;">Tarik data master produk terbaru dari Firestore ke dalam penyimpanan lokal perangkat agar proses scan dapat dilakukan tanpa internet.</div>
               <button class="btn btn-ghost" style="width:100%" id="btnPullMaster">⬇️ Tarik Master Data Cloud ke Lokal</button>
             </div>
             
@@ -553,22 +445,43 @@
 </div>
 
 <script>
-/* ============================================================
-   0) WAKTU REAL-TIME UNTUK KARTU ALAMAT GUDANG
-   ============================================================ */
 function updateClock() {
   const now = new Date();
   const timeString = now.toLocaleTimeString("id-ID", { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   const dateString = now.toLocaleDateString("id-ID", { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
-  document.getElementById("liveTime").textContent = timeString;
-  document.getElementById("liveDate").textContent = dateString;
+  const timeEl = document.getElementById("liveTime");
+  const dateEl = document.getElementById("liveDate");
+  if(timeEl) timeEl.textContent = timeString;
+  if(dateEl) dateEl.textContent = dateString;
 }
 setInterval(updateClock, 1000);
 updateClock();
 
-/* ============================================================
-   1) KONFIGURASI FIREBASE
-   ============================================================ */
+function generateID() {
+  return "scan_" + Date.now() + "_" + Math.random().toString(36).substring(2, 9);
+}
+
+// Custom Date Parser untuk mengatasi masalah waktu pada upload Excel
+function parseIdDate(dateStr) {
+  if (!dateStr) return null;
+  if(typeof dateStr === 'number') {
+      return new Date((dateStr - (25567 + 2)) * 86400 * 1000).toISOString();
+  }
+  const str = String(dateStr).trim();
+  const parts = str.split(', ');
+  if (parts.length === 2) {
+      const dateParts = parts[0].split('/');
+      const timeParts = parts[1].split(/[^\d]/); 
+      if (dateParts.length === 3 && timeParts.length >= 2) {
+          const d = new Date(dateParts[2], dateParts[1]-1, dateParts[0], timeParts[0], timeParts[1], timeParts[2]||0);
+          if (!isNaN(d)) return d.toISOString();
+      }
+  }
+  const fallback = new Date(str);
+  if (!isNaN(fallback)) return fallback.toISOString();
+  return null;
+}
+
 const firebaseConfig = {
   apiKey: "AIzaSyATHrEKneLilCcYwnRgzbPZoFH2R9o9AR4",
   authDomain: "tools-marves.firebaseapp.com",
@@ -584,9 +497,6 @@ const db = firebase.firestore();
 const COL_MASTER = "master_produk";
 const COL_SCAN   = "scan_results";
 
-/* ============================================================
-   2) INDEXEDDB (cache lokal, offline-first)
-   ============================================================ */
 let idb;
 const IDB_NAME = "scan_wms_db";
 const IDB_VERSION = 1;
@@ -600,7 +510,7 @@ function openIDB(){
         database.createObjectStore("master", { keyPath: "sku" });
       }
       if(!database.objectStoreNames.contains("scanlog")){
-        database.createObjectStore("scanlog", { keyPath: "id", autoIncrement: true });
+        database.createObjectStore("scanlog", { keyPath: "id" });
       }
     };
     req.onsuccess = (e)=>resolve(e.target.result);
@@ -647,8 +557,7 @@ function idbClearMaster(){
 function idbAddScan(entry){
   return new Promise((resolve, reject)=>{
     const tx = idb.transaction("scanlog", "readwrite");
-    const req = tx.objectStore("scanlog").add(entry);
-    req.onsuccess = (e) => { entry.id = e.target.result; }; 
+    tx.objectStore("scanlog").put(entry);
     tx.oncomplete = ()=>resolve();
     tx.onerror = (e)=>reject(e);
   });
@@ -695,19 +604,19 @@ function idbClearSession(){
   });
 }
 
-/* ============================================================
-   3) UI HELPERS & TABS
-   ============================================================ */
 function toast(msg, type=""){
   const t = document.getElementById("toast");
+  if(!t) return;
   t.textContent = msg;
   t.className = "toast show " + type;
   setTimeout(()=>t.className = "toast " + type, 2500);
 }
 
 function setConn(ok, text){
-  document.getElementById("connDot").className = "status-dot" + (ok ? " on" : "");
-  document.getElementById("connText").textContent = text;
+  const dot = document.getElementById("connDot");
+  const txt = document.getElementById("connText");
+  if(dot) dot.className = "status-dot" + (ok ? " on" : " off");
+  if(txt) txt.textContent = text;
 }
 
 window.copyToClipboard = function(text) {
@@ -721,30 +630,52 @@ window.copyToClipboard = function(text) {
 const tabNames = [
   { id: "scan", nav: "navScan", tab: "tab-scan" },
   { id: "pivot", nav: "navPivot", tab: "tab-pivot" },
+  { id: "search", nav: "navSearchTab", tab: "tab-search" },
   { id: "allscan", nav: "navAllScan", tab: "tab-allscan" },
   { id: "master", nav: "navMaster", tab: "tab-master" }
 ];
 
 function switchTab(activeId) {
+  if (activeId === "allscan") {
+      if (!sessionStorage.getItem("admin_unlocked")) {
+          const pass = prompt("Masukkan Password Administrator (Default: admin123) untuk mengakses Semua Riwayat & Konfigurasi:");
+          if (pass === "admin123") {
+              sessionStorage.setItem("admin_unlocked", "true");
+              document.getElementById("navAllScan").classList.remove("locked");
+              document.getElementById("navAllScan").innerHTML = "🌍 Semua Riwayat";
+          } else {
+              if (pass !== null) toast("Password Salah! Akses ditolak.", "bad");
+              return; 
+          }
+      }
+  }
+
   tabNames.forEach(t => {
-    document.getElementById(t.tab).classList.toggle("hidden", t.id !== activeId);
-    document.getElementById(t.nav).classList.toggle("active", t.id === activeId);
+    const tabEl = document.getElementById(t.tab);
+    const navEl = document.getElementById(t.nav);
+    if(tabEl) tabEl.classList.toggle("hidden", t.id !== activeId);
+    if(navEl) navEl.classList.toggle("active", t.id === activeId);
   });
   
   if(activeId === "scan") document.getElementById("scanInput").focus();
   if(activeId === "pivot") loadPivot();
+  if(activeId === "search") {
+    document.getElementById("advSearchInput").value = "";
+    document.getElementById("advSearchInput").focus();
+    document.getElementById("advSearchBody").innerHTML = `<tr><td colspan="4" class="hint" style="text-align:center;">Gunakan kolom pencarian di atas</td></tr>`;
+    document.getElementById("advSearchQty").textContent = "0";
+    document.getElementById("advSearchBinStats").innerHTML = `<span class="hint">Belum ada pencarian</span>`;
+  }
   if(activeId === "allscan") loadAllScan();
   if(activeId === "master") refreshMasterStats();
 }
 
 document.getElementById("navScan").onclick = () => switchTab("scan");
 document.getElementById("navPivot").onclick = () => switchTab("pivot");
+document.getElementById("navSearchTab").onclick = () => switchTab("search");
 document.getElementById("navAllScan").onclick = () => switchTab("allscan");
 document.getElementById("navMaster").onclick = () => switchTab("master");
 
-/* ============================================================
-   4) SCAN LOGIC & CYCLE COUNT
-   ============================================================ */
 let sessionStats = { total:0, found:0, notfound:0 };
 
 const scanInput = document.getElementById("scanInput");
@@ -804,16 +735,33 @@ async function handleScan(sku){
   }
 
   const entry = {
+    id: generateID(),
     sku,
     nama: product ? product.nama : null,
     found: !!product,
     bin: binValue,
     ts: new Date().toISOString(),
-    synced: false,
-    sessionActive: true 
+    sessionActive: true,
+    synced: false
   };
   
   await idbAddScan(entry);
+  
+  db.collection(COL_SCAN).doc(entry.id).set({
+    id: entry.id,
+    uid: entry.id,
+    sku: entry.sku,
+    nama: entry.nama,
+    found: entry.found,
+    bin: entry.bin,
+    ts: entry.ts
+  }).then(() => {
+    entry.synced = true;
+    const tx = idb.transaction("scanlog", "readwrite");
+    tx.objectStore("scanlog").put(entry);
+    if(!document.getElementById("tab-allscan").classList.contains("hidden")) loadAllScan();
+  }).catch(err => console.warn("Auto-sync ke Cloud tertunda (Offline)", err));
+
   await loadScanLogFromIDB();
   scanInput.focus();
 }
@@ -826,6 +774,7 @@ function updateStats(){
 
 function prependScanRow(entry){
   const tbody = document.getElementById("scanLogBody");
+  if(!tbody) return;
   const tr = document.createElement("tr");
   const jam = new Date(entry.ts).toLocaleTimeString("id-ID");
   tr.innerHTML = `
@@ -833,30 +782,53 @@ function prependScanRow(entry){
     <td><span style="color:var(--accent); font-weight:bold;">${entry.bin || '-'}</span></td>
     <td class="sku">${entry.sku}</td>
     <td>${entry.found ? entry.nama : '<span class="badge bad">N/A</span>'}</td>
-    <td style="text-align:center;"><button class="btn-delete" onclick="deleteScan(${entry.id})" title="Hapus Scan">🗑️</button></td>
+    <td style="text-align:center;"><button class="btn-delete" onclick="deleteScan('${entry.id}')" title="Hapus Scan">🗑️</button></td>
   `;
   tbody.prepend(tr);
 }
 
 async function loadScanLogFromIDB(){
-  const rows = await getActiveSessionScans();
-  sessionStats = { total: rows.length, found: rows.filter(r=>r.found).length, notfound: rows.filter(r=>!r.found).length };
-  updateStats();
-  const tbody = document.getElementById("scanLogBody");
-  tbody.innerHTML = "";
-  rows.slice().reverse().forEach(prependScanRow);
+  try {
+      const rows = await getActiveSessionScans();
+      sessionStats = { total: rows.length, found: rows.filter(r=>r.found).length, notfound: rows.filter(r=>!r.found).length };
+      updateStats();
+      const tbody = document.getElementById("scanLogBody");
+      if(!tbody) return;
+      tbody.innerHTML = "";
+      rows.slice().reverse().slice(0, 50).forEach(prependScanRow);
+  } catch(e) {
+      console.error(e);
+  }
 }
 
 window.deleteScan = async function(id) {
-  if(!confirm("Anda yakin ingin menghapus data scan ini?")) return;
-  await idbDeleteScan(id);
-  await loadScanLogFromIDB();
-  if(!document.getElementById("tab-pivot").classList.contains("hidden")) { loadPivot(); }
-  toast("✓ Data scan berhasil dihapus", "good");
-  document.getElementById("scanInput").focus();
+  if(!confirm("Hapus data ini secara permanen dari Lokal & Cloud?")) return;
+  
+  try {
+    const stringId = String(id);
+    db.collection(COL_SCAN).doc(stringId).delete().catch(e => console.warn(e));
+    
+    const parsedId = stringId.startsWith("scan_") ? stringId : Number(id);
+    await idbDeleteScan(parsedId);
+    
+    if(!document.getElementById("tab-scan").classList.contains("hidden")) {
+       await loadScanLogFromIDB();
+       document.getElementById("scanInput").focus();
+    }
+    if(!document.getElementById("tab-allscan").classList.contains("hidden")) {
+       await loadAllScan();
+    }
+    if(!document.getElementById("tab-pivot").classList.contains("hidden")) {
+       loadPivot();
+    }
+    
+    toast("✓ Data berhasil dihapus", "good");
+  } catch(err) {
+    console.error(err);
+    toast("Gagal menghapus data", "bad");
+  }
 };
 
-/* --- CYCLE COUNT LOGIC --- */
 document.getElementById("btnCycleCount").onclick = async () => {
   const activeScans = await getActiveSessionScans();
   if(activeScans.length === 0){
@@ -866,39 +838,140 @@ document.getElementById("btnCycleCount").onclick = async () => {
   
   const uniqueBins = [...new Set(activeScans.map(r => r.bin))];
   
-  if(!confirm(`Yakin ingin melakukan Cycle Count untuk Bin:\n${uniqueBins.join(", ")}\n\nSeluruh riwayat data lama pada bin tersebut akan dihapus dan diganti dengan data sesi ini.`)) return;
+  if(!confirm(`Yakin ingin melakukan Cycle Count untuk Bin:\n${uniqueBins.join(", ")}\n\nSeluruh riwayat data lama pada bin tersebut akan dihapus secara lokal dan Cloud, lalu diganti dengan data sesi ini.`)) return;
 
-  const rows = await idbGetAllScans();
-  const tx = idb.transaction("scanlog", "readwrite");
-  const store = tx.objectStore("scanlog");
-  
-  let deletedCount = 0;
-  
-  rows.forEach(r => {
-    if (r.sessionActive === false && uniqueBins.includes(r.bin)) {
-      store.delete(r.id);
-      deletedCount++;
-    } 
-    else if (r.sessionActive !== false) {
-      r.sessionActive = false;
-      store.put(r);
-    }
-  });
-  
-  tx.oncomplete = async () => {
-    await loadScanLogFromIDB();
-    if(!document.getElementById("tab-pivot").classList.contains("hidden")) loadPivot();
-    document.getElementById("scanResult").innerHTML = "";
-    toast(`✓ Cycle Count berhasil. ${deletedCount} data lama diganti & sesi otomatis ditutup.`, "good");
-  };
-  tx.onerror = (e) => {
-    toast("Terjadi kesalahan saat Cycle Count", "bad");
-    console.error(e);
-  };
+  toast("Memproses Cycle Count...", "warning");
+
+  try {
+      const rows = await idbGetAllScans();
+      let deletedCount = 0;
+      let batch = db.batch();
+      let opCount = 0;
+      const localIdsToDelete = [];
+
+      for (const r of rows) {
+        if (r.sessionActive === false && uniqueBins.includes(r.bin)) {
+          localIdsToDelete.push(r.id);
+          deletedCount++;
+          
+          batch.delete(db.collection(COL_SCAN).doc(String(r.id)));
+          opCount++;
+          
+          if(opCount >= 400) { await batch.commit(); batch = db.batch(); opCount=0; }
+        }
+      }
+      if(opCount > 0) await batch.commit();
+
+      const tx = idb.transaction("scanlog", "readwrite");
+      const store = tx.objectStore("scanlog");
+      rows.forEach(r => {
+        if (localIdsToDelete.includes(r.id)) {
+          store.delete(r.id);
+        } else if (r.sessionActive !== false) {
+          r.sessionActive = false;
+          store.put(r);
+        }
+      });
+
+      tx.oncomplete = async () => {
+        await loadScanLogFromIDB();
+        if(!document.getElementById("tab-pivot").classList.contains("hidden")) loadPivot();
+        document.getElementById("scanResult").innerHTML = "";
+        toast(`✓ Cycle Count berhasil. ${deletedCount} riwayat lama dihapus (Lokal & Cloud).`, "good");
+      };
+  } catch(err) {
+     console.error(err);
+     toast("Gagal melakukan Cycle Count", "bad");
+  }
 };
 
+
 /* ============================================================
-   5) PIVOT LOGIC (HANYA SESI AKTIF)
+   5) TAB PENCARIAN RIWAYAT (ADVANCED SEARCH)
+   ============================================================ */
+let searchTimeout;
+document.getElementById("advSearchInput").addEventListener("input", (e) => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    performAdvSearch(e.target.value);
+  }, 300);
+});
+
+async function performAdvSearch(query) {
+  const tbody = document.getElementById("advSearchBody");
+  const statFind = document.getElementById("advSearchQty");
+  const binStatsContainer = document.getElementById("advSearchBinStats");
+  const q = query.toLowerCase().trim();
+  
+  if (!q) {
+     tbody.innerHTML = `<tr><td colspan="4" class="hint" style="text-align:center;">Gunakan kolom pencarian di atas</td></tr>`;
+     statFind.textContent = "0";
+     binStatsContainer.innerHTML = `<span class="hint">Belum ada pencarian</span>`;
+     return;
+  }
+  
+  tbody.innerHTML = `<tr><td colspan="4" class="hint" style="text-align:center;">Mencari...</td></tr>`;
+
+  const allRows = await idbGetAllScans();
+  const matched = allRows.filter(r => 
+      (r.sku && r.sku.toLowerCase().includes(q)) ||
+      (r.nama && r.nama.toLowerCase().includes(q)) ||
+      (r.bin && r.bin.toLowerCase().includes(q))
+  );
+
+  statFind.textContent = matched.length;
+
+  // Render Sebaran Qty Per Bin
+  const binCounts = {};
+  matched.forEach(r => {
+     const bin = r.bin || '-';
+     binCounts[bin] = (binCounts[bin] || 0) + 1;
+  });
+  
+  const binKeys = Object.keys(binCounts).sort();
+  if(binKeys.length === 0) {
+      binStatsContainer.innerHTML = `<span class="hint">Tidak ada sebaran Bin</span>`;
+  } else {
+      binStatsContainer.innerHTML = binKeys.map(b => 
+          `<div class="bin-stat-badge">
+              <span class="b-name">${b}</span>
+              <span class="b-qty">${binCounts[b]}</span>
+           </div>`
+      ).join('');
+  }
+
+  tbody.innerHTML = "";
+
+  if (matched.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" class="hint" style="text-align:center;">Data tidak ditemukan</td></tr>`;
+      return;
+  }
+
+  matched.reverse().slice(0, 500).forEach(r => {
+      const tr = document.createElement("tr");
+      const jam = r.ts ? new Date(r.ts).toLocaleString("id-ID") : "-";
+      tr.innerHTML = `
+        <td>${jam}</td>
+        <td style="color:var(--accent); font-weight:bold;">${r.bin || '-'}</td>
+        <td class="sku">
+          ${r.sku} 
+          <button class="btn-copy" onclick="copyToClipboard('${r.sku}')">Salin</button>
+        </td>
+        <td>${r.nama || 'N/A'}</td>
+      `;
+      tbody.appendChild(tr);
+  });
+
+  if (matched.length > 500) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="4" class="hint" style="text-align:center;">Menampilkan 500 hasil teratas...</td>`;
+      tbody.appendChild(tr);
+  }
+}
+
+
+/* ============================================================
+   6) PIVOT LOGIC 
    ============================================================ */
 async function loadPivot(){
   const rows = await getActiveSessionScans(); 
@@ -921,6 +994,7 @@ async function loadPivot(){
 
   const pivotArray = Object.values(pivotMap).sort((a,b) => b.qty - a.qty);
   const tbody = document.getElementById("pivotBody");
+  if(!tbody) return;
   tbody.innerHTML = "";
 
   if(pivotArray.length === 0){
@@ -997,11 +1071,10 @@ document.getElementById("btnExportPivot").onclick = async ()=>{
   toast("✓ File Excel berhasil diunduh", "good");
 };
 
-/* ============================================================
-   6) RIWAYAT ALL SCAN, SEARCH MODAL & BIN MANAGEMENT
-   ============================================================ */
 
-// --- BIN MANAGEMENT LOGIC ---
+/* ============================================================
+   7) RIWAYAT ALL SCAN, UPLOAD & BIN MANAGEMENT
+   ============================================================ */
 let deactivatedBins = JSON.parse(localStorage.getItem('deactivatedBins') || '[]');
 
 function saveDeactivatedBins() {
@@ -1012,6 +1085,7 @@ async function loadBinManagement() {
   const rows = await idbGetAllScans();
   const uniqueBins = [...new Set(rows.map(r => r.bin || '-'))].sort();
   const tbody = document.getElementById("binModalBody");
+  if(!tbody) return;
   tbody.innerHTML = "";
 
   if(uniqueBins.length === 0){
@@ -1051,43 +1125,70 @@ document.getElementById("btnManageBin").onclick = () => {
   loadBinManagement();
   document.getElementById("binModal").classList.add("show");
 };
-
 document.getElementById("btnCloseBin").onclick = () => {
   document.getElementById("binModal").classList.remove("show");
 };
-
 document.getElementById("binModal").addEventListener("click", (e) => {
-  if (e.target.id === "binModal") {
-    document.getElementById("binModal").classList.remove("show");
-  }
+  if (e.target.id === "binModal") document.getElementById("binModal").classList.remove("show");
 });
 
+// LIMIT RENDER UNTUK PERFORMA
+let allScanRenderLimit = 200; 
 
-// --- ALL SCAN LIST LOGIC ---
 async function loadAllScan(){
-  const rows = await idbGetAllScans();
-  const tbody = document.getElementById("allScanBody");
-  
-  document.getElementById("statAllScanQty").textContent = rows.length;
-  tbody.innerHTML = "";
+  try {
+      const rows = await idbGetAllScans();
+      const tbody = document.getElementById("allScanBody");
+      if(!tbody) return;
+      
+      const statQty = document.getElementById("statAllScanQty");
+      if(statQty) statQty.textContent = rows.length;
+      
+      const unsyncedCount = rows.filter(r => !r.synced).length;
+      const statPending = document.getElementById("statPendingSync");
+      if(statPending) statPending.textContent = unsyncedCount;
 
-  if(rows.length === 0){
-     tbody.innerHTML = `<tr><td colspan="4" class="hint" style="text-align:center; padding: 24px;">Database lokal kosong. Belum ada riwayat scan sama sekali.</td></tr>`;
-     return;
+      tbody.innerHTML = "";
+
+      if(rows.length === 0){
+         tbody.innerHTML = `<tr><td colspan="6" class="hint" style="text-align:center; padding: 24px;">Database lokal kosong. Belum ada riwayat scan sama sekali.</td></tr>`;
+         document.getElementById("allScanLoadMoreContainer").style.display = "none";
+         return;
+      }
+
+      const renderRows = rows.slice().reverse().slice(0, allScanRenderLimit);
+
+      renderRows.forEach(r => {
+        const tr = document.createElement("tr");
+        const jam = r.ts ? new Date(r.ts).toLocaleString("id-ID") : "-";
+        tr.innerHTML = `
+          <td>${jam}</td>
+          <td style="color:var(--accent); font-weight:bold;">${r.bin || '-'}</td>
+          <td class="sku">${r.sku || '-'}</td>
+          <td>${r.found ? (r.nama || 'N/A') : '<span class="badge bad">N/A</span>'}</td>
+          <td>${r.synced ? '<span class="badge good">TER-SYNC</span>' : '<span class="badge warning">PENDING</span>'}</td>
+          <td style="text-align:center;"><button class="btn-delete" onclick="deleteScan('${r.id}')" title="Hapus Scan">🗑️</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      if (rows.length > allScanRenderLimit) {
+         document.getElementById("allScanLoadMoreContainer").style.display = "block";
+      } else {
+         document.getElementById("allScanLoadMoreContainer").style.display = "none";
+      }
+
+  } catch (err) {
+      console.error(err);
+      const tbody = document.getElementById("allScanBody");
+      if(tbody) tbody.innerHTML = `<tr><td colspan="6" class="hint" style="text-align:center; color:red;">Gagal memuat data. Periksa konsol.</td></tr>`;
   }
-
-  rows.slice().reverse().forEach(r => {
-    const tr = document.createElement("tr");
-    const jam = new Date(r.ts).toLocaleString("id-ID");
-    tr.innerHTML = `
-      <td>${jam}</td>
-      <td style="color:var(--accent); font-weight:bold;">${r.bin || '-'}</td>
-      <td class="sku">${r.sku}</td>
-      <td>${r.found ? r.nama : '<span class="badge bad">N/A</span>'}</td>
-    `;
-    tbody.appendChild(tr);
-  });
 }
+
+document.getElementById("btnLoadMoreAllScan").onclick = () => {
+  allScanRenderLimit += 500;
+  loadAllScan();
+};
 
 document.getElementById("btnExportAllScan").onclick = async ()=>{
   const rows = await idbGetAllScans();
@@ -1121,145 +1222,246 @@ document.getElementById("btnExportAllScan").onclick = async ()=>{
   toast("✓ Ekspor riwayat keseluruhan berhasil", "good");
 };
 
-// --- MODAL PENCARIAN BARANG LOGIC ---
-let allPivotedSearchData = [];
+document.getElementById("fileUploadScan").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if(!file) return;
+  
+  toast("Memproses file gabungan scan...", "warning");
+  const reader = new FileReader();
+  reader.onload = async (evt) => {
+    try {
+      const wb = XLSX.read(evt.target.result, { type: "array" });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { defval: "" });
+      
+      let successCount = 0;
+      let batch = db.batch();
+      let opCount = 0;
+      
+      for(let r of rows) {
+        const keys = Object.keys(r);
+        const skuKey = keys.find(k=>k.trim().toLowerCase() === "sku") || keys.find(k=>k.trim().toLowerCase().includes("sku"));
+        const binKey = keys.find(k=>k.trim().toLowerCase().includes("bin"));
+        const waktuKey = keys.find(k=>k.trim().toLowerCase() === "waktu scan" || k.trim().toLowerCase().includes("waktu") || k.trim().toLowerCase().includes("time") || k.trim().toLowerCase().includes("tanggal"));
+        
+        const skuVal = skuKey ? String(r[skuKey]).trim() : null;
+        if(!skuVal) continue;
+        
+        const binVal = binKey ? String(r[binKey]).trim().toUpperCase() : "-";
+        
+        let finalTs = new Date().toISOString();
+        if(waktuKey && r[waktuKey]) {
+            let parsedDate = parseIdDate(r[waktuKey]);
+            if (parsedDate) finalTs = parsedDate;
+        }
 
-async function prepareSearchData() {
-  const rows = await idbGetAllScans();
-  const pivotMap = {};
+        let product = await idbGetMaster(skuVal);
+        
+        const entry = {
+          id: generateID(),
+          sku: skuVal,
+          nama: product ? product.nama : "Tidak Dikenali",
+          found: !!product,
+          bin: binVal,
+          ts: finalTs, 
+          synced: true,
+          sessionActive: false 
+        };
+        
+        await idbAddScan(entry);
+        
+        batch.set(db.collection(COL_SCAN).doc(entry.id), {
+          id: entry.id,
+          uid: entry.id,
+          sku: entry.sku,
+          nama: entry.nama,
+          found: entry.found,
+          bin: entry.bin,
+          ts: entry.ts
+        });
+        opCount++;
+        if(opCount >= 400) { await batch.commit(); batch = db.batch(); opCount=0; }
 
-  rows.forEach(r => {
-    const binVal = r.bin || "-";
-    
-    // SKIP/SEMBUNYIKAN BIN YANG DINONAKTIFKAN
-    if(deactivatedBins.includes(binVal)) return;
+        successCount++;
+      }
+      
+      if(opCount > 0) await batch.commit().catch(e=>console.warn("Upload sync Cloud deferred", e));
 
-    const key = `${r.sku}_${binVal}`;
-    if(pivotMap[key]){
-      pivotMap[key].qty += 1;
-    } else {
-      pivotMap[key] = {
-        bin: binVal,
-        sku: r.sku,
-        nama: r.nama || "Tidak Dikenali",
-        qty: 1
-      };
+      document.getElementById("fileUploadScan").value = "";
+      allScanRenderLimit = 200; // Reset limit setelah upload
+      await loadAllScan();
+      toast(`✓ Berhasil menggabungkan ${successCount} data scan ke Lokal & Cloud`, "good");
+    } catch (err) {
+      console.error(err);
+      toast("Gagal memproses file upload", "bad");
     }
-  });
-
-  allPivotedSearchData = Object.values(pivotMap).sort((a,b) => b.qty - a.qty);
-}
-
-function renderSearchResults(query) {
-  const tbody = document.getElementById("modalSearchBody");
-  tbody.innerHTML = "";
-  const q = query.toLowerCase().trim();
-  
-  let filtered = allPivotedSearchData;
-  if (q) {
-    filtered = allPivotedSearchData.filter(item => 
-      item.sku.toLowerCase().includes(q) || 
-      item.nama.toLowerCase().includes(q)
-    );
-  }
-
-  if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="4" class="hint" style="text-align:center; padding: 24px;">Tidak ada barang yang cocok dengan pencarian Anda. (Atau mungkin Bin sedang dinonaktifkan)</td></tr>`;
-    return;
-  }
-
-  filtered.forEach(p => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td style="color:var(--accent); font-weight:bold;">${p.bin}</td>
-      <td class="sku">
-        ${p.sku} 
-        <button class="btn-copy" onclick="copyToClipboard('${p.sku}')">Salin</button>
-      </td>
-      <td>${p.nama}</td>
-      <td style="font-weight:bold; color:var(--accent); font-size: 16px; background-color: rgba(59, 130, 246, 0.05);">${p.qty}</td>
-    `;
-    tbody.appendChild(tr);
-  });
-}
-
-document.getElementById("btnOpenSearch").onclick = async () => {
-  await prepareSearchData();
-  const inputSearch = document.getElementById("modalSearchInput");
-  inputSearch.value = "";
-  renderSearchResults("");
-  
-  document.getElementById("searchModal").classList.add("show");
-  setTimeout(() => { inputSearch.focus(); }, 100);
-};
-
-document.getElementById("btnCloseSearch").onclick = () => {
-  document.getElementById("searchModal").classList.remove("show");
-};
-
-document.getElementById("searchModal").addEventListener("click", (e) => {
-  if (e.target.id === "searchModal") {
-    document.getElementById("searchModal").classList.remove("show");
-  }
+  };
+  reader.readAsArrayBuffer(file);
 });
 
-document.getElementById("modalSearchInput").addEventListener("input", (e) => {
-  renderSearchResults(e.target.value);
-});
+// --- PULL CLOUD LOGIC ---
+document.getElementById("btnPullCloudScans").onclick = async () => {
+  toast("Menarik data dari Cloud...", "warning");
+  try {
+    const snap = await db.collection(COL_SCAN).get();
+    const localScans = await idbGetAllScans();
+    const localIds = localScans.map(r => String(r.id));
+    
+    let count = 0;
+    const tx = idb.transaction("scanlog", "readwrite");
+    const store = tx.objectStore("scanlog");
+
+    snap.docs.forEach(doc => {
+      const data = doc.data();
+      const checkId = doc.id;
+      if (!localIds.includes(checkId)) {
+        store.put({
+          id: checkId,
+          sku: data.sku,
+          nama: data.nama,
+          found: data.found,
+          bin: data.bin,
+          ts: data.ts,
+          synced: true,
+          sessionActive: false
+        });
+        count++;
+      }
+    });
+
+    tx.oncomplete = async () => {
+      await loadAllScan();
+      toast(`✓ ${count} data baru berhasil ditarik dari Cloud ke perangkat ini`, "good");
+    };
+    tx.onerror = (e) => {
+       console.error(e);
+       toast("Gagal menyimpan data ke lokal.", "bad");
+    };
+  } catch(err) {
+    console.error(err);
+    toast("Gagal menarik data dari Cloud. Periksa koneksi internet Anda.", "bad");
+  }
+};
 
 
 /* ============================================================
-   7) SINKRONISASI & MANAJEMEN SESI
+   8) SINKRONISASI MANUAL (MIRROR SYNC LOGIC)
    ============================================================ */
-document.getElementById("btnSyncScan").onclick = async ()=>{
-  const rows = (await idbGetAllScans()).filter(r=>!r.synced);
-  if(rows.length === 0){ toast("Semua data sudah tersinkron dengan Cloud", "good"); return; }
-  toast(`Menyinkronisasi ${rows.length} antrean data...`);
-  
-  let batch = db.batch();
-  let count = 0;
+
+async function runManualSync() {
   try {
-    for(const r of rows){
-      const ref = db.collection(COL_SCAN).doc();
-      batch.set(ref, { sku: r.sku, nama: r.nama, found: r.found, bin: r.bin || '-', ts: r.ts });
-      count++;
-      if(count % 450 === 0){ await batch.commit(); batch = db.batch(); }
-    }
-    await batch.commit();
+    toast("Menyamakan data Lokal dengan Cloud (Mirroring)...", "warning");
+    const localRows = await idbGetAllScans();
     
+    const localRowsCleaned = localRows.map(r => {
+      if(!String(r.id).startsWith("scan_")) {
+        r.id = "scan_" + Date.now() + "_" + Math.random().toString(36).substring(2, 9);
+      }
+      return r;
+    });
+    
+    const localIds = localRowsCleaned.map(r => String(r.id));
+
+    const cloudSnap = await db.collection(COL_SCAN).get();
+    const cloudIds = cloudSnap.docs.map(d => d.id);
+
+    const toDeleteFromCloud = cloudIds.filter(id => !localIds.includes(id));
+    
+    let batch = db.batch();
+    let opCount = 0;
+
+    for(const id of toDeleteFromCloud) {
+      batch.delete(db.collection(COL_SCAN).doc(id));
+      opCount++;
+      if(opCount >= 400){ await batch.commit(); batch = db.batch(); opCount=0; }
+    }
+
+    for(const r of localRowsCleaned) {
+      if(!r.synced) {
+        batch.set(db.collection(COL_SCAN).doc(String(r.id)), {
+          id: r.id,
+          uid: r.id,
+          sku: r.sku,
+          nama: r.nama,
+          found: r.found,
+          bin: r.bin || '-',
+          ts: r.ts
+        }, { merge: true });
+        opCount++;
+        if(opCount >= 400){ await batch.commit(); batch = db.batch(); opCount=0; }
+      }
+    }
+
+    if(opCount > 0){ await batch.commit(); }
+
     const tx = idb.transaction("scanlog", "readwrite");
     const store = tx.objectStore("scanlog");
-    rows.forEach(r => {
+    localRowsCleaned.forEach(r => {
       r.synced = true;
       store.put(r);
     });
-    
-    toast(`✓ ${rows.length} hasil scan berhasil di-sync ke Cloud`, "good");
+
+    tx.oncomplete = async () => {
+      if(!document.getElementById("tab-allscan").classList.contains("hidden")) await loadAllScan();
+      if(!document.getElementById("tab-scan").classList.contains("hidden")) await loadScanLogFromIDB();
+      toast(`✓ Sinkronisasi Selesai! Data Lokal & Cloud Balance.`, "good");
+    };
+
   } catch(e) {
-    toast(`Gagal melakukan sinkronisasi: ${e.message}`, "bad");
+    toast(`Gagal melakukan sinkronisasi: Periksa Koneksi Internet`, "bad");
+    console.error(e);
   }
-};
+}
+
+document.getElementById("btnSyncAllScan").onclick = runManualSync;
 
 document.getElementById("btnClearScan").onclick = async ()=>{
   if(!confirm("Anda yakin ingin meng-clear data (menutup sesi) saat ini? (Riwayat akan tetap aman tersimpan di tab 'Semua Riwayat')")) return;
   await idbClearSession(); 
   await loadScanLogFromIDB();
-  document.getElementById("scanResult").innerHTML = "";
+  const scanResult = document.getElementById("scanResult");
+  if(scanResult) scanResult.innerHTML = "";
   if(!document.getElementById("tab-pivot").classList.contains("hidden")) loadPivot();
-  toast("✓ Sesi saat ini berhasil di-clear", "good");
+  toast("✓ Sesi saat ini berhasil ditutup", "good");
 };
 
 document.getElementById("btnClearAllScan").onclick = async ()=>{
   if(!confirm("⚠️ PERINGATAN KRITIS: Apakah Anda yakin ingin menghapus SELURUH riwayat scan dari penyimpanan perangkat ini secara permanen?")) return;
-  await idbClearScans();
-  await loadAllScan();
-  await loadScanLogFromIDB(); 
-  document.getElementById("scanResult").innerHTML = "";
-  toast("✓ Database lokal berhasil dihapus bersih", "good");
+  
+  toast("Menghapus data dari Cloud...", "warning");
+  try {
+    const snap = await db.collection(COL_SCAN).get();
+    let batch = db.batch();
+    let opCount = 0;
+    
+    for (const doc of snap.docs) {
+      batch.delete(doc.ref);
+      opCount++;
+      if (opCount >= 400) {
+        await batch.commit();
+        batch = db.batch();
+        opCount = 0;
+      }
+    }
+    if (opCount > 0) await batch.commit();
+
+    await idbClearScans();
+    await loadAllScan();
+    await loadScanLogFromIDB(); 
+    const scanResult = document.getElementById("scanResult");
+    if(scanResult) scanResult.innerHTML = "";
+    toast("✓ Database Lokal & Cloud berhasil dihapus bersih", "good");
+  } catch(err) {
+    console.error(err);
+    await idbClearScans();
+    await loadAllScan();
+    await loadScanLogFromIDB();
+    toast("Lokal berhasil dibersihkan. Tetapi terjadi kendala pada Cloud (Periksa koneksi).", "warning");
+  }
 };
 
 /* ============================================================
-   8) MASTER PRODUK: UPLOAD & PULL
+   9) MASTER PRODUK: UPLOAD & PULL
    ============================================================ */
 let parsedMaster = [];
 
@@ -1286,16 +1488,18 @@ document.getElementById("fileMaster").addEventListener("change", (e)=>{
       `Berhasil membaca ${parsedMaster.length} baris data dari file "${file.name}"`;
 
     const tbody = document.getElementById("masterPreviewBody");
-    tbody.innerHTML = "";
-    parsedMaster.slice(0, 50).forEach(r=>{
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td class="sku">${r.sku}</td><td>${r.nama}</td>`;
-      tbody.appendChild(tr);
-    });
-    if(parsedMaster.length > 50){
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="2" class="hint" style="text-align:center;">... menampilkan 50 dari ${parsedMaster.length} baris</td>`;
-      tbody.appendChild(tr);
+    if(tbody){
+      tbody.innerHTML = "";
+      parsedMaster.slice(0, 50).forEach(r=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td class="sku">${r.sku}</td><td>${r.nama}</td>`;
+        tbody.appendChild(tr);
+      });
+      if(parsedMaster.length > 50){
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="2" class="hint" style="text-align:center;">... menampilkan 50 dari ${parsedMaster.length} baris</td>`;
+        tbody.appendChild(tr);
+      }
     }
 
     document.getElementById("btnUploadMaster").disabled = parsedMaster.length === 0;
@@ -1307,7 +1511,8 @@ document.getElementById("btnClearFile").onclick = ()=>{
   parsedMaster = [];
   document.getElementById("fileMaster").value = "";
   document.getElementById("masterPreviewInfo").textContent = "";
-  document.getElementById("masterPreviewBody").innerHTML = `<tr><td colspan="2" class="hint" style="text-align:center;">Pilih file excel untuk mempratinjau data</td></tr>`;
+  const tbody = document.getElementById("masterPreviewBody");
+  if(tbody) tbody.innerHTML = `<tr><td colspan="2" class="hint" style="text-align:center;">Pilih file excel untuk mempratinjau data</td></tr>`;
   document.getElementById("btnUploadMaster").disabled = true;
   document.getElementById("masterProgress").style.width = "0%";
 };
@@ -1346,7 +1551,7 @@ document.getElementById("btnUploadMaster").onclick = async ()=>{
 };
 
 document.getElementById("btnPullMaster").onclick = async ()=>{
-  toast("Sedang menarik master produk dari Cloud...");
+  toast("Sedang menarik master produk dari Cloud...", "warning");
   try{
     await idbClearMaster();
     let count = 0;
@@ -1373,28 +1578,35 @@ document.getElementById("btnPullMaster").onclick = async ()=>{
 
 async function refreshMasterStats(){
   const local = await idbCountMaster();
-  document.getElementById("statMasterLocal").textContent = local;
+  const statLocal = document.getElementById("statMasterLocal");
+  if(statLocal) statLocal.textContent = local;
   try{
     const snap = await db.collection(COL_MASTER).count().get();
-    document.getElementById("statMasterCloud").textContent = snap.data().count;
+    const statCloud = document.getElementById("statMasterCloud");
+    if(statCloud) statCloud.textContent = snap.data().count;
   }catch(e){
-    document.getElementById("statMasterCloud").textContent = "-";
+    const statCloud = document.getElementById("statMasterCloud");
+    if(statCloud) statCloud.textContent = "-";
   }
 }
 
-/* ============================================================
-   9) INIT
-   ============================================================ */
 (async function init(){
-  idb = await openIDB();
-  await loadScanLogFromIDB();
+  try {
+    idb = await openIDB();
+    await loadScanLogFromIDB();
+  } catch (e) {
+    console.error("Gagal membuka database lokal (IndexedDB):", e);
+    toast("Peringatan: Gagal membuka database lokal.", "warning");
+  }
 
-  db.collection(COL_MASTER).limit(1).get()
-    .then(()=>{
-      setConn(true, "Terhubung ke Firestore");
-      refreshMasterStats();
-    })
-    .catch((e)=>setConn(false, "Gagal konek Firestore / Mode Offline Aktif"));
+  try {
+    await db.collection(COL_MASTER).limit(1).get();
+    setConn(true, "Terhubung ke Firestore");
+    refreshMasterStats();
+  } catch(e) {
+    console.error("Gagal konek Firestore:", e);
+    setConn(false, "Gagal konek Firestore / Periksa Aturan Security");
+  }
 
   scanInput.focus();
 })();
