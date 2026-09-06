@@ -14,32 +14,41 @@
 
 <style>
   :root {
-    --bg-app: #0f172a;
-    --bg-sidebar: #1e293b;
-    --bg-card: #1e293b;
-    --bg-input: #0f172a;
-    --bg-hover: #334155;
-    --border: #334155;
-    --border-light: #475569;
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
-    --accent: #3b82f6;
-    --accent-hover: #2563eb;
-    --accent-glow: rgba(59, 130, 246, 0.5);
-    --success: #10b981;
-    --success-dim: rgba(16, 185, 129, 0.15);
-    --danger: #ef4444;
-    --danger-dim: rgba(239, 68, 68, 0.15);
-    --warning: #f59e0b;
-    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    /* Soft light-blue enterprise palette */
+    --bg-shell: #6fa3d8;
+    --bg-shell-active: #4a86c6;
+    --bg-app: #f4f8fc;
+    --bg-sidebar: #ffffff;
+    --bg-card: #ffffff;
+    --bg-input: #ffffff;
+    --bg-hover: #eef5fc;
+    --bg-hover-strong: #e3eefa;
+    --border: #dce6f0;
+    --border-light: #b9cfe4;
+    --text-main: #2c3e50;
+    --text-muted: #74889c;
+    --text-inverse: #ffffff;
+    --accent: #5b9bd5;
+    --accent-hover: #4a86c6;
+    --accent-dim: rgba(91, 155, 213, 0.12);
+    --accent-glow: rgba(91, 155, 213, 0.3);
+    --success: #4caf82;
+    --success-dim: rgba(76, 175, 130, 0.1);
+    --danger: #e07a7a;
+    --danger-dim: rgba(224, 122, 122, 0.08);
+    --warning: #d9a256;
+    --warning-dim: rgba(217, 162, 86, 0.12);
+    --radius: 4px;
+    --font-sans: 'Segoe UI', '72', Arial, Helvetica, sans-serif;
     --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   }
 
   * { box-sizing: border-box; }
-  
+
   body {
     margin: 0; padding: 0; background-color: var(--bg-app); color: var(--text-main);
-    font-family: var(--font-sans); height: 100vh; display: flex; overflow: hidden;
+    font-family: var(--font-sans); height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+    font-size: 14px;
   }
 
   ::-webkit-scrollbar { width: 10px; height: 10px; }
@@ -49,172 +58,250 @@
   .scroll-table::-webkit-scrollbar-thumb { border: 2px solid var(--bg-card); }
   .nav-menu::-webkit-scrollbar-thumb { border: 2px solid var(--bg-sidebar); }
 
-  .app-container { display: flex; width: 100vw; height: 100vh; }
+  /* ============ SHELL BAR (top app bar, SAP-style) ============ */
+  .shell-bar {
+    flex-shrink: 0; height: 44px; background: var(--bg-shell); color: var(--text-inverse);
+    display: flex; align-items: center; justify-content: space-between; padding: 0 16px;
+    font-size: 14px; z-index: 20; box-shadow: 0 1px 0 rgba(0,0,0,0.2);
+  }
+  .shell-left { display: flex; align-items: center; gap: 10px; font-weight: 600; letter-spacing: 0.2px; }
+  .shell-left .shell-icon { font-size: 15px; opacity: 0.9; }
+  .shell-left .shell-sep { opacity: 0.35; font-weight: 300; }
+  .shell-left .shell-module { font-weight: 400; opacity: 0.85; font-size: 13px; }
+  .shell-right { display: flex; align-items: center; gap: 14px; font-size: 12px; opacity: 0.9; }
+  .shell-avatar {
+    width: 26px; height: 26px; border-radius: 50%; background: var(--bg-shell-active);
+    display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700;
+  }
+
+  .app-container { display: flex; width: 100vw; flex: 1; min-height: 0; }
 
   .sidebar {
-    width: 260px; background-color: var(--bg-sidebar); border-right: 1px solid var(--border);
+    width: 240px; background-color: var(--bg-sidebar); border-right: 1px solid var(--border);
     display: flex; flex-direction: column; z-index: 10;
   }
-  .sidebar-header { padding: 24px; border-bottom: 1px solid var(--border); }
+  .sidebar-header { padding: 16px 20px; border-bottom: 1px solid var(--border); }
   .sidebar-header h1 {
-    margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.5px;
-    color: var(--text-main); display: flex; align-items: center; gap: 8px;
+    margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase;
+    color: var(--text-muted); display: flex; align-items: center; gap: 8px;
   }
   .sidebar-header h1 span { color: var(--accent); }
 
-  .nav-menu { flex: 1; padding: 20px 12px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
-  .nav-item {
-    background: transparent; border: none; color: var(--text-muted);
-    padding: 12px 16px; border-radius: 8px; text-align: left; font-size: 13px;
-    font-weight: 500; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 12px;
+  /* SIDEBAR ACCORDION */
+  .nav-menu { flex: 1; padding: 12px 8px; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
+  .nav-group { margin-bottom: 4px; }
+  .nav-group-title {
+    padding: 8px 12px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.6px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-radius: var(--radius); user-select: none; transition: background 0.15s; margin-bottom: 2px;
   }
-  .nav-item:hover { background-color: var(--bg-hover); color: var(--text-main); }
-  .nav-item.active { background-color: var(--accent); color: #ffffff; font-weight: 600; box-shadow: 0 4px 12px var(--accent-glow); }
+  .nav-group-title:hover { background: var(--bg-hover); color: var(--text-main); }
+  .nav-group-title span { transition: transform 0.2s ease; font-size: 9px; }
+  .nav-group.collapsed .nav-group-title span { transform: rotate(-90deg); }
+  .nav-group-items { display: flex; flex-direction: column; gap: 1px; overflow: hidden; }
+  .nav-group.collapsed .nav-group-items { display: none; }
+
+  .nav-item {
+    background: transparent; border: none; border-left: 3px solid transparent; color: var(--text-main);
+    padding: 9px 13px; border-radius: 0; text-align: left; font-size: 13px;
+    font-weight: 400; cursor: pointer; transition: all 0.15s ease; display: flex; align-items: center; gap: 10px;
+  }
+  .nav-item:hover { background-color: var(--bg-hover); }
+  .nav-item.active { background-color: var(--accent-dim); border-left-color: var(--accent); color: var(--accent); font-weight: 600; }
   .nav-item.locked { color: var(--warning); }
 
-  .sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-muted); display: flex; align-items: center; }
+  .sidebar-footer { padding: 12px 20px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-muted); display: flex; align-items: center; }
 
   .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; background: var(--danger); }
-  .status-dot.on { background: var(--success); box-shadow: 0 0 8px var(--success); }
+  .status-dot.on { background: var(--success); box-shadow: 0 0 0 3px var(--success-dim); }
 
-  .content-area { flex: 1; overflow-y: auto; padding: 24px 32px; background-color: var(--bg-app); }
-
+  .content-area { flex: 1; overflow-y: auto; padding: 20px 28px; background-color: var(--bg-app); }
   .section-container { max-width: 1200px; margin: 0 auto; height: 100%; display: flex; flex-direction: column; }
-  
+
+  /* Grid yang menjamin kolom Stat/Alamat sejajar sempurna dengan kolom Form/Tabel di bawahnya */
+  .dual-grid {
+    display: grid;
+    grid-template-columns: minmax(280px, 1fr) minmax(380px, 1.5fr);
+    gap: 20px;
+    align-items: stretch;
+  }
+  @media (max-width: 820px) {
+    .dual-grid { grid-template-columns: 1fr; }
+  }
+
   .card {
-    background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
-    padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+    background-color: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 18px 20px; box-shadow: 0 1px 2px rgba(29,45,62,0.06);
   }
-  .card-header { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin: 0 0 12px 0; }
+  .card-header { font-size: 13px; font-weight: 700; color: var(--text-main); text-transform: none; letter-spacing: 0; margin: 0 0 12px 0; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
 
-  /* Default Inputs */
-  input[type=text], input[type=date], input[type=file] {
-    width: 100%; background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); 
-    padding: 14px; border-radius: 8px; font-size: 15px; font-family: var(--font-mono); transition: border-color 0.2s;
+  input[type=text], input[type=date], input[type=file], select {
+    width: 100%; background: var(--bg-input); border: 1px solid var(--border-light); color: var(--text-main);
+    padding: 10px 12px; border-radius: var(--radius); font-size: 14px; font-family: var(--font-mono); transition: border-color 0.15s, box-shadow 0.15s;
   }
-  input[type=text]:focus, input[type=date]:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
-  
-  /* Compact Inputs for Filters */
-  .input-sm { padding: 10px 12px !important; font-size: 13px !important; }
-  
-  .scan-input { font-size: 20px; padding: 16px; text-align: center; letter-spacing: 2px; font-weight: bold;}
-  .bin-input { margin-bottom: 12px; text-transform: uppercase; }
+  input[type=text]:focus, input[type=date]:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
 
-  /* Default Buttons */
-  .btn { border: none; border-radius: 8px; padding: 12px 20px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-  
-  /* Compact Buttons */
-  .btn-sm { padding: 8px 14px; font-size: 12px; border-radius: 6px; }
+  .input-sm { padding: 8px 10px !important; font-size: 13px !important; }
+  .scan-input { font-size: 20px; padding: 14px !important; text-align: center; letter-spacing: 2px; font-weight: bold; border-color: var(--accent) !important; border-width: 2px !important; }
+  .bin-input { margin-bottom: 10px; text-transform: uppercase; }
 
-  .btn-accent { background: var(--accent); color: #fff; }
-  .btn-accent:hover:not(:disabled) { background: var(--accent-hover); }
-  .btn-ghost { background: transparent; color: var(--text-main); border: 1px solid var(--border-light); }
-  .btn-ghost:hover:not(:disabled) { background: var(--bg-hover); }
-  .btn-danger { background: var(--danger-dim); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
-  .btn-danger:hover:not(:disabled) { background: rgba(239,68,68,0.25); }
-  .btn-warning { background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
-  .btn-warning:hover:not(:disabled) { background: rgba(245, 158, 11, 0.25); }
-  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .btn { border: 1px solid transparent; border-radius: var(--radius); padding: 10px 18px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .btn-sm { padding: 7px 12px; font-size: 12px; border-radius: var(--radius); }
 
-  .btn-copy { background: transparent; border: 1px solid var(--border-light); color: var(--text-main); border-radius: 4px; padding: 6px 10px; font-size: 11px; cursor: pointer; margin-left: 8px; text-transform: uppercase; font-weight: 700; transition: all 0.2s; }
+  .btn-accent { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn-accent:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
+  .btn-ghost { background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-light); }
+  .btn-ghost:hover:not(:disabled) { background: var(--bg-hover); border-color: var(--text-muted); }
+  .btn-danger { background: #fff; color: var(--danger); border: 1px solid var(--danger); }
+  .btn-danger:hover:not(:disabled) { background: var(--danger-dim); }
+  .btn-warning { background: #fff; color: var(--warning); border: 1px solid var(--warning); }
+  .btn-warning:hover:not(:disabled) { background: var(--warning-dim); }
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+
+  /* Compact single-row toolbar (search + date range + actions) used in log/history tabs */
+  .toolbar-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  input[type=text].toolbar-search { flex: 1 1 200px; width: auto; min-width: 160px; }
+  input[type=date].toolbar-date { width: 142px; flex: 0 0 auto; }
+  .toolbar-sep { color: var(--text-muted); font-size: 12px; }
+  .toolbar-spacer { flex: 1 1 auto; }
+  .toolbar-count { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+  .toolbar-count b { color: var(--accent); font-size: 14px; font-family: var(--font-mono); }
+  @media (max-width: 700px) { .toolbar-spacer { display: none; } }
+
+  .btn-copy { background: #fff; border: 1px solid var(--border-light); color: var(--text-muted); border-radius: 3px; padding: 5px 9px; font-size: 10px; cursor: pointer; margin-left: 8px; text-transform: uppercase; font-weight: 700; transition: all 0.15s; }
   .btn-copy:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
-  
-  .btn-delete { background: transparent; border: none; color: var(--danger); cursor: pointer; font-size: 14px; padding: 4px; border-radius: 4px; transition: background 0.2s; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; margin: 0 auto; }
+  .btn-delete { background: transparent; border: none; color: var(--danger); cursor: pointer; font-size: 14px; padding: 4px; border-radius: 3px; transition: background 0.15s; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; margin: 0 auto; }
   .btn-delete:hover { background: var(--danger-dim); }
 
-  .result { margin-top: 16px; padding: 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-input); display: flex; flex-direction: column; gap: 6px;}
-  .result.found { border-color: var(--success); background: var(--success-dim); }
-  .result.notfound { border-color: var(--danger); background: var(--danger-dim); }
+  .result { margin-top: 14px; padding: 14px 16px; border-radius: var(--radius); border: 1px solid var(--border); border-left: 3px solid var(--border-light); background: var(--bg-app); display: flex; flex-direction: column; gap: 6px;}
+  .result.found { border-left-color: var(--success); background: var(--success-dim); }
+  .result.notfound { border-left-color: var(--danger); background: var(--danger-dim); }
   .result .sku { font-family: var(--font-mono); color: var(--text-muted); font-size: 12px; }
-  .result .nama { font-size: 16px; font-weight: 700; }
+  .result .nama { font-size: 16px; font-weight: 700; color: var(--text-main); }
 
-  .scroll-table { max-height: calc(100vh - 260px); overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; }
+  .scroll-table { max-height: calc(100vh - 280px); overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius); }
+  .scroll-table.fill { max-height: none; height: 100%; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  thead { position: sticky; top: 0; background-color: var(--bg-hover); z-index: 2; }
-  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); }
-  th { color: var(--text-muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
-  tbody tr:hover { background-color: rgba(255,255,255,0.02); }
+  thead { position: sticky; top: 0; background-color: #f5f6f7; z-index: 2; }
+  th, td { text-align: left; padding: 9px 14px; border-bottom: 1px solid var(--border); }
+  th { color: var(--text-muted); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 2px solid var(--border-light); }
+  tbody tr:hover { background-color: var(--bg-hover); }
   td.sku { font-family: var(--font-mono); color: var(--text-muted); white-space: nowrap; }
 
-  .badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-  .badge.good { background: var(--success-dim); color: var(--success); border: 1px solid rgba(16,185,129,0.3); }
-  .badge.bad { background: var(--danger-dim); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
-  .badge.warning { background: rgba(245,158,11,0.15); color: var(--warning); border: 1px solid rgba(245,158,11,0.3); }
-  .badge.out { background: rgba(139,92,246,0.15); color: #c4b5fd; border: 1px solid rgba(139,92,246,0.3); }
-  .badge.transfer { background: rgba(59, 130, 246, 0.15); color: var(--accent); border: 1px solid rgba(59, 130, 246, 0.3); }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; }
+  .badge.good { background: var(--success-dim); color: var(--success); border: 1px solid rgba(16,126,62,0.35); }
+  .badge.bad { background: var(--danger-dim); color: var(--danger); border: 1px solid rgba(187,0,0,0.3); }
+  .badge.warning { background: var(--warning-dim); color: var(--warning); border: 1px solid rgba(233,115,12,0.35); }
+  .badge.out { background: #f4f0fb; color: #5c3ebf; border: 1px solid rgba(92,62,191,0.3); }
+  .badge.transfer { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(10,110,209,0.3); }
+  .badge.muted { background: var(--bg-hover-strong); color: var(--text-muted); border: 1px solid var(--border-light); }
 
-  /* COMPACT STATS COMPONENTS */
-  .stat { flex: 1; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start;}
-  .stat .num { font-size: 26px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; }
-  .stat .lbl { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;}
-  .stat.highlight .num { color: var(--accent); }
-  .stat.danger .num { color: var(--danger); }
-  
-  .stat-mini { padding: 10px 12px; text-align: center; align-items: center; }
-  .stat-mini .num { font-size: 18px; margin-bottom: 2px; }
-  .stat-mini .lbl { font-size: 10px; }
+  /* COMPACT STATS CARDS (SAP-style KPI tiles) FOR PERFECT ALIGNMENT */
+  .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 8px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 1px 2px rgba(29,45,62,0.06); }
+  .stat-card .num { font-size: 26px; font-weight: 700; color: var(--text-main); line-height: 1; margin-bottom: 6px; font-family: var(--font-mono); }
+  .stat-card .lbl { font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
 
-  .progress-wrap { background: var(--bg-input); border-radius: 4px; overflow: hidden; height: 6px; margin-top: 12px; }
+  .progress-wrap { background: var(--bg-app); border: 1px solid var(--border); border-radius: 3px; overflow: hidden; height: 6px; margin-top: 12px; }
   .progress-bar { height: 100%; background: var(--accent); width: 0%; transition: width 0.2s; }
   .hint { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
   .hidden { display: none !important; }
 
   .toast {
-    position: fixed; top: 24px; right: 24px; 
-    background: var(--bg-card); border: 1px solid var(--border); color: var(--text-main);
-    padding: 16px 24px; border-radius: 8px; font-size: 13px; font-weight: 500;
-    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); z-index: 9999;
-    opacity: 0; transform: translateY(-20px); pointer-events: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: fixed; top: 20px; right: 20px;
+    background: var(--bg-card); border: 1px solid var(--border); border-left: 4px solid var(--border-light); color: var(--text-main);
+    padding: 14px 20px; border-radius: var(--radius); font-size: 13px; font-weight: 500;
+    box-shadow: 0 4px 16px rgba(29,45,62,0.18); z-index: 9999;
+    opacity: 0; transform: translateY(-16px); pointer-events: none; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .toast.show { opacity: 1; transform: translateY(0); }
-  .toast.good { border-left: 4px solid var(--success); }
-  .toast.bad { border-left: 4px solid var(--danger); }
-  .toast.warning { border-left: 4px solid var(--warning); }
+  .toast.good { border-left-color: var(--success); }
+  .toast.bad { border-left-color: var(--danger); }
+  .toast.warning { border-left-color: var(--warning); }
 
   .modal-overlay {
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px);
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(29, 45, 62, 0.5);
     display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.2s;
   }
   .modal-overlay.show { opacity: 1; pointer-events: auto; }
   .modal-content {
-    background: var(--bg-card); width: 90%; max-width: 800px; border-radius: 12px; border: 1px solid var(--border);
-    display: flex; flex-direction: column; max-height: 85vh; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
-    transform: translateY(20px); transition: transform 0.2s;
+    background: var(--bg-card); width: 90%; max-width: 800px; border-radius: var(--radius); border: 1px solid var(--border);
+    display: flex; flex-direction: column; max-height: 85vh; box-shadow: 0 12px 32px rgba(29,45,62,0.25);
+    transform: translateY(16px); transition: transform 0.2s;
   }
   .modal-overlay.show .modal-content { transform: translateY(0); }
-  .modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-  .modal-header h3 { margin: 0; color: var(--text-main); font-size: 16px; }
+  .modal-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #f5f6f7; border-radius: var(--radius) var(--radius) 0 0; }
+  .modal-header h3 { margin: 0; color: var(--text-main); font-size: 15px; font-weight: 700; }
   .btn-close { background: transparent; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; line-height: 1; padding: 0; }
   .btn-close:hover { color: var(--danger); }
   .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
 
   .bin-stat-badge {
-    background: var(--bg-hover); border: 1px solid var(--border-light); padding: 4px 10px; border-radius: 6px;
-    display: inline-flex; align-items: center; gap: 6px; margin-right: 6px; margin-bottom: 6px;
+    background: var(--bg-hover); border: 1px solid var(--border-light); padding: 6px 10px; border-radius: 3px;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    cursor: pointer; transition: all 0.15s;
   }
+  .bin-stat-badge:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-dim); }
   .bin-stat-badge .b-name { font-weight: bold; color: var(--text-main); font-size: 12px; }
-  .bin-stat-badge .b-qty { background: var(--accent); color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; }
-  
-  .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 24px; }
+  .bin-stat-badge .b-qty { background: var(--accent); color: #fff; padding: 2px 6px; border-radius: 3px; font-size: 11px; font-weight: bold; }
+  .bin-stat-badge.empty { background: var(--danger-dim); border-color: var(--danger); }
+  .bin-stat-badge.empty .b-name { color: var(--danger); }
+  .bin-stat-badge.empty .b-qty { background: var(--danger); }
+  #advSearchBinStats { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
+  .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .summary-grid .stat-card { padding: 14px 8px; }
+  @media (max-width: 480px) { .summary-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
+
+<div class="shell-bar">
+  <div class="shell-left">
+    <span class="shell-icon">▤</span>
+    <span>SCAN<span style="color:#8fc4ff;">WMS</span></span>
+    <span class="shell-sep">|</span>
+    <span class="shell-module">Warehouse Management</span>
+  </div>
+  <div class="shell-right">
+    <span>Marves Gudang RTS</span>
+    <span class="shell-avatar">WH</span>
+  </div>
+</div>
 
 <div class="app-container">
   
   <aside class="sidebar">
     <div class="sidebar-header">
-      <h1>SCAN<span>WMS</span></h1>
+      <h1>Navigasi Menu</h1>
     </div>
     <div class="nav-menu">
-      <button class="nav-item active" id="navScan">📷 Scan & Entry (IN)</button>
-      <button class="nav-item" id="navOutbound">📤 Outbound (OUT)</button>
-      <button class="nav-item" id="navPivot">📊 Rekap Pivot</button>
-      <button class="nav-item" id="navSearchTab">🔎 Pencarian Riwayat</button>
-      <button class="nav-item locked" id="navAllScan">🔒 Data Induk (Stok Aktif)</button>
-      <button class="nav-item" id="navMovement">📜 Tracking Movement</button>
-      <button class="nav-item" id="navMaster">📦 Master Produk</button>
+      
+      <div class="nav-group">
+        <div class="nav-group-title">Operasional <span>▼</span></div>
+        <div class="nav-group-items">
+          <button class="nav-item active" id="navScan">📷 Inbound / Retur</button>
+          <button class="nav-item" id="navOutbound">📤 Outbound (Keluar)</button>
+          <button class="nav-item" id="navCycleCount">🔄 Cycle Count Bin</button>
+          <button class="nav-item" id="navTransferBin">🔀 Transfer Bin</button>
+        </div>
+      </div>
+      
+      <div class="nav-group">
+        <div class="nav-group-title">Monitoring <span>▼</span></div>
+        <div class="nav-group-items">
+          <button class="nav-item" id="navSearchTab">🔎 Pencarian Riwayat</button>
+          <button class="nav-item" id="navPivot">📊 Rekap Pivot Sesi</button>
+          <button class="nav-item" id="navMovement">📜 Tracking Movement</button>
+          <button class="nav-item" id="navHistoryCCTF">📜 History CC & Transfer</button>
+        </div>
+      </div>
+      
+      <div class="nav-group">
+        <div class="nav-group-title">Database Induk <span>▼</span></div>
+        <div class="nav-group-items">
+          <button class="nav-item locked" id="navAllScan">🔒 Stok Fisik (Lokal)</button>
+          <button class="nav-item" id="navMaster">📦 Master Produk (Cloud)</button>
+        </div>
+      </div>
+
     </div>
     <div class="sidebar-footer">
       <span id="connDot" class="status-dot"></span><span id="connText">Memeriksa koneksi...</span>
@@ -245,62 +332,83 @@
     </div>
   </div>
 
+  <!-- SKU SUMMARY MODAL -->
+  <div class="modal-overlay" id="skuSummaryModal">
+    <div class="modal-content" style="max-width: 560px;">
+      <div class="modal-header">
+        <h3 id="skuSummaryTitle">📊 Summary SKU</h3>
+        <button class="btn-close" id="btnCloseSkuSummary">&times;</button>
+      </div>
+      <div class="modal-body" id="skuSummaryBody">
+        <div class="hint" style="text-align:center; padding: 20px;">Memuat ringkasan...</div>
+      </div>
+    </div>
+  </div>
+
   <main class="content-area">
     <div class="section-container">
 
       <!-- ============================ TAB: SCAN INBOUND ============================ -->
       <section id="tab-scan">
-        <!-- COMPACT STATS HEADER -->
-        <div style="display: flex; gap: 16px; align-items: stretch; flex-wrap: wrap; margin-bottom: 16px;">
-           <div style="flex: 1; min-width: 250px; display: flex; gap: 8px;">
-              <div class="stat stat-mini highlight">
-                <div class="num" id="statTotal">0</div>
-                <div class="lbl">Total Masuk</div>
+        <div class="dual-grid">
+        <!-- HEADER BAR: Presisi Kiri (Stats) dan Kanan (Address) -->
+        <div style="display: contents;">
+           <!-- Kiri: Mini Stats Sejajar dengan Form -->
+           <div style="display: flex; gap: 10px;">
+              <div class="stat-card" style="margin: 0; flex: 1; border-bottom: 3px solid var(--accent);">
+                <div class="num" id="statTotal" style="color: var(--accent);">0</div>
+                <div class="lbl">Masuk</div>
               </div>
-              <div class="stat stat-mini">
+              <div class="stat-card" style="margin: 0; flex: 1;">
                 <div class="num" id="statFound">0</div>
-                <div class="lbl">Ditemukan</div>
+                <div class="lbl">Sukses</div>
               </div>
-              <div class="stat stat-mini">
-                <div class="num" id="statNotFound">0</div>
-                <div class="lbl">Tdk Dikenali</div>
+              <div class="stat-card" style="margin: 0; flex: 1; border-bottom: 3px solid var(--danger);">
+                <div class="num" id="statNotFound" style="color: var(--danger);">0</div>
+                <div class="lbl">Gagal</div>
               </div>
            </div>
            
-           <div style="flex: 1.5; min-width: 350px; display: flex;">
-              <div class="stat" style="flex: 1; margin: 0; flex-direction: row; justify-content: space-between; align-items: center; padding: 12px 16px;">
-                  <div>
-                      <div style="font-weight: 700; color: var(--text-main); font-size: 13px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
-                          <span style="color:var(--accent); font-size: 14px;">📍</span> Marves Gudang RTS
-                      </div>
-                      <div style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">
-                          Jl.Raya Kresek No.25 RT 1 RW 12, Duri Kosambi,<br>Cengkareng, Jakarta Barat, 11750
-                      </div>
+           <!-- Kanan: Card Address Sejajar dengan Tabel -->
+           <div class="card" style="margin: 0; padding: 12px 20px; display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
+              <div>
+                  <div style="font-weight: 700; color: var(--text-main); font-size: 13px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                      <span style="color:var(--accent); font-size: 14px;">📍</span> Marves Gudang RTS
                   </div>
-                  <div style="text-align: right; border-left: 1px solid var(--border); padding-left: 16px; min-width: 110px;">
-                      <div id="liveTime" style="font-size: 22px; font-weight: 800; color: var(--text-main); font-family: var(--font-mono); letter-spacing: 1px;">00:00:00</div>
-                      <div id="liveDate" style="font-size: 10px; color: var(--accent); text-transform: uppercase; font-weight: 700; margin-top: 4px;">-</div>
+                  <div style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">
+                      Jl.Raya Kresek No.25 RT 1 RW 12, Duri Kosambi,<br>Cengkareng, Jakarta Barat
                   </div>
+              </div>
+              <div style="text-align: right; border-left: 1px solid var(--border); padding-left: 16px;">
+                  <div class="liveTime" style="font-size: 22px; font-weight: 800; color: var(--text-main); font-family: var(--font-mono); letter-spacing: 1px;">00:00</div>
+                  <div class="liveDate" style="font-size: 10px; color: var(--accent); text-transform: uppercase; font-weight: 700; margin-top: 4px;">-</div>
               </div>
            </div>
         </div>
 
-        <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
-          <div style="flex: 1; min-width: 300px;">
-            <div class="card">
-              <h3 class="card-header">Pemindaian INBOUND (Masuk)</h3>
-              <input id="binInput" class="bin-input input-sm" type="text" placeholder="Masukkan Lokasi Bin (Opsional)" autocomplete="off">
+        <!-- BODY BAR: Kiri (Form) dan Kanan (Tabel) -->
+        <div style="display: contents;">
+          <div style="display: flex; flex-direction: column;">
+            <div class="card" style="margin: 0; flex: 1;">
+              <h3 class="card-header">Pemindaian INBOUND / RETUR</h3>
+              <select id="inboundType" class="input-sm" style="margin-bottom: 12px; font-weight: bold; color: var(--accent);">
+                 <option value="INBOUND">Tipe: BARANG BARU (INBOUND)</option>
+                 <option value="RETUR">Tipe: BARANG KEMBALI (RETUR)</option>
+              </select>
+              <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <input id="binInput" class="bin-input input-sm" type="text" placeholder="Lokasi Bin (Opsional)" autocomplete="off" style="margin-bottom: 0; flex: 1;">
+                <input id="docNoInput" class="input-sm" type="text" placeholder="No. Dokumen Inbound" autocomplete="off" style="flex: 1;">
+              </div>
               <input id="scanInput" class="scan-input" type="text" placeholder="Tembak barcode..." autocomplete="off" autofocus>
               <div class="hint" style="margin-top:10px;">Scanner otomatis mengetik + Enter. Menambah stok lokal.</div>
               <div id="scanResult"></div>
             </div>
           </div>
 
-          <div style="flex: 1.5; min-width: 400px;">
-            <div class="card" style="display: flex; flex-direction: column; height: 100%;">
+          <div style="display: flex; flex-direction: column;">
+            <div class="card" style="margin: 0; display: flex; flex-direction: column; flex: 1;">
               <h3 class="card-header">Log Masuk Sesi Ini</h3>
               <div class="btn-row" style="margin-bottom: 12px;">
-                <button class="btn btn-warning btn-sm" id="btnCycleCount">🔄 Cycle Count Bin</button>
                 <button class="btn btn-danger btn-sm" id="btnClearScan">🗑️ Tutup Sesi (Clear UI)</button>
               </div>
               <div class="scroll-table" style="flex: 1;">
@@ -312,31 +420,52 @@
             </div>
           </div>
         </div>
+        </div>
       </section>
 
       <!-- ============================ TAB: OUTBOUND ============================ -->
       <section id="tab-outbound" class="hidden">
-        <!-- COMPACT STATS HEADER OUTBOUND -->
-        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; max-width: 400px;">
-           <div class="stat stat-mini danger" style="flex: 1;">
-             <div class="num" id="outStatTotal">0</div>
-             <div class="lbl">Total Keluar</div>
+        <div class="dual-grid">
+        <!-- HEADER BAR: Presisi Kiri (Stats) dan Kanan (Address) -->
+        <div style="display: contents;">
+           <!-- Kiri: Mini Stats Sejajar dengan Form -->
+           <div style="display: flex; gap: 10px;">
+              <div class="stat-card" style="margin: 0; flex: 1; border-bottom: 3px solid var(--danger);">
+                <div class="num" id="outStatTotal" style="color: var(--danger);">0</div>
+                <div class="lbl">Keluar</div>
+              </div>
+              <div class="stat-card" style="margin: 0; flex: 1;">
+                <div class="num" id="outStatFound">0</div>
+                <div class="lbl">Sukses</div>
+              </div>
+              <div class="stat-card" style="margin: 0; flex: 1; border-bottom: 3px solid var(--danger);">
+                <div class="num" id="outStatNotFound" style="color: var(--danger);">0</div>
+                <div class="lbl">Gagal</div>
+              </div>
            </div>
-           <div class="stat stat-mini" style="flex: 1;">
-             <div class="num" id="outStatFound">0</div>
-             <div class="lbl">Ditemukan</div>
-           </div>
-           <div class="stat stat-mini" style="flex: 1;">
-             <div class="num" id="outStatNotFound">0</div>
-             <div class="lbl">Tdk Dikenali</div>
+           
+           <!-- Kanan: Card Address Sejajar dengan Tabel -->
+           <div class="card" style="margin: 0; padding: 12px 20px; display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
+              <div>
+                  <div style="font-weight: 700; color: var(--text-main); font-size: 13px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                      <span style="color:var(--accent); font-size: 14px;">📍</span> Marves Gudang RTS
+                  </div>
+                  <div style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">
+                      Jl.Raya Kresek No.25 RT 1 RW 12, Duri Kosambi,<br>Cengkareng, Jakarta Barat
+                  </div>
+              </div>
+              <div style="text-align: right; border-left: 1px solid var(--border); padding-left: 16px;">
+                  <div class="liveTime" style="font-size: 22px; font-weight: 800; color: var(--text-main); font-family: var(--font-mono); letter-spacing: 1px;">00:00</div>
+                  <div class="liveDate" style="font-size: 10px; color: var(--accent); text-transform: uppercase; font-weight: 700; margin-top: 4px;">-</div>
+              </div>
            </div>
         </div>
 
-        <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
-          <div style="flex: 1; min-width: 300px;">
-            <div class="card">
+        <!-- BODY BAR: Kiri (Form) dan Kanan (Tabel) -->
+        <div style="display: contents;">
+          <div style="display: flex; flex-direction: column;">
+            <div class="card" style="margin: 0; flex: 1;">
               <h3 class="card-header">Pemindaian OUTBOUND (Keluar)</h3>
-              <div class="hint" style="margin-bottom:12px;">Setiap scan di sini akan <b>mencari dan menghapus stok fisik lokal</b> yang ada di Data Induk, lalu mencatatnya ke Tracking Movement.</div>
               <input id="outBinInput" class="bin-input input-sm" type="text" placeholder="Target Bin Barang Keluar (Wajib)" autocomplete="off">
               <input id="outRemarkInput" class="bin-input input-sm" type="text" placeholder="Remark / Catatan (Cth: SO-999)" autocomplete="off">
               <input id="outScanInput" class="scan-input" type="text" placeholder="Tembak barcode keluar..." autocomplete="off">
@@ -344,8 +473,8 @@
             </div>
           </div>
 
-          <div style="flex: 1.5; min-width: 400px;">
-            <div class="card" style="display: flex; flex-direction: column; height: 100%;">
+          <div style="display: flex; flex-direction: column;">
+            <div class="card" style="margin: 0; display: flex; flex-direction: column; flex: 1;">
               <h3 class="card-header">Log Keluar Sesi Ini</h3>
               <div class="btn-row" style="margin-bottom: 12px;">
                 <button class="btn btn-danger btn-sm" id="btnClearOutboundScan">🗑️ Tutup Sesi Outbound</button>
@@ -359,11 +488,156 @@
             </div>
           </div>
         </div>
+        </div>
+      </section>
+
+      <!-- ============================ TAB: CYCLE COUNT STAGING ============================ -->
+      <section id="tab-cyclecount" class="hidden">
+        <div class="dual-grid">
+        <!-- HEADER BAR: Presisi Kiri (Stats) dan Kanan (Address) -->
+        <div style="display: contents;">
+           <!-- Kiri: Mini Stats Sejajar dengan Form -->
+           <div style="display: flex; gap: 10px;">
+              <div class="stat-card" style="margin: 0; flex: 1; border-bottom: 3px solid var(--warning);">
+                <div class="num" id="ccStatTotal" style="color: var(--warning);">0</div>
+                <div class="lbl">Staging</div>
+              </div>
+              <div class="stat-card" style="margin: 0; flex: 1;">
+                <div class="num" id="ccStatFound">0</div>
+                <div class="lbl">Sukses</div>
+              </div>
+              <div class="stat-card" style="margin: 0; flex: 1; border-bottom: 3px solid var(--danger);">
+                <div class="num" id="ccStatNotFound" style="color: var(--danger);">0</div>
+                <div class="lbl">Gagal</div>
+              </div>
+           </div>
+           
+           <!-- Kanan: Card Address Sejajar dengan Tabel -->
+           <div class="card" style="margin: 0; padding: 12px 20px; display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
+              <div>
+                  <div style="font-weight: 700; color: var(--text-main); font-size: 13px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                      <span style="color:var(--accent); font-size: 14px;">📍</span> Marves Gudang RTS
+                  </div>
+                  <div style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">
+                      Jl.Raya Kresek No.25 RT 1 RW 12, Duri Kosambi,<br>Cengkareng, Jakarta Barat
+                  </div>
+              </div>
+              <div style="text-align: right; border-left: 1px solid var(--border); padding-left: 16px;">
+                  <div class="liveTime" style="font-size: 22px; font-weight: 800; color: var(--text-main); font-family: var(--font-mono); letter-spacing: 1px;">00:00</div>
+                  <div class="liveDate" style="font-size: 10px; color: var(--accent); text-transform: uppercase; font-weight: 700; margin-top: 4px;">-</div>
+              </div>
+           </div>
+        </div>
+
+        <!-- BODY BAR: Kiri (Form) dan Kanan (Tabel) -->
+        <div style="display: contents;">
+          <div style="display: flex; flex-direction: column;">
+            <div class="card" style="margin: 0; flex: 1;">
+              <h3 class="card-header">Pemindaian Cycle Count (Staging)</h3>
+              <input id="ccBinInput" class="bin-input input-sm" type="text" placeholder="Target Bin Cycle Count (Wajib)" autocomplete="off">
+              <input id="ccScanInput" class="scan-input" type="text" placeholder="Tembak barcode..." autocomplete="off">
+              <div id="ccScanResult"></div>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-direction: column;">
+            <div class="card" style="margin: 0; display: flex; flex-direction: column; flex: 1;">
+              <h3 class="card-header">Data Staging Sesi Ini</h3>
+              <div class="btn-row" style="margin-bottom: 12px;">
+                <button class="btn btn-accent btn-sm" id="btnExecCC">🚀 Eksekusi Cycle Count</button>
+                <button class="btn btn-danger btn-sm" id="btnClearCC">🗑️ Batal & Bersihkan Staging</button>
+              </div>
+              <div class="scroll-table" style="flex: 1;">
+                <table>
+                  <thead><tr><th>Bin Target</th><th>SKU</th><th>Nama Barang</th><th style="text-align:center;">Aksi</th></tr></thead>
+                  <tbody id="ccLogBody">
+                     <tr><td colspan="4" class="hint" style="text-align:center;">Belum ada data staging.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+      </section>
+
+      <!-- ============================ TAB: TRANSFER BIN ============================ -->
+      <section id="tab-transferbin" class="hidden">
+        <div class="dual-grid">
+        <!-- HEADER BAR: Presisi Kiri (Stats) dan Kanan (Address) -->
+        <div style="display: contents;">
+           <!-- Kiri: Mini Stats Sejajar dengan Form -->
+           <div style="display: flex; gap: 10px;">
+              <div class="stat-card" style="margin: 0; flex: 1; border-bottom: 3px solid var(--accent);">
+                <div class="num" id="tfStatTotal" style="color: var(--accent);">0</div>
+                <div class="lbl">Staging</div>
+              </div>
+              <div class="stat-card" style="margin: 0; flex: 1;">
+                <div class="num" id="tfStatFound">0</div>
+                <div class="lbl">Sukses</div>
+              </div>
+              <div class="stat-card" style="margin: 0; flex: 1; border-bottom: 3px solid var(--danger);">
+                <div class="num" id="tfStatNotFound" style="color: var(--danger);">0</div>
+                <div class="lbl">Gagal</div>
+              </div>
+           </div>
+           
+           <!-- Kanan: Card Address Sejajar dengan Tabel -->
+           <div class="card" style="margin: 0; padding: 12px 20px; display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
+              <div>
+                  <div style="font-weight: 700; color: var(--text-main); font-size: 13px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                      <span style="color:var(--accent); font-size: 14px;">📍</span> Marves Gudang RTS
+                  </div>
+                  <div style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">
+                      Jl.Raya Kresek No.25 RT 1 RW 12, Duri Kosambi,<br>Cengkareng, Jakarta Barat
+                  </div>
+              </div>
+              <div style="text-align: right; border-left: 1px solid var(--border); padding-left: 16px;">
+                  <div class="liveTime" style="font-size: 22px; font-weight: 800; color: var(--text-main); font-family: var(--font-mono); letter-spacing: 1px;">00:00</div>
+                  <div class="liveDate" style="font-size: 10px; color: var(--accent); text-transform: uppercase; font-weight: 700; margin-top: 4px;">-</div>
+              </div>
+           </div>
+        </div>
+
+        <!-- BODY BAR: Kiri (Form) dan Kanan (Tabel) -->
+        <div style="display: contents;">
+          <div style="display: flex; flex-direction: column;">
+            <div class="card" style="margin: 0; flex: 1;">
+              <h3 class="card-header">Pemindaian Transfer Bin (Staging)</h3>
+              <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <input id="tfBinFromInput" class="bin-input input-sm" type="text" placeholder="Bin Asal (Wajib)" autocomplete="off" style="margin-bottom: 0; flex: 1;">
+                <input id="tfBinToInput" class="bin-input input-sm" type="text" placeholder="Bin Tujuan (Wajib)" autocomplete="off" style="margin-bottom: 0; flex: 1;">
+              </div>
+              <input id="tfScanInput" class="scan-input" type="text" placeholder="Tembak barcode..." autocomplete="off">
+              <div class="hint" style="margin-top:10px;">Item akan ditampung dahulu di Staging. Stok baru berpindah dari Bin Asal ke Bin Tujuan di Data Induk setelah klik "Eksekusi Transfer".</div>
+              <div id="tfScanResult"></div>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-direction: column;">
+            <div class="card" style="margin: 0; display: flex; flex-direction: column; flex: 1;">
+              <h3 class="card-header">Data Staging Transfer Sesi Ini</h3>
+              <div class="btn-row" style="margin-bottom: 12px;">
+                <button class="btn btn-accent btn-sm" id="btnExecTransfer">🚀 Eksekusi Transfer</button>
+                <button class="btn btn-danger btn-sm" id="btnClearTransfer">🗑️ Batal & Bersihkan Staging</button>
+              </div>
+              <div class="scroll-table" style="flex: 1;">
+                <table>
+                  <thead><tr><th>Bin Asal</th><th>Bin Tujuan</th><th>SKU</th><th>Nama Barang</th><th style="text-align:center;">Aksi</th></tr></thead>
+                  <tbody id="tfLogBody">
+                     <tr><td colspan="5" class="hint" style="text-align:center;">Belum ada data staging.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
       </section>
 
       <!-- ============================ TAB: PIVOT (REKAP) ============================ -->
       <section id="tab-pivot" class="hidden">
-        <div class="card" style="height: 100%; display: flex; flex-direction: column;">
+        <div class="card" style="height: 100%; display: flex; flex-direction: column; margin-bottom: 0;">
           <h3 class="card-header">Rekap Pivot Sesi Aktif</h3>
           <div class="hint" style="margin-bottom:12px;">Tabel ini hanya menghitung kalkulasi data yang sedang Anda scan (Masuk dan Keluar) pada sesi yang sedang berjalan.</div>
           <div class="btn-row">
@@ -382,7 +656,7 @@
 
       <!-- ============================ TAB: PENCARIAN RIWAYAT ========================= -->
       <section id="tab-search" class="hidden" style="height: 100%;">
-        <div class="card" style="display: flex; flex-direction: column; height: 100%; padding: 20px;">
+        <div class="card" style="display: flex; flex-direction: column; height: 100%; padding: 20px; margin-bottom: 0;">
           <h3 class="card-header" style="margin-bottom: 8px;">Pencarian & Eksekusi Cepat</h3>
           <div class="hint" style="margin-bottom: 12px;">Cari stok aktif yang ada di Data Induk. Anda bisa langsung melakukan Transfer Bin atau Sales dari tabel ini.</div>
           
@@ -392,12 +666,17 @@
                   <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: bold;">Ditemukan:</span>
                   <span class="num" id="advSearchQty" style="font-size: 16px; font-weight: 800; color: var(--accent);">0</span>
               </div>
+              <button class="btn btn-accent btn-sm" id="btnCreateBin" title="Buat Bin Baru (Perlu Password)">➕ Buat Bin</button>
+              <button class="btn btn-danger btn-sm" id="btnDeleteBin" title="Hapus Bin (Perlu Password)">🗑️ Hapus Bin</button>
           </div>
           
           <div style="margin-bottom: 16px; padding: 12px; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border);">
-              <div class="lbl" style="font-size: 10px; margin-bottom: 8px; color: var(--text-muted); font-weight: bold; letter-spacing: 0.5px;">📊 STOK AKTIF PER BIN UNTUK PENCARIAN INI</div>
+              <div class="lbl" style="font-size: 10px; margin-bottom: 8px; color: var(--text-muted); font-weight: bold; letter-spacing: 0.5px; display:flex; align-items:center; justify-content:space-between;">
+                  <span>📊 OVERVIEW SEMUA BIN (KLIK BIN UNTUK LIHAT ISI)</span>
+                  <span style="display:flex; align-items:center; gap:4px; font-weight: normal; text-transform:none;"><span style="width:9px;height:9px;border-radius:50%;background:var(--danger); display:inline-block;"></span> Bin Kosong / Perlu Restock</span>
+              </div>
               <div id="advSearchBinStats">
-                  <span class="hint" style="font-size:11px;">Mulai pencarian untuk melihat sebaran Bin...</span>
+                  <span class="hint" style="font-size:11px;">Memuat data Bin...</span>
               </div>
           </div>
           
@@ -414,13 +693,13 @@
 
       <!-- ============================ TAB: DATA INDUK ======================== -->
       <section id="tab-allscan" class="hidden" style="height: 100%;">
-        <div class="card" style="display: flex; flex-direction: column; height: 100%;">
+        <div class="card" style="display: flex; flex-direction: column; height: 100%; margin-bottom: 0;">
           <h3 class="card-header" style="margin-bottom: 8px;">Data Induk (Master Active Inventory Lokal)</h3>
-          <div class="hint" style="margin-bottom: 12px;">Ini adalah daftar fisik barang yang <b>sedang berada di dalam gudang</b> tersimpan di Lokal Browser. Tidak terhubung ke cloud.</div>
+          <div class="hint" style="margin-bottom: 12px;">Ini adalah daftar fisik barang yang <b>sedang berada di dalam gudang</b> tersimpan di Lokal Browser (Tanpa Sinkronisasi Cloud).</div>
 
           <div style="display: flex; gap: 12px; margin-bottom: 16px; justify-content: space-between; align-items: center; flex-wrap: wrap;">
              <div style="display: flex; align-items: center; gap: 8px; background: var(--bg-input); border: 1px solid var(--border); padding: 8px 16px; border-radius: 6px;">
-                <span style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: bold;">Total Fisik Item Tersedia:</span>
+                <span style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: bold;">Total Item:</span>
                 <span class="num" id="statAllScanQty" style="font-size: 18px; font-weight: 800; color: var(--accent);">0</span>
              </div>
              
@@ -449,43 +728,24 @@
 
       <!-- ============================ TAB: TRACKING MOVEMENT ======================== -->
       <section id="tab-movement" class="hidden" style="height: 100%;">
-        <div class="card" style="display: flex; flex-direction: column; height: 100%; padding: 20px;">
-          <h3 class="card-header" style="margin-bottom: 8px;">Tracking Movement (Log History Lokal)</h3>
-          <div class="hint" style="margin-bottom: 12px;">Seluruh aktivitas historis lokal dicatat di sini. (Format Tanggal: DD/MM/YYYY)</div>
+        <div class="card" style="display: flex; flex-direction: column; height: 100%; padding: 20px; margin-bottom: 0;">
+          <h3 class="card-header" style="margin-bottom: 10px;">Tracking Movement (IN/OUT/SALES/RETUR)</h3>
           
-          <!-- Compact Filters -->
-          <div style="display: flex; gap: 8px; margin-bottom: 12px; align-items: flex-end; flex-wrap: wrap;">
-            <div style="flex: 1.5; min-width: 160px;">
-               <div class="lbl" style="font-size:10px; margin-bottom:4px; color:var(--text-muted)">Cari SKU / Keyword</div>
-               <input type="text" id="moveSearchSku" class="input-sm" placeholder="Ketik pencarian..." autocomplete="off">
-            </div>
-            <div style="flex: 1; min-width: 120px;">
-               <div class="lbl" style="font-size:10px; margin-bottom:4px; color:var(--text-muted)">Dari Tanggal</div>
-               <input type="date" id="moveStartDate" class="input-sm">
-            </div>
-            <div style="flex: 1; min-width: 120px;">
-               <div class="lbl" style="font-size:10px; margin-bottom:4px; color:var(--text-muted)">Sampai Tanggal</div>
-               <input type="date" id="moveEndDate" class="input-sm">
-            </div>
-            <div style="display: flex; gap: 6px;">
-               <button class="btn btn-accent btn-sm" id="btnSearchMove" style="padding: 10px 14px;">🔍 Cari</button>
-               <button class="btn btn-ghost btn-sm" id="btnResetMove" style="padding: 10px 14px;">🔄 Reset</button>
-            </div>
+          <div class="toolbar-row">
+            <input type="text" id="moveSearchSku" class="input-sm toolbar-search" placeholder="🔍 Cari SKU / Keyword..." autocomplete="off">
+            <button class="btn btn-ghost btn-sm" id="btnSkuSummary" title="Lihat Ringkasan Total IN/OUT/RETUR/SALES untuk SKU ini">📊 Summary</button>
+            <input type="date" id="moveStartDate" class="input-sm toolbar-date" title="Dari Tanggal">
+            <span class="toolbar-sep">–</span>
+            <input type="date" id="moveEndDate" class="input-sm toolbar-date" title="Sampai Tanggal">
+            <button class="btn btn-accent btn-sm" id="btnSearchMove">Cari</button>
+            <button class="btn btn-ghost btn-sm" id="btnResetMove">Reset</button>
+            <div class="toolbar-spacer"></div>
+            <span class="toolbar-count">Log: <b id="statMoveQty">0</b></span>
+            <button class="btn btn-ghost btn-sm" id="btnExportMovements" title="Export Excel Tracking">⬇️ Export</button>
+            <button class="btn btn-danger btn-sm" id="btnClearMovements" title="Bersihkan Log Tracking Lokal">🗑️</button>
           </div>
           
-          <div style="display: flex; gap: 12px; margin-bottom: 12px; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-             <div style="display: flex; align-items: center; gap: 8px; background: var(--bg-input); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px;">
-                <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: bold;">Log Ditampilkan:</span>
-                <span class="num" id="statMoveQty" style="font-size: 16px; font-weight: 800; color: var(--accent);">0</span>
-             </div>
-             
-             <div style="display: flex; gap: 6px;">
-                <button class="btn btn-accent btn-sm" id="btnExportMovements" title="Export Excel Tracking">⬇️ Export Log</button>
-                <button class="btn btn-danger btn-sm" id="btnClearMovements" title="Bersihkan Log Tracking Lokal">🗑️ Clear Log</button>
-             </div>
-          </div>
-          
-          <div class="scroll-table" style="flex: 1;">
+          <div class="scroll-table fill">
             <table>
               <thead><tr><th>Waktu Eksekusi</th><th>Tipe</th><th>Bin Info</th><th>SKU</th><th>Keterangan / Nama</th></tr></thead>
               <tbody id="movementBody">
@@ -499,48 +759,67 @@
         </div>
       </section>
 
+      <!-- ============================ TAB: HISTORY CC & TRANSFER ======================== -->
+      <section id="tab-historycctf" class="hidden" style="height: 100%;">
+        <div class="card" style="display: flex; flex-direction: column; height: 100%; padding: 20px; margin-bottom: 0;">
+          <h3 class="card-header" style="margin-bottom: 10px;">History Cycle Count & Transfer Bin</h3>
+          
+          <div class="toolbar-row">
+            <input type="text" id="cctfSearchSku" class="input-sm toolbar-search" placeholder="🔍 Cari SKU / Bin..." autocomplete="off">
+            <input type="date" id="cctfStartDate" class="input-sm toolbar-date" title="Dari Tanggal">
+            <span class="toolbar-sep">–</span>
+            <input type="date" id="cctfEndDate" class="input-sm toolbar-date" title="Sampai Tanggal">
+            <button class="btn btn-accent btn-sm" id="btnSearchCCTF">Cari</button>
+            <button class="btn btn-ghost btn-sm" id="btnResetCCTF">Reset</button>
+            <div class="toolbar-spacer"></div>
+            <span class="toolbar-count">Log: <b id="statCCTFQty">0</b></span>
+            <button class="btn btn-ghost btn-sm" id="btnExportCCTF" title="Export Excel">⬇️ Export</button>
+            <button class="btn btn-danger btn-sm" id="btnClearCCTF" title="Bersihkan Log Lokal">🗑️</button>
+          </div>
+          
+          <div class="scroll-table fill">
+            <table>
+              <thead><tr><th>Waktu Eksekusi</th><th>Tipe</th><th>Bin Info</th><th>SKU</th><th>Keterangan</th></tr></thead>
+              <tbody id="cctfBody">
+                <tr><td colspan="5" class="hint" style="text-align:center;">Memuat data...</td></tr>
+              </tbody>
+            </table>
+            <div id="cctfLoadMoreContainer" style="text-align:center; padding: 12px; display:none;">
+              <button class="btn btn-ghost btn-sm" id="btnLoadMoreCCTF">Tampilkan Lebih Banyak Log ↓</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- ============================ TAB: MASTER ============================ -->
       <section id="tab-master" class="hidden">
-        <div class="stat-row">
-          <div class="stat"><div class="num" id="statMasterLocal">0</div><div class="lbl">Tersimpan di Cache Lokal</div></div>
-          <!-- Statistik Cloud dihapus sesuai instruksi -->
-        </div>
+        <div style="max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
+          
+          <div class="stat-card" style="border-bottom: 3px solid var(--accent); padding: 24px; margin: 0;">
+            <div class="num" id="statMasterLocal" style="color: var(--accent); font-size: 36px;">0</div>
+            <div class="lbl" style="font-size: 12px;">Total Master SKU (Cache Lokal)</div>
+          </div>
 
-        <div style="display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap;">
-          <div style="flex: 1; min-width: 350px;">
-            <div class="card">
-              <h3 class="card-header">Sinkronisasi Cloud</h3>
-              <div class="hint" style="margin-bottom: 16px;">Satu-satunya fitur yang terhubung ke Cloud. Tarik data master produk terbaru dari Firestore.</div>
-              <button class="btn btn-ghost" style="width:100%" id="btnPullMaster">⬇️ Tarik Master Data Cloud ke Lokal</button>
+          <div class="card" style="margin: 0;">
+            <h3 class="card-header">Sinkronisasi Cloud</h3>
+            <div class="hint" style="margin-bottom: 16px;">Satu-satunya fitur yang terhubung ke Cloud. Tarik data master produk terbaru dari Firestore.</div>
+            <button class="btn btn-ghost" style="width:100%" id="btnPullMaster">⬇️ Tarik Master Data Cloud ke Lokal</button>
+          </div>
+          
+          <div class="card" style="margin: 0;">
+            <h3 class="card-header">Upload Master Baru (Excel/CSV)</h3>
+            <div class="hint">Kolom wajib: <b>SKU</b> dan <b>Nama Barang</b>. Data menimpa (upsert) produk SKU yang sama di cloud.</div>
+            <div style="margin-top:16px;">
+              <input type="file" id="fileMaster" class="input-sm" accept=".xlsx,.xls,.csv">
             </div>
-            
-            <div class="card">
-              <h3 class="card-header">Upload Master Baru (Excel/CSV)</h3>
-              <div class="hint">Kolom wajib: <b>SKU</b> dan <b>Nama Barang</b>. Data akan menimpa (upsert) produk dengan SKU yang sama di database cloud.</div>
-              <div style="margin-top:16px;">
-                <input type="file" id="fileMaster" class="input-sm" accept=".xlsx,.xls,.csv">
-              </div>
-              <div id="masterPreviewInfo" class="hint" style="margin-top:12px; font-weight: 600;"></div>
-              <div class="progress-wrap"><div class="progress-bar" id="masterProgress"></div></div>
-              <div class="btn-row" style="margin-top: 16px;">
-                <button class="btn btn-accent btn-sm" id="btnUploadMaster" disabled>🚀 Simpan ke Cloud</button>
-                <button class="btn btn-ghost btn-sm" id="btnClearFile">Batal</button>
-              </div>
+            <div id="masterPreviewInfo" class="hint" style="margin-top:12px; font-weight: 600; color: var(--accent);"></div>
+            <div class="progress-wrap"><div class="progress-bar" id="masterProgress"></div></div>
+            <div class="btn-row" style="margin-top: 16px;">
+              <button class="btn btn-accent btn-sm" id="btnUploadMaster" disabled>🚀 Simpan ke Cloud</button>
+              <button class="btn btn-ghost btn-sm" id="btnClearFile">Batal</button>
             </div>
           </div>
 
-          <div style="flex: 1.5; min-width: 400px;">
-            <div class="card">
-              <div class="scroll-table">
-                <table>
-                  <thead><tr><th>SKU</th><th>Nama Barang</th></tr></thead>
-                  <tbody id="masterPreviewBody">
-                    <tr><td colspan="2" class="hint" style="text-align:center;">Pilih file excel untuk mempratinjau data</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -549,30 +828,30 @@
 </div>
 
 <script>
+// Toggle Accordion Group Logic
+document.querySelectorAll('.nav-group-title').forEach(title => {
+    title.addEventListener('click', () => {
+        title.parentElement.classList.toggle('collapsed');
+    });
+});
+
 function updateClock() {
   const now = new Date();
   const timeString = now.toLocaleTimeString("id-ID", { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   const dateString = now.toLocaleDateString("id-ID", { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
-  const timeEl = document.getElementById("liveTime");
-  const dateEl = document.getElementById("liveDate");
-  if(timeEl) timeEl.textContent = timeString;
-  if(dateEl) dateEl.textContent = dateString;
+  
+  document.querySelectorAll(".liveTime").forEach(el => el.textContent = timeString);
+  document.querySelectorAll(".liveDate").forEach(el => el.textContent = dateString);
 }
 setInterval(updateClock, 1000);
 updateClock();
 
-function generateID() {
-  return "sc_" + Date.now() + "_" + Math.random().toString(36).substring(2, 9);
-}
-function generateMoveID() {
-  return "mv_" + Date.now() + "_" + Math.random().toString(36).substring(2, 9);
-}
+function generateID() { return "sc_" + Date.now() + "_" + Math.random().toString(36).substring(2, 9); }
+function generateMoveID() { return "mv_" + Date.now() + "_" + Math.random().toString(36).substring(2, 9); }
 
 function parseIdDate(dateStr) {
   if (!dateStr) return null;
-  if(typeof dateStr === 'number') {
-      return new Date((dateStr - (25567 + 2)) * 86400 * 1000).toISOString();
-  }
+  if(typeof dateStr === 'number') { return new Date((dateStr - (25567 + 2)) * 86400 * 1000).toISOString(); }
   const str = String(dateStr).trim();
   const parts = str.split(', ');
   if (parts.length === 2) {
@@ -620,7 +899,6 @@ function openIDB(){
   });
 }
 
-// === IndexedDB Helpers ===
 function idbPutMasterBulk(items){
   return new Promise((resolve)=>{
     const tx = idb.transaction("master", "readwrite");
@@ -716,17 +994,9 @@ function idbClearMovements(){
   });
 }
 
-// === Logging Function ===
-async function recordMovement(ref_id, type, sku, nama, bin, remark) {
+async function recordMovement(ref_id, type, sku, nama, bin, remark, docNo = "") {
     const moveEntry = {
-        id: generateMoveID(),
-        ref_id: ref_id,
-        type: type,
-        sku: sku,
-        nama: nama,
-        bin: bin,
-        remark: remark,
-        ts: new Date().toISOString()
+        id: generateMoveID(), ref_id: ref_id, type: type, sku: sku, nama: nama, bin: bin, remark: remark, docNo: docNo || "", ts: new Date().toISOString()
     };
     await idbAddMovement(moveEntry);
 }
@@ -738,29 +1008,26 @@ function toast(msg, type=""){
   t.className = "toast show " + type;
   setTimeout(()=>t.className = "toast " + type, 2500);
 }
-
 function setConn(ok, text){
   const dot = document.getElementById("connDot");
   const txt = document.getElementById("connText");
   if(dot) dot.className = "status-dot" + (ok ? " on" : " off");
   if(txt) txt.textContent = text;
 }
-
 window.copyToClipboard = function(text) {
-  navigator.clipboard.writeText(text).then(()=>{
-    toast("✓ Tersalin: " + text, "good");
-  }).catch(err=>{
-    toast("Gagal menyalin", "bad");
-  });
+  navigator.clipboard.writeText(text).then(()=>{ toast("✓ Tersalin: " + text, "good"); }).catch(err=>{ toast("Gagal menyalin", "bad"); });
 };
 
 const tabNames = [
   { id: "scan", nav: "navScan", tab: "tab-scan" },
   { id: "outbound", nav: "navOutbound", tab: "tab-outbound" },
+  { id: "cyclecount", nav: "navCycleCount", tab: "tab-cyclecount" },
+  { id: "transferbin", nav: "navTransferBin", tab: "tab-transferbin" },
   { id: "pivot", nav: "navPivot", tab: "tab-pivot" },
   { id: "search", nav: "navSearchTab", tab: "tab-search" },
   { id: "allscan", nav: "navAllScan", tab: "tab-allscan" },
   { id: "movement", nav: "navMovement", tab: "tab-movement" },
+  { id: "historycctf", nav: "navHistoryCCTF", tab: "tab-historycctf" },
   { id: "master", nav: "navMaster", tab: "tab-master" }
 ];
 
@@ -788,6 +1055,8 @@ function switchTab(activeId) {
   
   if(activeId === "scan") document.getElementById("scanInput").focus();
   if(activeId === "outbound") document.getElementById("outScanInput").focus();
+  if(activeId === "cyclecount") document.getElementById("ccScanInput").focus();
+  if(activeId === "transferbin") document.getElementById("tfScanInput").focus();
   if(activeId === "pivot") loadPivot();
   if(activeId === "search") {
     document.getElementById("advSearchInput").focus();
@@ -800,24 +1069,35 @@ function switchTab(activeId) {
     document.getElementById("moveEndDate").value = "";
     loadMovements();
   }
+  if(activeId === "historycctf") {
+    document.getElementById("cctfSearchSku").value = "";
+    document.getElementById("cctfStartDate").value = "";
+    document.getElementById("cctfEndDate").value = "";
+    loadHistoryCCTF();
+  }
   if(activeId === "master") refreshMasterStats();
 }
 
 document.getElementById("navScan").onclick = () => switchTab("scan");
 document.getElementById("navOutbound").onclick = () => switchTab("outbound");
+document.getElementById("navCycleCount").onclick = () => switchTab("cyclecount");
+document.getElementById("navTransferBin").onclick = () => switchTab("transferbin");
 document.getElementById("navPivot").onclick = () => switchTab("pivot");
 document.getElementById("navSearchTab").onclick = () => switchTab("search");
 document.getElementById("navAllScan").onclick = () => switchTab("allscan");
 document.getElementById("navMovement").onclick = () => switchTab("movement");
+document.getElementById("navHistoryCCTF").onclick = () => switchTab("historycctf");
 document.getElementById("navMaster").onclick = () => switchTab("master");
 
 /* ============================================================
-   4) INBOUND SCAN LOGIC (Data Lokal Only)
+   4) INBOUND / RETUR SCAN LOGIC (Data Lokal Only)
    ============================================================ */
 let sessionStats = { total:0, found:0, notfound:0 };
 
 const scanInput = document.getElementById("scanInput");
 const binInput = document.getElementById("binInput");
+const docNoInput = document.getElementById("docNoInput");
+const inboundType = document.getElementById("inboundType");
 
 scanInput.addEventListener("keydown", async (e)=>{
   if(e.key !== "Enter") return;
@@ -829,7 +1109,7 @@ scanInput.addEventListener("keydown", async (e)=>{
 
 document.addEventListener("click", (e)=>{
   if(!document.getElementById("tab-scan").classList.contains("hidden")) {
-    if(e.target.tagName !== "INPUT" && e.target.tagName !== "BUTTON" && !e.target.closest('.btn-close') && !e.target.closest('.btn-delete') && !e.target.closest('.modal-content')){
+    if(e.target.tagName !== "INPUT" && e.target.tagName !== "BUTTON" && !e.target.closest('.btn-close') && !e.target.closest('.btn-delete') && !e.target.closest('.modal-content') && e.target.tagName !== "SELECT"){
       scanInput.focus();
     }
   }
@@ -837,7 +1117,7 @@ document.addEventListener("click", (e)=>{
 
 async function getActiveSessionScans() {
   const rows = await idbGetAllScans();
-  return rows.filter(r => r && r.sessionActive !== false && (!r.type || r.type === "IN"));
+  return rows.filter(r => r && r.sessionActive !== false && (r.type === "INBOUND" || r.type === "RETUR" || r.type === "IN"));
 }
 
 async function handleScan(sku){
@@ -853,38 +1133,33 @@ async function handleScan(sku){
   }
 
   const binValue = binInput.value.trim().toUpperCase() || "-";
+  const docNoValue = docNoInput.value.trim().toUpperCase();
+  const typeValue = inboundType.value; 
   const resultBox = document.getElementById("scanResult");
   
   if(product){
     resultBox.innerHTML = `<div class="result found">
-      <div class="sku"><span class="badge muted">BIN: ${binValue}</span> ${sku}</div>
+      <div class="sku"><span class="badge muted">BIN: ${binValue}</span>${docNoValue ? ` <span class="badge transfer">DOK: ${docNoValue}</span>` : ""} ${sku}</div>
       <div class="nama">${product.nama}</div>
-      <div style="margin-top:4px"><span class="badge good">✓ DITEMUKAN</span></div>
+      <div style="margin-top:4px"><span class="badge good">✓ DITEMUKAN (${typeValue})</span></div>
     </div>`;
   }else{
     resultBox.innerHTML = `<div class="result notfound">
-      <div class="sku"><span class="badge muted">BIN: ${binValue}</span> ${sku}</div>
+      <div class="sku"><span class="badge muted">BIN: ${binValue}</span>${docNoValue ? ` <span class="badge transfer">DOK: ${docNoValue}</span>` : ""} ${sku}</div>
       <div class="nama">SKU tidak ditemukan di database Master</div>
       <div style="margin-top:4px"><span class="badge bad">⚠ TIDAK DIKENALI</span></div>
     </div>`;
   }
 
   const entry = {
-    id: generateID(), 
-    sku,
-    nama: product ? product.nama : null,
-    found: !!product,
-    bin: binValue,
-    ts: new Date().toISOString(),
-    sessionActive: true,
-    type: "IN",
-    remark: "Scanned IN"
+    id: generateID(), sku, nama: product ? product.nama : null, found: !!product, bin: binValue, docNo: docNoValue || "", ts: new Date().toISOString(), sessionActive: true, type: typeValue, remark: typeValue === "RETUR" ? "Retur Barang" : "Scanned IN"
   };
   
   await idbAddScan(entry);
-  await recordMovement(entry.id, "INBOUND", sku, product ? product.nama : "-", binValue, "Inbound Scan");
+  await recordMovement(entry.id, typeValue, sku, product ? product.nama : "-", binValue, entry.remark, docNoValue);
   
   await loadScanLogFromIDB();
+  if(!document.getElementById("tab-search").classList.contains("hidden")) renderBinOverview();
   scanInput.focus();
 }
 
@@ -908,8 +1183,8 @@ async function loadScanLogFromIDB(){
         const tr = document.createElement("tr");
         const jam = r.ts ? new Date(r.ts).toLocaleTimeString("id-ID") : "-";
         tr.innerHTML = `
-          <td>${jam}</td>
-          <td><span style="color:var(--accent); font-weight:bold;">${r.bin || '-'}</span></td>
+          <td>${jam} <span class="badge ${r.type==='RETUR'?'warning':'good'}">${r.type}</span></td>
+          <td><span style="color:var(--accent); font-weight:bold;">${r.bin || '-'}</span>${r.docNo ? `<br><span style="font-size:10px; color:var(--text-muted);">DOK: ${r.docNo}</span>` : ''}</td>
           <td class="sku">${r.sku}</td>
           <td>${r.found ? r.nama : '<span class="badge bad">N/A</span>'}</td>
           <td style="text-align:center;"><button class="btn-delete" onclick="undoInbound('${r.id}')" title="Batalkan Scan">🗑️</button></td>
@@ -920,64 +1195,16 @@ async function loadScanLogFromIDB(){
 }
 
 window.undoInbound = async function(id) {
-    if(!confirm("Batalkan scan Inbound ini?")) return;
+    if(!confirm("Batalkan scan Inbound/Retur ini?")) return;
     try {
         const rows = await idbGetAllScans();
         const target = rows.find(r=>String(r.id) === String(id));
         await idbDeleteScan(id);
-        if(target) await recordMovement(id, "DELETE", target.sku, target.nama, target.bin, "Undo Inbound Session");
+        if(target) await recordMovement(id, "DELETE", target.sku, target.nama, target.bin, "Undo Session");
         await loadScanLogFromIDB();
-        toast("Inbound dibatalkan.", "good");
+        toast("Dibatalkan.", "good");
     } catch(e){}
 }
-
-document.getElementById("btnCycleCount").onclick = async () => {
-  const activeScans = await getActiveSessionScans();
-  if(activeScans.length === 0){ toast("Sesi scan masuk masih kosong", "bad"); return; }
-  
-  const uniqueBins = [...new Set(activeScans.map(r => r.bin))];
-  if(!confirm(`Yakin ingin melakukan Cycle Count untuk Bin:\n${uniqueBins.join(", ")}\n\nSeluruh riwayat data (Masuk/Keluar) lama pada bin tersebut akan dihapus secara lokal, lalu diganti dengan data sesi ini.`)) return;
-
-  toast("Memproses Cycle Count...", "warning");
-
-  try {
-      const rows = await idbGetAllScans();
-      const validRows = rows.filter(r => r !== null && r !== undefined);
-      let deletedCount = 0;
-      const localIdsToDelete = [];
-
-      for (const r of validRows) {
-        if (r.sessionActive === false && uniqueBins.includes(r.bin)) {
-          localIdsToDelete.push(r.id);
-          deletedCount++;
-        }
-      }
-
-      const tx = idb.transaction("scanlog", "readwrite");
-      const store = tx.objectStore("scanlog");
-      validRows.forEach(r => {
-        if (localIdsToDelete.includes(r.id)) {
-          store.delete(r.id);
-        } else if (r.sessionActive !== false) {
-          r.sessionActive = false;
-          store.put(r);
-        }
-      });
-
-      tx.oncomplete = async () => {
-        await loadScanLogFromIDB();
-        await loadOutboundLogFromIDB();
-        if(!document.getElementById("tab-pivot").classList.contains("hidden")) loadPivot();
-        const scanResult = document.getElementById("scanResult");
-        if(scanResult) scanResult.innerHTML = "";
-        toast(`✓ Cycle Count berhasil. ${deletedCount} riwayat lama dihapus.`, "good");
-      };
-  } catch(err) {
-     console.error(err);
-     toast("Gagal melakukan Cycle Count", "bad");
-  }
-};
-
 
 /* ============================================================
    4.5) OUTBOUND LOGIC (Memotong Langsung Data Induk Lokal)
@@ -1007,12 +1234,10 @@ async function executeDeduction(sku, bin, typeStr, remark, isSession = false) {
     const allScansRaw = await idbGetAllScans();
     const allScans = allScansRaw.filter(r => r !== null && r !== undefined);
     
-    // Cari 1 item IN yang cocok dari Data Induk yang aktif
     const targetIndex = allScans.findIndex(r => r.sku === sku && (r.bin || '-') === bin && r.type !== 'OUT');
     
     if (targetIndex === -1) {
         toast(`Stok tidak mencukupi untuk SKU ${sku} di Bin ${bin}`, "bad");
-        
         if(isSession) {
             outboundStats.notfound += 1;
             document.getElementById("outStatNotFound").textContent = outboundStats.notfound;
@@ -1022,10 +1247,7 @@ async function executeDeduction(sku, bin, typeStr, remark, isSession = false) {
     
     const target = allScans[targetIndex];
 
-    // 1. DELETE FROM MASTER DATA (IDB)
     await idbDeleteScan(target.id);
-
-    // 2. CREATE MOVEMENT LOG
     await recordMovement(target.id, typeStr, target.sku, target.nama, target.bin, remark);
 
     if (isSession) {
@@ -1034,14 +1256,7 @@ async function executeDeduction(sku, bin, typeStr, remark, isSession = false) {
         document.getElementById("outStatTotal").textContent = outboundStats.total;
         document.getElementById("outStatFound").textContent = outboundStats.found;
         
-        sessionOutboundScans.push({
-            id: target.id,
-            ts: new Date().toISOString(),
-            bin: target.bin,
-            sku: target.sku,
-            remark: remark,
-            nama: target.nama
-        });
+        sessionOutboundScans.push({ id: target.id, ts: new Date().toISOString(), bin: target.bin, sku: target.sku, remark: remark, nama: target.nama });
         
         const resultBox = document.getElementById("outScanResult");
         if(resultBox) {
@@ -1078,6 +1293,12 @@ function renderOutboundLog() {
     });
 }
 
+async function loadOutboundLogFromIDB(){
+  // Sesi Outbound bersifat sementara (in-memory per sesi), belum ada penyimpanan permanen di IndexedDB.
+  // Fungsi ini menjaga kompatibilitas dengan proses init() dan cukup me-render ulang log sesi yang tersimpan di memori.
+  renderOutboundLog();
+}
+
 document.getElementById("btnClearScan").onclick = async ()=>{
   if(!confirm("Tutup sesi INBOUND saat ini?")) return;
   await idbClearSession(); 
@@ -1101,6 +1322,290 @@ document.getElementById("btnClearOutboundScan").onclick = async ()=>{
 };
 
 /* ============================================================
+   4.8) CYCLE COUNT STAGING LOGIC
+   ============================================================ */
+let sessionCCScans = [];
+let ccStats = { total:0, found:0, notfound:0 };
+
+const ccScanInput = document.getElementById("ccScanInput");
+ccScanInput.addEventListener("keydown", async (e)=>{
+  if(e.key !== "Enter") return;
+  const raw = ccScanInput.value.trim();
+  ccScanInput.value = "";
+  if(!raw) return;
+  await handleCCScan(raw);
+});
+
+async function handleCCScan(sku) {
+  const binValue = document.getElementById("ccBinInput").value.trim().toUpperCase();
+  if (!binValue || binValue === "-") { toast("Lokasi Target Bin Wajib Diisi!", "bad"); return; }
+  
+  let product = await idbGetMaster(sku);
+  if(!product){
+    try{
+      const doc = await db.collection(COL_MASTER).doc(sku).get();
+      if(doc.exists){ product = { sku, nama: doc.data().nama || "" }; await idbPutMasterBulk([product]); }
+    }catch(err){}
+  }
+
+  const resultBox = document.getElementById("ccScanResult");
+  if(product){
+    resultBox.innerHTML = `<div class="result found">
+      <div class="sku"><span class="badge muted">BIN: ${binValue}</span> ${sku}</div>
+      <div class="nama">${product.nama}</div>
+      <div style="margin-top:4px"><span class="badge good">STAGED (BELUM EKSEKUSI)</span></div>
+    </div>`;
+  }else{
+    resultBox.innerHTML = `<div class="result notfound">
+      <div class="sku"><span class="badge muted">BIN: ${binValue}</span> ${sku}</div>
+      <div class="nama">SKU tidak ditemukan di Master</div>
+    </div>`;
+  }
+
+  sessionCCScans.push({
+      id: generateID(), sku: sku, nama: product ? product.nama : "Tidak Dikenali", found: !!product, bin: binValue, ts: new Date().toISOString()
+  });
+  
+  renderCCLog();
+  ccScanInput.focus();
+}
+
+function renderCCLog() {
+    const tbody = document.getElementById("ccLogBody");
+    if(!tbody) return;
+
+    ccStats.total = sessionCCScans.length;
+    ccStats.found = sessionCCScans.filter(r => r.found).length;
+    ccStats.notfound = sessionCCScans.filter(r => !r.found).length;
+
+    document.getElementById("ccStatTotal").textContent = ccStats.total;
+    document.getElementById("ccStatFound").textContent = ccStats.found;
+    document.getElementById("ccStatNotFound").textContent = ccStats.notfound;
+
+    tbody.innerHTML = "";
+    if (sessionCCScans.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="hint" style="text-align:center;">Belum ada data staging.</td></tr>`;
+        return;
+    }
+
+    sessionCCScans.slice().reverse().slice(0, 50).forEach((r, idx) => {
+        const tr = document.createElement("tr");
+        const realIdx = sessionCCScans.length - 1 - idx;
+        tr.innerHTML = `
+          <td><span style="color:var(--accent); font-weight:bold;">${r.bin}</span></td>
+          <td class="sku">${r.sku}</td>
+          <td>${r.nama}</td>
+          <td style="text-align:center;"><button class="btn-delete" onclick="removeCCStage(${realIdx})" title="Hapus Staging">🗑️</button></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+window.removeCCStage = function(idx) {
+    sessionCCScans.splice(idx, 1);
+    renderCCLog();
+}
+
+document.getElementById("btnClearCC").onclick = () => {
+    if(!confirm("Batal dan bersihkan data Staging Cycle Count ini?")) return;
+    sessionCCScans = [];
+    renderCCLog();
+    const res = document.getElementById("ccScanResult");
+    if(res) res.innerHTML = "";
+    toast("Staging Cycle Count Dibatalkan", "good");
+};
+
+document.getElementById("btnExecCC").onclick = async () => {
+  if(sessionCCScans.length === 0){ toast("Data Staging kosong!", "bad"); return; }
+  
+  const uniqueBins = [...new Set(sessionCCScans.map(r => r.bin))];
+  if(!confirm(`PERINGATAN: Eksekusi Cycle Count untuk Bin:\n${uniqueBins.join(", ")}\n\nSeluruh stok fisik lama pada bin tersebut di Data Induk akan dihapus, lalu ditimpa dengan ${sessionCCScans.length} item dari Staging ini. Lanjutkan?`)) return;
+
+  toast("Mengeksekusi Cycle Count...", "warning");
+
+  try {
+      const rows = await idbGetAllScans();
+      const validRows = rows.filter(r => r !== null && r !== undefined);
+      const localIdsToDelete = validRows.filter(r => r.type !== 'OUT' && uniqueBins.includes(r.bin)).map(r => r.id);
+
+      for(let id of localIdsToDelete) { await idbDeleteScan(id); }
+      await recordMovement("CC_CLEAR", "CC_CLEAR", "-", "-", uniqueBins.join(","), `Clear Bin Sebelum Cycle Count (${localIdsToDelete.length} item dihapus)`);
+
+      for(let item of sessionCCScans) {
+          const entry = {
+              id: item.id, sku: item.sku, nama: item.nama, found: item.found, bin: item.bin, ts: new Date().toISOString(), type: "IN", remark: "Cycle Count Result", sessionActive: false 
+          };
+          await idbAddScan(entry);
+      }
+      await recordMovement("CC_INSERT", "CYCLE_COUNT", "MULTIPLE", "Batch CC", uniqueBins.join(","), `Insert ${sessionCCScans.length} item hasil Cycle Count`);
+
+      sessionCCScans = [];
+      renderCCLog();
+      const res = document.getElementById("ccScanResult");
+      if(res) res.innerHTML = "";
+      if(!document.getElementById("tab-search").classList.contains("hidden")) renderBinOverview();
+      
+      toast(`✓ Cycle Count berhasil untuk Bin: ${uniqueBins.join(", ")}`, "good");
+  } catch(err) {
+     console.error(err);
+     toast("Gagal melakukan Eksekusi Cycle Count", "bad");
+  }
+};
+
+/* ============================================================
+   TRANSFER BIN (Staging dulu, baru masuk Data Induk setelah Eksekusi)
+   ============================================================ */
+let sessionTransferScans = []; // { stagingId, rowId, sku, nama, fromBin, toBin, ts, found }
+let tfStats = { total: 0, found: 0, notfound: 0 };
+
+const tfScanInput = document.getElementById("tfScanInput");
+tfScanInput.addEventListener("keydown", async (e) => {
+  if (e.key !== "Enter") return;
+  const raw = tfScanInput.value.trim();
+  tfScanInput.value = "";
+  if (!raw) return;
+  await handleTransferScan(raw);
+});
+
+async function handleTransferScan(sku) {
+  const fromBin = document.getElementById("tfBinFromInput").value.trim().toUpperCase();
+  const toBin = document.getElementById("tfBinToInput").value.trim().toUpperCase();
+  const resultBox = document.getElementById("tfScanResult");
+
+  if (!fromBin || !toBin) { toast("Bin Asal dan Bin Tujuan wajib diisi!", "bad"); return; }
+  if (fromBin === toBin) { toast("Bin Asal dan Bin Tujuan tidak boleh sama!", "bad"); return; }
+
+  try {
+      const rows = await idbGetAllScans();
+      const validRows = rows.filter(r => r !== null && r !== undefined);
+      const stagedRowIds = new Set(sessionTransferScans.map(s => s.rowId));
+
+      // Cari 1 unit fisik SKU ini yang benar-benar ada di Bin Asal & belum di-staging pada sesi ini
+      const candidate = validRows.find(r => r.type !== 'OUT' && r.sku === sku && (r.bin || '-').toUpperCase() === fromBin && !stagedRowIds.has(r.id));
+
+      if (!candidate) {
+          resultBox.innerHTML = `<div class="result notfound">
+            <div class="sku"><span class="badge muted">DARI: ${fromBin}</span> <span class="badge transfer">KE: ${toBin}</span> ${sku}</div>
+            <div class="nama">Stok SKU ini tidak ditemukan / sudah habis di Bin ${fromBin}</div>
+            <div style="margin-top:4px"><span class="badge bad">⚠ TIDAK DITEMUKAN</span></div>
+          </div>`;
+          tfStats.notfound++;
+          document.getElementById("tfStatNotFound").textContent = tfStats.notfound;
+          tfScanInput.focus();
+          return;
+      }
+
+      resultBox.innerHTML = `<div class="result found">
+        <div class="sku"><span class="badge muted">DARI: ${fromBin}</span> <span class="badge transfer">KE: ${toBin}</span> ${sku}</div>
+        <div class="nama">${candidate.nama || 'N/A'}</div>
+        <div style="margin-top:4px"><span class="badge good">STAGED (BELUM EKSEKUSI)</span></div>
+      </div>`;
+
+      sessionTransferScans.push({
+          stagingId: generateID(), rowId: candidate.id, sku: candidate.sku, nama: candidate.nama || 'N/A',
+          fromBin, toBin, ts: new Date().toISOString(), found: true
+      });
+
+      renderTransferLog();
+  } catch (err) {
+      console.error(err);
+      toast("Gagal memindai untuk Transfer Bin", "bad");
+  }
+  tfScanInput.focus();
+}
+
+function renderTransferLog() {
+    const tbody = document.getElementById("tfLogBody");
+    if (!tbody) return;
+
+    tfStats.total = sessionTransferScans.length;
+    tfStats.found = sessionTransferScans.filter(r => r.found).length;
+
+    document.getElementById("tfStatTotal").textContent = tfStats.total;
+    document.getElementById("tfStatFound").textContent = tfStats.found;
+    document.getElementById("tfStatNotFound").textContent = tfStats.notfound;
+
+    tbody.innerHTML = "";
+    if (sessionTransferScans.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="hint" style="text-align:center;">Belum ada data staging.</td></tr>`;
+        return;
+    }
+
+    sessionTransferScans.slice().reverse().slice(0, 50).forEach((r, idx) => {
+        const tr = document.createElement("tr");
+        const realIdx = sessionTransferScans.length - 1 - idx;
+        tr.innerHTML = `
+          <td><span style="color:var(--text-main); font-weight:bold;">${r.fromBin}</span></td>
+          <td><span style="color:var(--accent); font-weight:bold;">${r.toBin}</span></td>
+          <td class="sku">${r.sku}</td>
+          <td>${r.nama}</td>
+          <td style="text-align:center;"><button class="btn-delete" onclick="removeTransferStage(${realIdx})" title="Hapus Staging">🗑️</button></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+window.removeTransferStage = function(idx) {
+    sessionTransferScans.splice(idx, 1);
+    renderTransferLog();
+};
+
+document.getElementById("btnClearTransfer").onclick = () => {
+    if (sessionTransferScans.length > 0 && !confirm("Batal dan bersihkan data Staging Transfer ini?")) return;
+    sessionTransferScans = [];
+    tfStats = { total: 0, found: 0, notfound: 0 };
+    renderTransferLog();
+    const res = document.getElementById("tfScanResult");
+    if (res) res.innerHTML = "";
+    toast("Staging Transfer Bin Dibatalkan", "good");
+};
+
+document.getElementById("btnExecTransfer").onclick = async () => {
+  if (sessionTransferScans.length === 0) { toast("Data Staging kosong!", "bad"); return; }
+
+  const uniquePairs = [...new Set(sessionTransferScans.map(r => `${r.fromBin} → ${r.toBin}`))];
+  if (!confirm(`Eksekusi Transfer Bin untuk ${sessionTransferScans.length} item?\n\n${uniquePairs.join("\n")}\n\nStok akan dipindahkan permanen di Data Induk. Lanjutkan?`)) return;
+
+  toast("Mengeksekusi Transfer Bin...", "warning");
+
+  try {
+      let successCount = 0;
+      for (let item of sessionTransferScans) {
+          const rows = await idbGetAllScans();
+          const validRows = rows.filter(r => r !== null && r !== undefined);
+          const target = validRows.find(r => r.id === item.rowId && r.type !== 'OUT');
+          if (!target) continue; // item sudah tidak ada (kemungkinan sudah keluar/berubah sejak di-staging)
+
+          target.bin = item.toBin;
+          await new Promise((res) => {
+              const tx = idb.transaction("scanlog", "readwrite");
+              tx.objectStore("scanlog").put(target);
+              tx.oncomplete = res;
+          });
+
+          await recordMovement(target.id, "TRANSFER", item.sku, item.nama, `${item.fromBin} -> ${item.toBin}`, "Transfer Bin (Batch)");
+          successCount++;
+      }
+
+      sessionTransferScans = [];
+      tfStats = { total: 0, found: 0, notfound: 0 };
+      renderTransferLog();
+      const res = document.getElementById("tfScanResult");
+      if (res) res.innerHTML = "";
+
+      if (!document.getElementById("tab-allscan").classList.contains("hidden")) loadAllScan();
+      if (!document.getElementById("tab-search").classList.contains("hidden")) performAdvSearch(document.getElementById("advSearchInput").value);
+      if (!document.getElementById("tab-pivot").classList.contains("hidden")) loadPivot();
+
+      toast(`✓ Transfer Bin berhasil untuk ${successCount} item.`, "good");
+  } catch (err) {
+      console.error(err);
+      toast("Gagal melakukan Eksekusi Transfer Bin", "bad");
+  }
+};
+
+
+/* ============================================================
    5) TAB PENCARIAN RIWAYAT (ADVANCED SEARCH) & ACTION
    ============================================================ */
 let searchTimeout;
@@ -1119,7 +1624,7 @@ async function performAdvSearch(query) {
       if (!q) {
          tbody.innerHTML = `<tr><td colspan="5" class="hint" style="text-align:center;">Gunakan kolom pencarian di atas</td></tr>`;
          statFind.textContent = "0";
-         binStatsContainer.innerHTML = `<span class="hint" style="font-size:11px;">Belum ada pencarian</span>`;
+         if (binStatsContainer) binStatsContainer.innerHTML = `<span class="hint" style="font-size:11px;">Belum ada pencarian</span>`;
          return;
       }
       
@@ -1128,28 +1633,44 @@ async function performAdvSearch(query) {
       const allRows = await idbGetAllScans();
       const validRows = allRows.filter(r => r !== null && r !== undefined);
 
+      const deactivatedBins = JSON.parse(localStorage.getItem('deactivatedBins') || '[]');
+
       const matched = validRows.filter(r => 
           r.type !== 'OUT' && 
+          !deactivatedBins.includes(r.bin || '-') && 
           ((r.sku && r.sku.toLowerCase().includes(q)) ||
            (r.nama && r.nama.toLowerCase().includes(q)) ||
            (r.bin && r.bin.toLowerCase().includes(q)))
       );
 
-      const binCounts = {};
-      matched.forEach(r => {
-         const bin = r.bin || '-';
-         binCounts[bin] = (binCounts[bin] || 0) + 1;
-      });
-      
       statFind.textContent = matched.length;
 
-      const binKeys = Object.keys(binCounts).sort();
-      if(binKeys.length === 0) {
-          binStatsContainer.innerHTML = `<span class="hint" style="font-size:11px;">Tidak ada stok ditemukan</span>`;
-      } else {
-          binStatsContainer.innerHTML = binKeys.map(b => {
-                 return `<div class="bin-stat-badge"><span class="b-name">${b}</span><span class="b-qty">${binCounts[b]}</span></div>`;
-          }).join('');
+      // Overview Bin: dihitung dari hasil pencarian ini, ditambah Bin terdaftar (masterBins)
+      // yang kode-nya cocok dengan pencarian meski stoknya kosong (0) -- supaya tetap kelihatan merah.
+      if (binStatsContainer) {
+          const binCounts = {};
+          matched.forEach(r => {
+              const bin = (r.bin || '-').toUpperCase();
+              if (bin === '-') return;
+              binCounts[bin] = (binCounts[bin] || 0) + 1;
+          });
+          masterBins.filter(b => b.toLowerCase().includes(q)).forEach(b => {
+              if (!(b in binCounts)) binCounts[b] = 0;
+          });
+
+          const binKeys = Object.keys(binCounts).sort();
+          if (binKeys.length === 0) {
+              binStatsContainer.innerHTML = `<span class="hint" style="font-size:11px;">Tidak ada Bin ditemukan</span>`;
+          } else {
+              binStatsContainer.innerHTML = binKeys.map(b => {
+                  const qty = binCounts[b];
+                  const safeB = String(b).replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                  return `<div class="bin-stat-badge${qty === 0 ? ' empty' : ''}" data-bin="${safeB}" title="Klik untuk lihat isi Bin ${safeB}"><span class="b-name">${safeB}</span><span class="b-qty">${qty}</span></div>`;
+              }).join('');
+              binStatsContainer.querySelectorAll(".bin-stat-badge").forEach(el => {
+                  el.addEventListener("click", () => viewBinContents(el.getAttribute("data-bin")));
+              });
+          }
       }
 
       tbody.innerHTML = "";
@@ -1190,6 +1711,93 @@ async function performAdvSearch(query) {
   }
 }
 
+/* ============================================================
+   5.5) OVERVIEW & MANAJEMEN BIN (Create / Delete, Password Protected)
+   ============================================================ */
+const BIN_ADMIN_PASSWORD = "admin123";
+let masterBins = JSON.parse(localStorage.getItem('masterBins') || '[]');
+function saveMasterBins() { localStorage.setItem('masterBins', JSON.stringify(masterBins)); }
+
+async function getBinQtyMap() {
+  const allRows = await idbGetAllScans();
+  const validRows = allRows.filter(r => r !== null && r !== undefined && r.type !== 'OUT');
+  const binQty = {};
+  validRows.forEach(r => {
+      const bin = (r.bin || '-').toUpperCase();
+      if (bin === '-' ) return;
+      binQty[bin] = (binQty[bin] || 0) + 1;
+  });
+  return binQty;
+}
+
+async function renderBinOverview() {
+  // Sudah digabung ke dalam performAdvSearch() -- fungsi ini dipertahankan sebagai alias
+  // agar pemanggilan lama tetap aman, cukup menjalankan ulang query pencarian saat ini.
+  const input = document.getElementById("advSearchInput");
+  await performAdvSearch(input ? input.value : "");
+}
+
+window.viewBinContents = function(bin) {
+  const input = document.getElementById("advSearchInput");
+  if (input) input.value = bin;
+  performAdvSearch(bin);
+  toast(`📦 Menampilkan isi Bin: ${bin}`, "good");
+};
+
+document.getElementById("btnCreateBin").onclick = () => {
+  const pass = prompt("Masukkan Password Administrator untuk membuat Bin baru:");
+  if (pass === null) return;
+  if (pass !== BIN_ADMIN_PASSWORD) { toast("Password salah! Akses ditolak.", "bad"); return; }
+
+  const newBin = prompt("Masukkan Kode Bin baru (contoh: A-01-01):");
+  if (newBin === null) return;
+  const code = newBin.trim().toUpperCase();
+  if (!code) { toast("Kode Bin tidak boleh kosong.", "bad"); return; }
+  if (masterBins.includes(code)) { toast(`Bin ${code} sudah terdaftar.`, "warning"); return; }
+
+  masterBins.push(code);
+  saveMasterBins();
+  const searchInputEl = document.getElementById("advSearchInput");
+  if (searchInputEl) searchInputEl.value = code;
+  performAdvSearch(code);
+  toast(`✓ Bin ${code} berhasil dibuat.`, "good");
+};
+
+document.getElementById("btnDeleteBin").onclick = async () => {
+  const pass = prompt("Masukkan Password Administrator untuk menghapus Bin:");
+  if (pass === null) return;
+  if (pass !== BIN_ADMIN_PASSWORD) { toast("Password salah! Akses ditolak.", "bad"); return; }
+
+  const target = prompt("Masukkan Kode Bin yang ingin dihapus:");
+  if (target === null) return;
+  const code = target.trim().toUpperCase();
+  if (!code) return;
+
+  try {
+      const binQty = await getBinQtyMap();
+      const qty = binQty[code] || 0;
+      if (qty > 0) {
+          toast(`Bin ${code} tidak bisa dihapus, masih berisi ${qty} item. Kosongkan/pindahkan stok dahulu.`, "bad");
+          return;
+      }
+      if (!masterBins.includes(code)) {
+          toast(`Bin ${code} tidak ditemukan di daftar Bin terdaftar.`, "warning");
+          return;
+      }
+      if (!confirm(`Yakin ingin menghapus Bin ${code} secara permanen?`)) return;
+
+      masterBins = masterBins.filter(b => b !== code);
+      saveMasterBins();
+      const searchInputEl = document.getElementById("advSearchInput");
+      if (searchInputEl) searchInputEl.value = "";
+      performAdvSearch("");
+      toast(`🗑️ Bin ${code} berhasil dihapus.`, "good");
+  } catch (err) {
+      console.error(err);
+      toast("Gagal menghapus Bin.", "bad");
+  }
+};
+
 window.processSales = async function(sku, bin) {
     const remark = prompt(`Sales SKU: ${sku}\nLokasi Bin: ${bin}\n\nMasukkan remark / nomor SO (Opsional):`);
     if (remark === null) return; 
@@ -1210,7 +1818,6 @@ window.processTransfer = async function(sku, oldBin) {
     
     const finalBin = newBin.trim().toUpperCase();
     
-    // Update Lokal Data Induk
     target.bin = finalBin;
     await new Promise((res)=>{
         const tx = idb.transaction("scanlog", "readwrite");
@@ -1218,7 +1825,6 @@ window.processTransfer = async function(sku, oldBin) {
         tx.oncomplete = res;
     });
     
-    // Rekam Pergerakan Lokal
     await recordMovement(target.id, "TRANSFER", sku, target.nama, `${oldBin} -> ${finalBin}`, "Transfer Bin");
     
     toast(`✓ 1 Item dipindah ke Bin ${finalBin}`, "good");
@@ -1231,32 +1837,28 @@ window.processTransfer = async function(sku, oldBin) {
    ============================================================ */
 async function loadPivot(){
   try {
-      // Ambil Inbound Active
       const inRows = await getActiveSessionScans(); 
-      
-      // Ambil Outbound Active dari memori sessionOutboundScans
       const pivotMap = {};
+      const deactivatedBins = JSON.parse(localStorage.getItem('deactivatedBins') || '[]');
 
       inRows.forEach(r => {
         const binVal = r.bin || "-";
+        if(deactivatedBins.includes(binVal)) return;
+        
         const key = `${r.sku}_${binVal}`;
-        if(!pivotMap[key]){
-          pivotMap[key] = { bin: binVal, sku: r.sku, nama: r.nama || "Tidak Dikenali", qty: 0 };
-        }
+        if(!pivotMap[key]) pivotMap[key] = { bin: binVal, sku: r.sku, nama: r.nama || "Tidak Dikenali", qty: 0 };
         pivotMap[key].qty += 1;
       });
 
-      // Kurangi qty dengan barang yang sedang keluar di sesi Outbound berjalan
       sessionOutboundScans.forEach(r => {
         const binVal = r.bin || "-";
+        if(deactivatedBins.includes(binVal)) return;
+        
         const key = `${r.sku}_${binVal}`;
-        if(!pivotMap[key]){
-          pivotMap[key] = { bin: binVal, sku: r.sku, nama: r.nama || "Tidak Dikenali", qty: 0 };
-        }
+        if(!pivotMap[key]) pivotMap[key] = { bin: binVal, sku: r.sku, nama: r.nama || "Tidak Dikenali", qty: 0 };
         pivotMap[key].qty -= 1;
       });
 
-      // Filter Qty yang nol atau minus (Hanya tampilkan sisa positif di sesi ini)
       const pivotArray = Object.values(pivotMap).filter(p => p.qty > 0).sort((a,b) => b.qty - a.qty);
       
       const tbody = document.getElementById("pivotBody");
@@ -1287,24 +1889,20 @@ async function loadPivot(){
 
 document.getElementById("btnExportPivot").onclick = async ()=>{
   const inRows = await getActiveSessionScans();
-  if(inRows.length === 0 && sessionOutboundScans.length === 0){ toast("Belum ada data di sesi ini untuk di-export", ""); return; }
+  if(inRows.length === 0 && sessionOutboundScans.length === 0){ toast("Belum ada data di sesi ini", ""); return; }
 
   const pivotMap = {};
   inRows.forEach(r => {
     const binVal = r.bin || "-";
     const key = `${r.sku}_${binVal}`;
-    if(!pivotMap[key]){
-      pivotMap[key] = { bin: binVal, sku: r.sku, nama: r.nama || "TIDAK DIKENALI", qty: 0 };
-    }
+    if(!pivotMap[key]) pivotMap[key] = { bin: binVal, sku: r.sku, nama: r.nama || "TIDAK DIKENALI", qty: 0 };
     pivotMap[key].qty += 1;
   });
 
   sessionOutboundScans.forEach(r => {
     const binVal = r.bin || "-";
     const key = `${r.sku}_${binVal}`;
-    if(!pivotMap[key]){
-      pivotMap[key] = { bin: binVal, sku: r.sku, nama: r.nama || "TIDAK DIKENALI", qty: 0 };
-    }
+    if(!pivotMap[key]) pivotMap[key] = { bin: binVal, sku: r.sku, nama: r.nama || "TIDAK DIKENALI", qty: 0 };
     pivotMap[key].qty -= 1;
   });
 
@@ -1318,23 +1916,10 @@ document.getElementById("btnExportPivot").onclick = async ()=>{
   if(wsData.length === 0) { toast("Kalkulasi Qty kosong", "warning"); return; }
 
   const ws = XLSX.utils.json_to_sheet(wsData);
-  const range = XLSX.utils.decode_range(ws['!ref']);
-  
-  for(let C = range.s.c; C <= range.e.c; ++C) {
-    const address = XLSX.utils.encode_cell({c:C, r:0});
-    if(!ws[address]) continue;
-    ws[address].s = { fill: { fgColor: { rgb: "2563EB" } }, font: { bold: true, color: { rgb: "FFFFFF" } }, alignment: { vertical: "center", horizontal: "center" } };
-  }
-  for(let R = 1; R <= range.e.r; ++R) {
-    const address = XLSX.utils.encode_cell({c:3, r:R}); 
-    if(ws[address]) ws[address].s = { font: { bold: true, color: { rgb: "000000" } }, fill: { fgColor: { rgb: "E2E8F0" } }, alignment: { vertical: "center", horizontal: "center" } };
-  }
-
-  ws['!cols'] = [{wch: 15}, {wch: 20}, {wch: 40}, {wch: 15}];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Rekap Pivot Sesi");
   XLSX.writeFile(wb, `Laporan_Pivot_Sesi_${Date.now()}.xlsx`);
-  toast("✓ File Excel berhasil diunduh", "good");
+  toast("✓ Excel berhasil diunduh", "good");
 };
 
 
@@ -1342,10 +1927,7 @@ document.getElementById("btnExportPivot").onclick = async ()=>{
    7) TAB DATA INDUK (ALL SCAN LOKAL)
    ============================================================ */
 let deactivatedBins = JSON.parse(localStorage.getItem('deactivatedBins') || '[]');
-
-function saveDeactivatedBins() {
-  localStorage.setItem('deactivatedBins', JSON.stringify(deactivatedBins));
-}
+function saveDeactivatedBins() { localStorage.setItem('deactivatedBins', JSON.stringify(deactivatedBins)); }
 
 let currentUniqueBins = [];
 async function loadBinManagement() {
@@ -1565,9 +2147,11 @@ async function loadMovements(filterSku = "", startDate = "", endDate = "") {
       const rows = await idbGetAllMovements();
       let validRows = rows.filter(r => r !== null && r !== undefined);
       
+      validRows = validRows.filter(r => ['INBOUND', 'OUTBOUND', 'SALES', 'RETUR', 'DELETE'].includes(r.type));
+
       if (filterSku) {
           const q = filterSku.toLowerCase().trim();
-          validRows = validRows.filter(r => (r.sku && r.sku.toLowerCase().includes(q)) || (r.remark && r.remark.toLowerCase().includes(q)));
+          validRows = validRows.filter(r => (r.sku && r.sku.toLowerCase().includes(q)) || (r.remark && r.remark.toLowerCase().includes(q)) || (r.docNo && r.docNo.toLowerCase().includes(q)));
       }
       
       if (startDate || endDate) {
@@ -1603,12 +2187,13 @@ async function loadMovements(filterSku = "", startDate = "", endDate = "") {
         const jam = r.ts ? new Date(r.ts).toLocaleString("id-ID") : "-";
         const safeNama = r.nama ? r.nama.replace(/</g, "&lt;").replace(/>/g, "&gt;") : '-';
         const safeRemark = r.remark ? r.remark.replace(/</g, "&lt;").replace(/>/g, "&gt;") : '';
+        const safeDocNo = r.docNo ? String(r.docNo).replace(/</g, "&lt;").replace(/>/g, "&gt;") : '';
         
         let typeBadge = `<span class="badge">${r.type}</span>`;
         if(r.type === 'INBOUND') typeBadge = `<span class="badge good">INBOUND</span>`;
         else if(r.type === 'OUTBOUND') typeBadge = `<span class="badge out">OUTBOUND</span>`;
         else if(r.type === 'SALES') typeBadge = `<span class="badge warning">SALES</span>`;
-        else if(r.type === 'TRANSFER') typeBadge = `<span class="badge transfer">TRANSFER</span>`;
+        else if(r.type === 'RETUR') typeBadge = `<span class="badge warning">RETUR</span>`;
         else if(r.type === 'DELETE') typeBadge = `<span class="badge bad">DELETE</span>`;
 
         tr.innerHTML = `
@@ -1616,7 +2201,7 @@ async function loadMovements(filterSku = "", startDate = "", endDate = "") {
           <td>${typeBadge}</td>
           <td style="font-weight:bold;">${r.bin || '-'}</td>
           <td class="sku">${r.sku || '-'}</td>
-          <td>${safeRemark} <br> <span style="font-size:10px; color:var(--text-muted)">${safeNama}</span></td>
+          <td>${safeRemark}${safeDocNo ? ` <span class="badge transfer">DOK: ${safeDocNo}</span>` : ''} <br> <span style="font-size:10px; color:var(--text-muted)">${safeNama}</span></td>
         `;
         tbody.appendChild(tr);
       });
@@ -1644,15 +2229,101 @@ document.getElementById("btnResetMove").onclick = () => {
    moveRenderLimit = 200;
    loadMovements();
 };
-
 document.getElementById("btnLoadMoreMove").onclick = () => {
   moveRenderLimit += 500;
   document.getElementById("btnSearchMove").click();
 };
 
+/* ============ SUMMARY SKU (Total IN/OUT/RETUR/SALES & Current Stock) ============ */
+async function showSkuSummary(rawSku) {
+  const sku = (rawSku || "").trim();
+  if (!sku) { toast("Ketik SKU yang ingin dilihat ringkasannya terlebih dahulu.", "warning"); return; }
+
+  const modal = document.getElementById("skuSummaryModal");
+  const titleEl = document.getElementById("skuSummaryTitle");
+  const bodyEl = document.getElementById("skuSummaryBody");
+  if (titleEl) titleEl.textContent = `📊 Summary SKU: ${sku}`;
+  if (bodyEl) bodyEl.innerHTML = `<div class="hint" style="text-align:center; padding: 20px;">Memuat ringkasan...</div>`;
+  modal.classList.add("show");
+
+  try {
+      let nama = "-";
+      try {
+          let product = await idbGetMaster(sku);
+          if (!product) {
+              const doc = await db.collection(COL_MASTER).doc(sku).get();
+              if (doc.exists) product = { sku, nama: doc.data().nama || "" };
+          }
+          if (product && product.nama) nama = product.nama;
+      } catch (e) { /* offline / master tidak ditemukan, lanjut fallback dari histori */ }
+
+      const allMoves = await idbGetAllMovements();
+      const validMoves = allMoves.filter(m => m !== null && m !== undefined);
+      const skuMoves = validMoves.filter(m => m.sku === sku);
+
+      if (nama === "-") {
+          const withNama = skuMoves.find(m => m.nama && m.nama !== "-" && m.nama !== "MULTIPLE" && m.nama !== "Batch CC");
+          if (withNama) nama = withNama.nama;
+      }
+
+      const totalInbound = skuMoves.filter(m => m.type === "INBOUND").length;
+      const totalOutbound = skuMoves.filter(m => m.type === "OUTBOUND").length;
+      const totalRetur = skuMoves.filter(m => m.type === "RETUR").length;
+      const totalSales = skuMoves.filter(m => m.type === "SALES").length;
+
+      const allStock = await idbGetAllScans();
+      const currentStock = allStock.filter(r => r && r.type !== "OUT" && r.sku === sku).length;
+
+      if (bodyEl) {
+          const safeNama = String(nama).replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          bodyEl.innerHTML = `
+            <div style="margin-bottom:16px; padding-bottom:14px; border-bottom:1px solid var(--border);">
+                <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; font-weight:bold; letter-spacing:0.4px;">SKU</div>
+                <div class="sku" style="font-size:15px; font-weight:800; color:var(--text-main); margin-bottom:8px;">${sku}</div>
+                <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; font-weight:bold; letter-spacing:0.4px;">Nama Produk</div>
+                <div style="font-size:14px; font-weight:600; color:var(--text-main);">${safeNama}</div>
+            </div>
+            <div class="summary-grid">
+                <div class="stat-card" style="border-bottom: 3px solid var(--success);">
+                    <div class="num" style="color:var(--success);">${totalInbound}</div>
+                    <div class="lbl">Total Inbound</div>
+                </div>
+                <div class="stat-card" style="border-bottom: 3px solid var(--danger);">
+                    <div class="num" style="color:var(--danger);">${totalOutbound}</div>
+                    <div class="lbl">Total Outbound</div>
+                </div>
+                <div class="stat-card" style="border-bottom: 3px solid var(--warning);">
+                    <div class="num" style="color:var(--warning);">${totalRetur}</div>
+                    <div class="lbl">Total Retur</div>
+                </div>
+                <div class="stat-card" style="border-bottom: 3px solid #5c3ebf;">
+                    <div class="num" style="color:#5c3ebf;">${totalSales}</div>
+                    <div class="lbl">Total Sales</div>
+                </div>
+            </div>
+            <div class="stat-card" style="margin-top:10px; border-bottom: 3px solid var(--accent);">
+                <div class="num" style="color:var(--accent); font-size: 30px;">${currentStock}</div>
+                <div class="lbl">Current Stock Saat Ini</div>
+            </div>
+          `;
+      }
+  } catch (err) {
+      console.error(err);
+      if (bodyEl) bodyEl.innerHTML = `<div class="hint" style="text-align:center; color:var(--danger); padding:20px;">Gagal memuat ringkasan SKU.</div>`;
+  }
+}
+
+document.getElementById("btnSkuSummary").onclick = () => {
+  showSkuSummary(document.getElementById("moveSearchSku").value);
+};
+document.getElementById("moveSearchSku").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && e.shiftKey) { e.preventDefault(); showSkuSummary(document.getElementById("moveSearchSku").value); }
+});
+document.getElementById("btnCloseSkuSummary").onclick = () => document.getElementById("skuSummaryModal").classList.remove("show");
+
 document.getElementById("btnExportMovements").onclick = async ()=>{
   const rows = await idbGetAllMovements();
-  const validRows = rows.filter(r => r !== null && r !== undefined);
+  const validRows = rows.filter(r => r !== null && r !== undefined && ['INBOUND', 'OUTBOUND', 'SALES', 'RETUR', 'DELETE'].includes(r.type));
   if(validRows.length === 0){ toast("Tidak ada log", ""); return; }
   
   const wsData = validRows.map(r=>({
@@ -1661,6 +2332,7 @@ document.getElementById("btnExportMovements").onclick = async ()=>{
     "Bin Info": r.bin || "-",
     "SKU": r.sku,
     "Nama Barang": r.nama || "-",
+    "No Dokumen": r.docNo || "-",
     "Keterangan / Remark": r.remark || "-"
   }));
   
@@ -1672,10 +2344,136 @@ document.getElementById("btnExportMovements").onclick = async ()=>{
 
 document.getElementById("btnClearMovements").onclick = async ()=>{
   if(!confirm("Hapus seluruh Tracking Log Lokal secara permanen?")) return;
+  const rows = await idbGetAllMovements();
+  const nonMoveRows = rows.filter(r => r && !['INBOUND', 'OUTBOUND', 'SALES', 'RETUR', 'DELETE'].includes(r.type));
   await idbClearMovements();
+  for(let r of nonMoveRows) { await idbAddMovement(r); }
   loadMovements();
   toast("Log dibersihkan", "good");
 };
+
+/* ============================================================
+   7.6) TAB HISTORY CC & TRANSFER (LOKAL ONLY)
+   ============================================================ */
+let cctfRenderLimit = 200;
+
+async function loadHistoryCCTF(filterSku = "", startDate = "", endDate = "") {
+  try {
+      const rows = await idbGetAllMovements();
+      let validRows = rows.filter(r => r !== null && r !== undefined);
+      
+      validRows = validRows.filter(r => ['CYCLE_COUNT', 'TRANSFER', 'CC_CLEAR', 'CC_INSERT'].includes(r.type));
+
+      if (filterSku) {
+          const q = filterSku.toLowerCase().trim();
+          validRows = validRows.filter(r => (r.sku && r.sku.toLowerCase().includes(q)) || (r.bin && r.bin.toLowerCase().includes(q)));
+      }
+      
+      if (startDate || endDate) {
+          const start = startDate ? new Date(startDate) : new Date("2000-01-01");
+          start.setHours(0,0,0,0);
+          const end = endDate ? new Date(endDate) : new Date("2099-12-31");
+          end.setHours(23,59,59,999);
+          
+          validRows = validRows.filter(r => {
+             if (!r.ts) return false;
+             const d = new Date(r.ts);
+             return d >= start && d <= end;
+          });
+      }
+      
+      const statQty = document.getElementById("statCCTFQty");
+      if(statQty) statQty.textContent = validRows.length;
+
+      const tbody = document.getElementById("cctfBody");
+      if(!tbody) return;
+      tbody.innerHTML = "";
+
+      if(validRows.length === 0){
+         tbody.innerHTML = `<tr><td colspan="5" class="hint" style="text-align:center; padding: 24px;">Tidak ada log Cycle Count / Transfer.</td></tr>`;
+         document.getElementById("cctfLoadMoreContainer").style.display = "none";
+         return;
+      }
+
+      const renderRows = validRows.slice().reverse().slice(0, cctfRenderLimit);
+
+      renderRows.forEach(r => {
+        const tr = document.createElement("tr");
+        const jam = r.ts ? new Date(r.ts).toLocaleString("id-ID") : "-";
+        const safeRemark = r.remark ? r.remark.replace(/</g, "&lt;").replace(/>/g, "&gt;") : '';
+        
+        let typeBadge = `<span class="badge">${r.type}</span>`;
+        if(r.type === 'TRANSFER') typeBadge = `<span class="badge transfer">TRANSFER BIN</span>`;
+        else if(r.type.includes('CC_')) typeBadge = `<span class="badge warning">CYCLE COUNT</span>`;
+        else if(r.type === 'CYCLE_COUNT') typeBadge = `<span class="badge warning">CYCLE COUNT</span>`;
+
+        tr.innerHTML = `
+          <td>${jam}</td>
+          <td>${typeBadge}</td>
+          <td style="font-weight:bold;">${r.bin || '-'}</td>
+          <td class="sku">${r.sku || '-'}</td>
+          <td>${safeRemark}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById("cctfLoadMoreContainer").style.display = validRows.length > cctfRenderLimit ? "block" : "none";
+
+  } catch (err) {
+      console.error(err);
+      const tbody = document.getElementById("cctfBody");
+      if(tbody) tbody.innerHTML = `<tr><td colspan="5" class="hint" style="text-align:center; color:red;">Gagal memuat log lokal.</td></tr>`;
+  }
+}
+
+document.getElementById("btnSearchCCTF").onclick = () => {
+   cctfRenderLimit = 200;
+   const s = document.getElementById("cctfSearchSku").value;
+   const sd = document.getElementById("cctfStartDate").value;
+   const ed = document.getElementById("cctfEndDate").value;
+   loadHistoryCCTF(s, sd, ed);
+};
+document.getElementById("btnResetCCTF").onclick = () => {
+   document.getElementById("cctfSearchSku").value = "";
+   document.getElementById("cctfStartDate").value = "";
+   document.getElementById("cctfEndDate").value = "";
+   cctfRenderLimit = 200;
+   loadHistoryCCTF();
+};
+document.getElementById("btnLoadMoreCCTF").onclick = () => {
+  cctfRenderLimit += 500;
+  document.getElementById("btnSearchCCTF").click();
+};
+
+document.getElementById("btnExportCCTF").onclick = async ()=>{
+  const rows = await idbGetAllMovements();
+  const validRows = rows.filter(r => r !== null && r !== undefined && ['CYCLE_COUNT', 'TRANSFER', 'CC_CLEAR', 'CC_INSERT'].includes(r.type));
+  if(validRows.length === 0){ toast("Tidak ada log", ""); return; }
+  
+  const wsData = validRows.map(r=>({
+    "Waktu Eksekusi": r.ts ? new Date(r.ts).toLocaleString("id-ID") : "-",
+    "Tipe Eksekusi": r.type || "-",
+    "Bin Info": r.bin || "-",
+    "SKU": r.sku,
+    "Keterangan / Remark": r.remark || "-"
+  }));
+  
+  const ws = XLSX.utils.json_to_sheet(wsData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "History CC Transfer Lokal");
+  XLSX.writeFile(wb, `History_CC_Transfer_${Date.now()}.xlsx`);
+};
+
+document.getElementById("btnClearCCTF").onclick = async ()=>{
+  if(!confirm("Hapus seluruh Log Cycle Count & Transfer Lokal secara permanen?")) return;
+  const rows = await idbGetAllMovements();
+  const nonCCTFRows = rows.filter(r => r && !['CYCLE_COUNT', 'TRANSFER', 'CC_CLEAR', 'CC_INSERT'].includes(r.type));
+  await idbClearMovements();
+  for(let r of nonCCTFRows) { await idbAddMovement(r); }
+  loadHistoryCCTF();
+  toast("Log dibersihkan", "good");
+};
+
 
 /* ============================================================
    9) MASTER PRODUK: UPLOAD & PULL (SATU-SATUNYA CLOUD)
@@ -1705,21 +2503,6 @@ document.getElementById("fileMaster").addEventListener("change", (e)=>{
     document.getElementById("masterPreviewInfo").textContent =
       `Berhasil membaca ${parsedMaster.length} baris data dari file "${file.name}"`;
 
-    const tbody = document.getElementById("masterPreviewBody");
-    if(tbody){
-      tbody.innerHTML = "";
-      parsedMaster.slice(0, 50).forEach(r=>{
-        const tr = document.createElement("tr");
-        const safeNama = r.nama ? r.nama.replace(/</g, "&lt;").replace(/>/g, "&gt;") : 'N/A';
-        tr.innerHTML = `<td class="sku">${r.sku}</td><td>${safeNama}</td>`;
-        tbody.appendChild(tr);
-      });
-      if(parsedMaster.length > 50){
-        const tr = document.createElement("tr");
-        tr.innerHTML = `<td colspan="2" class="hint" style="text-align:center;">... menampilkan 50 dari ${parsedMaster.length} baris</td>`;
-        tbody.appendChild(tr);
-      }
-    }
     document.getElementById("btnUploadMaster").disabled = parsedMaster.length === 0;
   };
   reader.readAsArrayBuffer(file);
@@ -1729,8 +2512,6 @@ document.getElementById("btnClearFile").onclick = ()=>{
   parsedMaster = [];
   document.getElementById("fileMaster").value = "";
   document.getElementById("masterPreviewInfo").textContent = "";
-  const tbody = document.getElementById("masterPreviewBody");
-  if(tbody) tbody.innerHTML = `<tr><td colspan="2" class="hint" style="text-align:center;">Pilih file excel untuk mempratinjau data</td></tr>`;
   document.getElementById("btnUploadMaster").disabled = true;
   document.getElementById("masterProgress").style.width = "0%";
 };
@@ -1810,7 +2591,7 @@ async function refreshMasterStats(){
     await loadOutboundLogFromIDB();
   } catch (e) {
     console.error("Gagal membuka database lokal (IndexedDB):", e);
-    toast("Peringatan: Gagal membuka database lokal. Pastikan file dijalankan via server (Localhost).", "warning");
+    toast("Peringatan: Gagal membuka database lokal.", "warning");
   }
 
   try {
@@ -1819,7 +2600,7 @@ async function refreshMasterStats(){
     refreshMasterStats();
   } catch(e) {
     console.error("Gagal konek Firestore:", e);
-    setConn(false, "Gagal konek Firestore / Periksa Aturan Security");
+    setConn(false, "Mode Lokal Offline Aktif");
   }
 
   scanInput.focus();
