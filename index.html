@@ -11,6 +11,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/firebase-app-compat.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/firebase-firestore-compat.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <style>
   :root {
@@ -300,6 +301,13 @@
           <button class="nav-item locked" id="navAllScan">🔒 Stok Fisik (Lokal)</button>
           <button class="nav-item locked" id="navBinCL">🔒 Data Bin CL</button>
           <button class="nav-item" id="navMaster">📦 Master Produk (Cloud)</button>
+        </div>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-group-title">Utilitas <span>▼</span></div>
+        <div class="nav-group-items">
+          <button class="nav-item" id="navQRCode">🔳 Buat Barcode QR</button>
         </div>
       </div>
 
@@ -715,9 +723,9 @@
           
           <div class="scroll-table" style="flex: 1;">
             <table>
-              <thead><tr><th>Waktu Masuk</th><th>Bin</th><th>SKU</th><th>Nama Barang</th><th style="text-align:center;">Aksi</th></tr></thead>
+              <thead><tr><th>Waktu Masuk</th><th>Bin</th><th>SKU</th><th>Nama Barang</th><th>Remark</th><th style="text-align:center;">Aksi</th></tr></thead>
               <tbody id="allScanBody">
-                <tr><td colspan="5" class="hint" style="text-align:center;">Memuat data...</td></tr>
+                <tr><td colspan="6" class="hint" style="text-align:center;">Memuat data...</td></tr>
               </tbody>
             </table>
             <div id="allScanLoadMoreContainer" style="text-align:center; padding: 12px; display:none;">
@@ -845,6 +853,66 @@
               <button class="btn btn-accent btn-sm" id="btnUploadMaster" disabled>🚀 Simpan ke Cloud</button>
               <button class="btn btn-ghost btn-sm" id="btnClearFile">Batal</button>
             </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ============================ TAB: BUAT BARCODE QR ============================ -->
+      <section id="tab-qrcode" class="hidden">
+        <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
+
+          <div class="card" style="margin: 0; flex: 1; min-width: 320px;">
+            <h3 class="card-header">Buat Barcode QR</h3>
+            <div class="hint" style="margin-bottom: 12px;">Ketik SKU, kode Bin, atau teks apa pun untuk dijadikan QR Code. Atur ukurannya sesuai kebutuhan cetak label.</div>
+
+            <div style="margin-bottom: 14px;">
+                <div class="lbl" style="font-size: 11px; margin-bottom: 6px; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Teks / SKU / Bin</div>
+                <input type="text" id="qrTextInput" class="input-sm" placeholder="Contoh: SKU12345 atau A-01-02" autocomplete="off">
+            </div>
+
+            <div style="margin-bottom: 14px;">
+                <div class="lbl" style="font-size: 11px; margin-bottom: 6px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; display:flex; justify-content:space-between;">
+                    <span>Ukuran QR</span>
+                    <span id="qrSizeLabel" style="color:var(--accent); font-family: var(--font-mono);">220 px</span>
+                </div>
+                <input type="range" id="qrSizeSlider" min="100" max="500" step="10" value="220" style="width:100%;">
+                <div style="display:flex; justify-content:space-between; margin-top:6px;">
+                    <button class="btn btn-ghost btn-sm" data-size="150">Kecil</button>
+                    <button class="btn btn-ghost btn-sm" data-size="250">Sedang</button>
+                    <button class="btn btn-ghost btn-sm" data-size="400">Besar</button>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 14px;">
+                <div class="lbl" style="font-size: 11px; margin-bottom: 6px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; display:flex; justify-content:space-between;">
+                    <span>Ukuran Teks Label</span>
+                    <span id="qrLabelSizeLabel" style="color:var(--accent); font-family: var(--font-mono);">16 px</span>
+                </div>
+                <input type="range" id="qrLabelSizeSlider" min="8" max="60" step="1" value="16" style="width:100%;">
+                <div style="display:flex; justify-content:space-between; margin-top:6px;">
+                    <button class="btn btn-ghost btn-sm" data-labelsize="12">Kecil</button>
+                    <button class="btn btn-ghost btn-sm" data-labelsize="16">Sedang</button>
+                    <button class="btn btn-ghost btn-sm" data-labelsize="32">Besar</button>
+                </div>
+                <label style="display:flex; align-items:center; gap:8px; margin-top:10px; font-size:12px; color:var(--text-muted); cursor:pointer;">
+                    <input type="checkbox" id="qrShowLabelCheckbox" checked style="width:auto;">
+                    Tampilkan teks label saat print
+                </label>
+            </div>
+
+            <div class="btn-row" style="margin-top: 8px;">
+                <button class="btn btn-accent" id="btnGenerateQR" style="flex:1;">🔳 Generate QR</button>
+                <button class="btn btn-ghost" id="btnDownloadQR" style="flex:1;" disabled>⬇️ Download PNG</button>
+                <button class="btn btn-ghost" id="btnPrintQR" style="flex:1;" disabled>🖨️ Print</button>
+            </div>
+          </div>
+
+          <div class="card" style="margin: 0; flex: 1; min-width: 320px; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height: 360px;">
+            <div id="qrPreviewContainer" style="display:flex; align-items:center; justify-content:center; min-height: 220px;">
+                <span class="hint">Preview QR Code akan muncul di sini.</span>
+            </div>
+            <div id="qrPreviewLabel" class="hint" style="margin-top: 14px; font-weight: 700; text-align:center; word-break: break-all; font-size: 16px;"></div>
           </div>
 
         </div>
@@ -1056,7 +1124,8 @@ const tabNames = [
   { id: "bincl", nav: "navBinCL", tab: "tab-bincl" },
   { id: "movement", nav: "navMovement", tab: "tab-movement" },
   { id: "historycctf", nav: "navHistoryCCTF", tab: "tab-historycctf" },
-  { id: "master", nav: "navMaster", tab: "tab-master" }
+  { id: "master", nav: "navMaster", tab: "tab-master" },
+  { id: "qrcode", nav: "navQRCode", tab: "tab-qrcode" }
 ];
 
 function switchTab(activeId) {
@@ -1107,6 +1176,7 @@ function switchTab(activeId) {
     loadHistoryCCTF();
   }
   if(activeId === "master") refreshMasterStats();
+  if(activeId === "qrcode") document.getElementById("qrTextInput").focus();
 }
 
 document.getElementById("navScan").onclick = () => switchTab("scan");
@@ -1120,6 +1190,7 @@ document.getElementById("navBinCL").onclick = () => switchTab("bincl");
 document.getElementById("navMovement").onclick = () => switchTab("movement");
 document.getElementById("navHistoryCCTF").onclick = () => switchTab("historycctf");
 document.getElementById("navMaster").onclick = () => switchTab("master");
+document.getElementById("navQRCode").onclick = () => switchTab("qrcode");
 
 /* ============================================================
    4) INBOUND / RETUR SCAN LOGIC (Data Lokal Only)
@@ -1130,6 +1201,17 @@ const scanInput = document.getElementById("scanInput");
 const binInput = document.getElementById("binInput");
 const docNoInput = document.getElementById("docNoInput");
 const inboundType = document.getElementById("inboundType");
+
+// Saat tipe diganti ke RETUR, No. Dokumen otomatis diisi awalan "R" sebagai penanda barang retur.
+// Saat dibalik ke INBOUND lagi, awalan "R" otomatis (yang belum diketik lanjut oleh user) dibersihkan kembali.
+inboundType.addEventListener("change", () => {
+  const val = docNoInput.value.trim().toUpperCase();
+  if (inboundType.value === "RETUR") {
+      if (!val) docNoInput.value = "R";
+  } else {
+      if (val === "R") docNoInput.value = "";
+  }
+});
 
 scanInput.addEventListener("keydown", async (e)=>{
   if(e.key !== "Enter") return;
@@ -1266,7 +1348,8 @@ async function executeDeduction(sku, bin, typeStr, remark, isSession = false) {
     const allScansRaw = await idbGetAllScans();
     const allScans = allScansRaw.filter(r => r !== null && r !== undefined);
     
-    const targetIndex = allScans.findIndex(r => r.sku === sku && (r.bin || '-') === bin && r.type !== 'OUT');
+    const skuNorm = String(sku).trim().toUpperCase();
+    const targetIndex = allScans.findIndex(r => r.sku && r.sku.trim().toUpperCase() === skuNorm && (r.bin || '-') === bin && r.type !== 'OUT');
     
     if (targetIndex === -1) {
         toast(`Stok tidak mencukupi untuk SKU ${sku} di Bin ${bin}`, "bad");
@@ -1503,6 +1586,7 @@ async function handleTransferScan(sku) {
   const fromBin = document.getElementById("tfBinFromInput").value.trim().toUpperCase();
   const toBin = document.getElementById("tfBinToInput").value.trim().toUpperCase();
   const resultBox = document.getElementById("tfScanResult");
+  const skuNorm = String(sku).trim().toUpperCase();
 
   if (!fromBin || !toBin) { toast("Bin Asal dan Bin Tujuan wajib diisi!", "bad"); return; }
   if (fromBin === toBin) { toast("Bin Asal dan Bin Tujuan tidak boleh sama!", "bad"); return; }
@@ -1513,7 +1597,9 @@ async function handleTransferScan(sku) {
       const stagedRowIds = new Set(sessionTransferScans.map(s => s.rowId));
 
       // Cari 1 unit fisik SKU ini yang benar-benar ada di Bin Asal & belum di-staging pada sesi ini
-      const candidate = validRows.find(r => r.type !== 'OUT' && r.sku === sku && (r.bin || '-').toUpperCase() === fromBin && !stagedRowIds.has(r.id));
+      // Perbandingan SKU dibuat case-insensitive (dan di-trim) agar hasil scan barcode (misal huruf kecil)
+      // tetap cocok dengan data yang tersimpan walau beda kapitalisasi/spasi.
+      const candidate = validRows.find(r => r.type !== 'OUT' && r.sku && r.sku.trim().toUpperCase() === skuNorm && (r.bin || '-').toUpperCase() === fromBin && !stagedRowIds.has(r.id));
 
       if (!candidate) {
           resultBox.innerHTML = `<div class="result notfound">
@@ -1842,7 +1928,8 @@ window.processTransfer = async function(sku, oldBin) {
     
     const rows = await idbGetAllScans();
     const validRows = rows.filter(r => r !== null && r !== undefined);
-    const target = validRows.find(r => r.sku === sku && (r.bin || '-') === oldBin && r.type !== "OUT");
+    const skuNorm = String(sku).trim().toUpperCase();
+    const target = validRows.find(r => r.sku && r.sku.trim().toUpperCase() === skuNorm && (r.bin || '-') === oldBin && r.type !== "OUT");
     
     if (!target) {
         toast("Sistem gagal mencari record spesifik. Pastikan stok masih ada.", "bad"); return;
@@ -2027,7 +2114,7 @@ async function loadAllScan(){
       tbody.innerHTML = "";
 
       if(validRows.length === 0){
-         tbody.innerHTML = `<tr><td colspan="5" class="hint" style="text-align:center; padding: 24px;">Data Induk Lokal Kosong.</td></tr>`;
+         tbody.innerHTML = `<tr><td colspan="6" class="hint" style="text-align:center; padding: 24px;">Data Induk Lokal Kosong.</td></tr>`;
          document.getElementById("allScanLoadMoreContainer").style.display = "none";
          return;
       }
@@ -2038,12 +2125,17 @@ async function loadAllScan(){
         const tr = document.createElement("tr");
         const jam = r.ts ? new Date(r.ts).toLocaleString("id-ID") : "-";
         const safeNama = r.nama ? r.nama.replace(/</g, "&lt;").replace(/>/g, "&gt;") : 'N/A';
+        const isRetur = r.type === 'RETUR';
+        const remarkCell = isRetur
+          ? `<span class="badge warning" title="Ditandai sebagai barang Retur">R - RETUR</span>`
+          : `<span class="hint">-</span>`;
         
         tr.innerHTML = `
           <td>${jam}</td>
           <td style="color:var(--accent); font-weight:bold;">${r.bin || '-'}</td>
           <td class="sku">${r.sku || '-'}</td>
           <td>${safeNama}</td>
+          <td>${remarkCell}</td>
           <td style="text-align:center;"><button class="btn-delete" onclick="deleteMasterRow('${r.id}')" title="Hapus Dari Data Induk">🗑️</button></td>
         `;
         tbody.appendChild(tr);
@@ -2054,7 +2146,7 @@ async function loadAllScan(){
   } catch (err) {
       console.error(err);
       const tbody = document.getElementById("allScanBody");
-      if(tbody) tbody.innerHTML = `<tr><td colspan="5" class="hint" style="text-align:center; color:red;">Gagal memuat data lokal: ${err.message}</td></tr>`;
+      if(tbody) tbody.innerHTML = `<tr><td colspan="6" class="hint" style="text-align:center; color:red;">Gagal memuat data lokal: ${err.message}</td></tr>`;
   }
 }
 
@@ -2253,6 +2345,7 @@ document.getElementById("fileUploadScan").addEventListener("change", async (e) =
       const ws = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(ws, { defval: "" });
       let successCount = 0;
+      const uploadedBins = new Set();
       
       for(let r of rows) {
         if(!r) continue;
@@ -2264,6 +2357,7 @@ document.getElementById("fileUploadScan").addEventListener("change", async (e) =
         const skuVal = skuKey ? String(r[skuKey]).trim() : null;
         if(!skuVal) continue;
         const binVal = binKey ? String(r[binKey]).trim().toUpperCase() : "-";
+        if (binVal && binVal !== "-") uploadedBins.add(binVal);
         
         let finalTs = new Date().toISOString();
         if(waktuKey && r[waktuKey]) {
@@ -2285,6 +2379,16 @@ document.getElementById("fileUploadScan").addEventListener("change", async (e) =
         await idbAddScan(entry);
         await recordMovement(entry.id, "INBOUND", skuVal, product ? product.nama : "-", binVal, "Batch Upload Excel");
         successCount++;
+      }
+      
+      // Daftarkan otomatis setiap Bin baru dari file upload ke Master Bin (Pencarian Riwayat),
+      // supaya Bin tersebut tetap tampil (qty otomatis 0 & berwarna merah) walau stoknya nanti habis.
+      if (uploadedBins.size > 0) {
+          let binsChanged = false;
+          uploadedBins.forEach(b => {
+              if (!masterBins.includes(b)) { masterBins.push(b); binsChanged = true; }
+          });
+          if (binsChanged) saveMasterBins();
       }
       
       document.getElementById("fileUploadScan").value = "";
@@ -2419,9 +2523,10 @@ async function showSkuSummary(rawSku) {
           if (product && product.nama) nama = product.nama;
       } catch (e) { /* offline / master tidak ditemukan, lanjut fallback dari histori */ }
 
+      const skuNorm = String(sku).trim().toUpperCase();
       const allMoves = await idbGetAllMovements();
       const validMoves = allMoves.filter(m => m !== null && m !== undefined);
-      const skuMoves = validMoves.filter(m => m.sku === sku);
+      const skuMoves = validMoves.filter(m => m.sku && m.sku.trim().toUpperCase() === skuNorm);
 
       if (nama === "-") {
           const withNama = skuMoves.find(m => m.nama && m.nama !== "-" && m.nama !== "MULTIPLE" && m.nama !== "Batch CC");
@@ -2434,7 +2539,7 @@ async function showSkuSummary(rawSku) {
       const totalSales = skuMoves.filter(m => m.type === "SALES").length;
 
       const allStock = await idbGetAllScans();
-      const currentStock = allStock.filter(r => r && r.type !== "OUT" && r.sku === sku).length;
+      const currentStock = allStock.filter(r => r && r.type !== "OUT" && r.sku && r.sku.trim().toUpperCase() === skuNorm).length;
 
       if (bodyEl) {
           const safeNama = String(nama).replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -2746,6 +2851,156 @@ async function refreshMasterStats(){
       if(statLocal) statLocal.textContent = local;
   } catch(e) { console.error(e); }
 }
+
+/* ============================================================
+   BUAT BARCODE QR (ukuran bisa diatur besar/kecil)
+   ============================================================ */
+let qrInstance = null;
+const qrTextInput = document.getElementById("qrTextInput");
+const qrSizeSlider = document.getElementById("qrSizeSlider");
+const qrSizeLabel = document.getElementById("qrSizeLabel");
+const qrLabelSizeSlider = document.getElementById("qrLabelSizeSlider");
+const qrLabelSizeLabel = document.getElementById("qrLabelSizeLabel");
+const qrShowLabelCheckbox = document.getElementById("qrShowLabelCheckbox");
+const qrPreviewContainer = document.getElementById("qrPreviewContainer");
+const qrPreviewLabel = document.getElementById("qrPreviewLabel");
+const btnDownloadQR = document.getElementById("btnDownloadQR");
+const btnPrintQR = document.getElementById("btnPrintQR");
+
+function getQrDataUrl() {
+  const canvas = qrPreviewContainer.querySelector("canvas");
+  const img = qrPreviewContainer.querySelector("img");
+  if (canvas) return canvas.toDataURL("image/png");
+  if (img && img.src) return img.src;
+  return null;
+}
+
+function updateLabelPreviewStyle() {
+  qrPreviewLabel.style.fontSize = `${qrLabelSizeSlider.value}px`;
+  qrPreviewLabel.style.display = qrShowLabelCheckbox.checked ? "block" : "none";
+}
+
+function renderQRCode() {
+  const text = qrTextInput.value.trim();
+  if (!text) { toast("Ketik teks / SKU / Bin terlebih dahulu.", "warning"); return; }
+
+  const size = parseInt(qrSizeSlider.value, 10);
+  qrPreviewContainer.innerHTML = "";
+  qrPreviewLabel.textContent = text;
+  updateLabelPreviewStyle();
+
+  try {
+      qrInstance = new QRCode(qrPreviewContainer, {
+          text: text,
+          width: size,
+          height: size,
+          colorDark: "#1d2d3e",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.M
+      });
+      btnDownloadQR.disabled = false;
+      btnPrintQR.disabled = false;
+  } catch (err) {
+      console.error(err);
+      qrPreviewContainer.innerHTML = `<span class="hint" style="color:var(--danger);">Gagal membuat QR Code.</span>`;
+      btnDownloadQR.disabled = true;
+      btnPrintQR.disabled = true;
+  }
+}
+
+document.getElementById("btnGenerateQR").onclick = renderQRCode;
+qrTextInput.addEventListener("keydown", (e) => { if (e.key === "Enter") renderQRCode(); });
+
+qrSizeSlider.addEventListener("input", () => {
+  qrSizeLabel.textContent = `${qrSizeSlider.value} px`;
+  if (qrTextInput.value.trim()) renderQRCode();
+});
+
+qrLabelSizeSlider.addEventListener("input", () => {
+  qrLabelSizeLabel.textContent = `${qrLabelSizeSlider.value} px`;
+  updateLabelPreviewStyle();
+});
+
+qrShowLabelCheckbox.addEventListener("change", updateLabelPreviewStyle);
+
+document.querySelectorAll('[data-labelsize]').forEach(btn => {
+  btn.addEventListener("click", () => {
+      qrLabelSizeSlider.value = btn.getAttribute("data-labelsize");
+      qrLabelSizeLabel.textContent = `${qrLabelSizeSlider.value} px`;
+      updateLabelPreviewStyle();
+  });
+});
+
+document.querySelectorAll('[data-size]').forEach(btn => {
+  btn.addEventListener("click", () => {
+      qrSizeSlider.value = btn.getAttribute("data-size");
+      qrSizeLabel.textContent = `${qrSizeSlider.value} px`;
+      if (qrTextInput.value.trim()) renderQRCode();
+  });
+});
+
+btnDownloadQR.onclick = () => {
+  const text = qrTextInput.value.trim() || "qrcode";
+  const safeName = text.replace(/[^a-z0-9\-_]/gi, "_");
+  const dataUrl = getQrDataUrl();
+
+  if (!dataUrl) { toast("Generate QR Code terlebih dahulu.", "warning"); return; }
+
+  const a = document.createElement("a");
+  a.href = dataUrl;
+  a.download = `QR_${safeName}.png`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+};
+
+btnPrintQR.onclick = () => {
+  const dataUrl = getQrDataUrl();
+  if (!dataUrl) { toast("Generate QR Code terlebih dahulu.", "warning"); return; }
+
+  const text = qrTextInput.value.trim() || "QR Code";
+  const safeText = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const labelFontSize = parseInt(qrLabelSizeSlider.value, 10) || 16;
+  const showLabel = qrShowLabelCheckbox.checked;
+
+  const printWindow = window.open('', '_blank', 'width=480,height=600');
+  if (!printWindow) { toast("Popup diblokir browser. Izinkan popup untuk mencetak.", "bad"); return; }
+
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Print QR - ${safeText}</title>
+      <style>
+        * { box-sizing: border-box; }
+        body {
+          margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+          min-height: 100vh; font-family: Arial, Helvetica, sans-serif; background: #fff;
+        }
+        img { image-rendering: pixelated; max-width: 90vw; }
+        .label { margin-top: 14px; font-weight: bold; font-size: ${labelFontSize}px; line-height: 1.25; word-break: break-all; text-align: center; padding: 0 16px; display: ${showLabel ? 'block' : 'none'}; }
+        @media print {
+          body { min-height: auto; }
+          @page { margin: 10mm; }
+        }
+      </style>
+    </head>
+    <body>
+      <img src="${dataUrl}" alt="QR Code">
+      <div class="label">${safeText}</div>
+      <script>
+        window.onload = function () {
+          window.print();
+        };
+        window.onafterprint = function () {
+          window.close();
+        };
+      <\/script>
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
+};
 
 (async function init(){
   try {
