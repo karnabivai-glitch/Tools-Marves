@@ -78,9 +78,14 @@
   .app-container { display: flex; width: 100vw; flex: 1; min-height: 0; }
 
   .sidebar {
-    width: 240px; background-color: var(--bg-sidebar); border-right: 1px solid var(--border);
-    display: flex; flex-direction: column; z-index: 10;
+    width: 240px; min-width: 240px; background-color: var(--bg-sidebar); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; z-index: 10; overflow: hidden;
+    transition: width 0.2s ease, min-width 0.2s ease, opacity 0.15s ease;
   }
+  .sidebar.collapsed { width: 0; min-width: 0; opacity: 0; border-right: none; pointer-events: none; }
+  .sidebar.collapsed ~ .content-area .section-container { max-width: 1600px; transition: max-width 0.2s ease; }
+  .shell-icon { cursor: pointer; padding: 4px 6px; border-radius: 4px; transition: background 0.15s; }
+  .shell-icon:hover { background: rgba(255,255,255,0.15); }
   .sidebar-header { padding: 16px 20px; border-bottom: 1px solid var(--border); }
   .sidebar-header h1 {
     margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase;
@@ -246,6 +251,10 @@
   .bin-stat-badge.empty { background: var(--danger-dim); border-color: var(--danger); }
   .bin-stat-badge.empty .b-name { color: var(--danger); }
   .bin-stat-badge.empty .b-qty { background: var(--danger); }
+  .bin-stat-badge.low { background: var(--warning-dim); border-color: var(--warning); }
+  .bin-stat-badge.low .b-name { color: var(--warning); }
+  .bin-stat-badge.low .b-qty { background: var(--warning); }
+  #statEmptyBinCard:hover, #statLowBinCard:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-dim); }
   #advSearchBinStats { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
   .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .summary-grid .stat-card { padding: 14px 8px; }
@@ -256,7 +265,7 @@
 
 <div class="shell-bar">
   <div class="shell-left">
-    <span class="shell-icon">▤</span>
+    <span class="shell-icon" id="btnToggleSidebar" title="Buka/Tutup Sidebar">▤</span>
     <span>SCAN<span style="color:#8fc4ff;">WMS</span></span>
     <span class="shell-sep">|</span>
     <span class="shell-module">Warehouse Management</span>
@@ -292,6 +301,7 @@
           <button class="nav-item" id="navPivot">📊 Rekap Pivot Sesi</button>
           <button class="nav-item" id="navMovement">📜 Tracking Movement</button>
           <button class="nav-item" id="navHistoryCCTF">📜 History CC & Transfer</button>
+          <button class="nav-item" id="navDiscrepancy">⚖️ Discrepancy</button>
         </div>
       </div>
       
@@ -675,6 +685,18 @@
                   <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: bold;">Ditemukan:</span>
                   <span class="num" id="advSearchQty" style="font-size: 16px; font-weight: 800; color: var(--accent);">0</span>
               </div>
+              <div style="display: flex; align-items: center; gap: 8px; background: var(--bg-input); border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px;" title="Total seluruh Bin terdaftar">
+                  <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: bold;">All Bin:</span>
+                  <span class="num" id="statAllBinCount" style="font-size: 16px; font-weight: 800; color: var(--accent);">0</span>
+              </div>
+              <div id="statEmptyBinCard" style="display: flex; align-items: center; gap: 8px; background: var(--bg-input); border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; cursor: pointer;" title="Klik untuk lihat semua Bin kosong (terurut A-H)">
+                  <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: bold;">Bin Kosong:</span>
+                  <span class="num" id="statEmptyBinCount" style="font-size: 16px; font-weight: 800; color: var(--danger);">0</span>
+              </div>
+              <div id="statLowBinCard" style="display: flex; align-items: center; gap: 8px; background: var(--bg-input); border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; cursor: pointer;" title="Klik untuk lihat Bin dengan stok rendah (qty 1-5), perlu di-restock">
+                  <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: bold;">Restock (≤5):</span>
+                  <span class="num" id="statLowBinCount" style="font-size: 16px; font-weight: 800; color: var(--warning);">0</span>
+              </div>
               <button class="btn btn-accent btn-sm" id="btnCreateBin" title="Buat Bin Baru (Perlu Password)">➕ Buat Bin</button>
               <button class="btn btn-danger btn-sm" id="btnDeleteBin" title="Hapus Bin (Perlu Password)">🗑️ Hapus Bin</button>
           </div>
@@ -691,9 +713,9 @@
           
           <div class="scroll-table" style="flex: 1;">
             <table>
-              <thead><tr><th>Waktu Masuk</th><th>Bin Terkini</th><th>SKU</th><th>Nama Barang</th><th style="text-align:center;">Aksi Eksekusi</th></tr></thead>
+              <thead><tr><th>Waktu Masuk</th><th>Bin Terkini</th><th>SKU</th><th>Nama Barang</th><th>Remark</th><th style="text-align:center;">Aksi Eksekusi</th></tr></thead>
               <tbody id="advSearchBody">
-                <tr><td colspan="5" class="hint" style="text-align:center;">Gunakan kolom pencarian di atas</td></tr>
+                <tr><td colspan="6" class="hint" style="text-align:center;">Gunakan kolom pencarian di atas</td></tr>
               </tbody>
             </table>
           </div>
@@ -800,6 +822,72 @@
         </div>
       </section>
 
+      <!-- ============================ TAB: DISCREPANCY (Rekonsiliasi OH vs Fisik) ======================== -->
+      <section id="tab-discrepancy" class="hidden" style="height: 100%;">
+        <div class="card" style="display: flex; flex-direction: column; height: 100%; padding: 16px 20px; margin-bottom: 0;">
+
+          <div style="display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
+             <div class="stat-card" style="margin:0; flex:1; min-width:100px; padding: 10px 6px;">
+                <div class="num" id="statDiscTotal" style="font-size:20px;">0</div>
+                <div class="lbl" style="font-size:9px;">Total SKU</div>
+             </div>
+             <div class="stat-card" style="margin:0; flex:1; min-width:100px; padding: 10px 6px; border-bottom: 3px solid var(--accent);">
+                <div class="num" id="statDiscOHQty" style="font-size:20px; color:var(--accent);">0</div>
+                <div class="lbl" style="font-size:9px;">WMS Qty</div>
+             </div>
+             <div class="stat-card" style="margin:0; flex:1; min-width:100px; padding: 10px 6px; border-bottom: 3px solid var(--success);">
+                <div class="num" id="statDiscFisikQty" style="font-size:20px; color:var(--success);">0</div>
+                <div class="lbl" style="font-size:9px;">Fisik Qty</div>
+             </div>
+             <div class="stat-card" style="margin:0; flex:1; min-width:100px; padding: 10px 6px;">
+                <div class="num" id="statDiscInboundQty" style="font-size:20px; color:var(--success);">0</div>
+                <div class="lbl" style="font-size:9px;">Inbound Qty</div>
+             </div>
+             <div class="stat-card" style="margin:0; flex:1; min-width:100px; padding: 10px 6px;">
+                <div class="num" id="statDiscOutboundQty" style="font-size:20px; color:var(--danger);">0</div>
+                <div class="lbl" style="font-size:9px;">Outbound Qty</div>
+             </div>
+             <div class="stat-card" style="margin:0; flex:1; min-width:100px; padding: 10px 6px; border-bottom: 3px solid var(--danger);">
+                <div class="num" id="statDiscDiffQty" style="font-size:20px; color:var(--danger);">0</div>
+                <div class="lbl" style="font-size:9px;">Diff</div>
+             </div>
+          </div>
+
+          <div class="toolbar-row" style="margin-bottom: 8px;">
+            <input type="text" id="discSearchInput" class="input-sm toolbar-search" placeholder="🔍 Cari SKU / Nama / Bin..." autocomplete="off">
+            <input type="file" id="fileDiscrepancyOH" accept=".xlsx,.xls,.csv" style="display:none;">
+            <button class="btn btn-accent btn-sm" id="discrepancyOHInfo" title="Belum ada data OH diupload." onclick="document.getElementById('fileDiscrepancyOH').click()">⬆️ OH</button>
+            <button class="btn btn-danger btn-sm" id="btnClearDiscrepancyOH" title="Hapus data OH yang sudah diupload">🗑️ OH</button>
+            <button class="btn btn-warning btn-sm" id="btnFilterSelisih" title="Tampilkan hanya baris yang selisih (bukan MATCH)">⚠️ Selisih</button>
+            <button class="btn btn-ghost btn-sm" id="btnFilterSelected" title="Tampilkan hanya baris yang dicentang">☑️ Filter</button>
+            <button class="btn btn-ghost btn-sm hidden" id="btnFilterReset" title="Kembali menampilkan semua baris">↺</button>
+            <div class="toolbar-spacer"></div>
+            <button class="btn btn-ghost btn-sm" id="btnRefreshDiscrepancy" title="Muat Ulang">🔄</button>
+            <button class="btn btn-ghost btn-sm" id="btnExportDiscrepancy" title="Export Excel">⬇️ Export</button>
+          </div>
+
+          <div class="scroll-table fill">
+            <table>
+              <thead><tr>
+                <th style="width:32px; text-align:center;"><input type="checkbox" id="discSelectAllCheckbox" title="Pilih semua baris yang tampil" style="width:auto; margin:0;"></th>
+                <th>SKU</th><th>Nama Barang</th>
+                <th style="text-align:center;">OH</th>
+                <th style="text-align:center;">Fisik (Qty)</th>
+                <th style="text-align:center;">Inbound</th>
+                <th style="text-align:center;">Outbound</th>
+                <th style="text-align:center;">Diff</th>
+                <th>Remark</th>
+                <th style="min-width:220px;">Lokasi Bin</th>
+                <th style="min-width:190px;">Aksi Revisi</th>
+              </tr></thead>
+              <tbody id="discrepancyBody">
+                <tr><td colspan="11" class="hint" style="text-align:center;">Upload data OH terlebih dahulu untuk memulai rekonsiliasi.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
       <!-- ============================ TAB: DATA BIN CL (Relabel SKU) ======================== -->
       <section id="tab-bincl" class="hidden" style="height: 100%;">
         <div class="card" style="display: flex; flex-direction: column; height: 100%; padding: 20px; margin-bottom: 0;">
@@ -830,10 +918,17 @@
       <section id="tab-master" class="hidden">
         <div style="max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
           
-          <div class="stat-card" style="border-bottom: 3px solid var(--accent); padding: 24px; margin: 0;">
-            <div class="num" id="statMasterLocal" style="color: var(--accent); font-size: 36px;">0</div>
-            <div class="lbl" style="font-size: 12px;">Total Master SKU (Cache Lokal)</div>
+          <div style="display: flex; gap: 16px;">
+            <div class="stat-card" style="border-bottom: 3px solid var(--accent); padding: 24px; margin: 0; flex: 1;">
+              <div class="num" id="statMasterLocal" style="color: var(--accent); font-size: 36px;">0</div>
+              <div class="lbl" style="font-size: 12px;">Total Master SKU (Cache Lokal)</div>
+            </div>
+            <div class="stat-card" style="border-bottom: 3px solid var(--success); padding: 24px; margin: 0; flex: 1;">
+              <div class="num" id="statMasterCloud" style="color: var(--success); font-size: 36px;">0</div>
+              <div class="lbl" style="font-size: 12px;">Total Master SKU (Firestore/Cloud)</div>
+            </div>
           </div>
+          <div class="hint" id="masterSyncStatus" style="text-align: center; margin-top: -8px;"></div>
 
           <div class="card" style="margin: 0;">
             <h3 class="card-header">Sinkronisasi Cloud</h3>
@@ -852,6 +947,15 @@
             <div class="btn-row" style="margin-top: 16px;">
               <button class="btn btn-accent btn-sm" id="btnUploadMaster" disabled>🚀 Simpan ke Cloud</button>
               <button class="btn btn-ghost btn-sm" id="btnClearFile">Batal</button>
+            </div>
+          </div>
+
+          <div class="card" style="margin: 0; border-color: var(--danger);">
+            <h3 class="card-header" style="color: var(--danger);">⚠️ Zona Berbahaya — Hapus Master SKU</h3>
+            <div class="hint" style="margin-bottom: 16px;">Tindakan ini permanen dan dilindungi password Administrator. Hapus Lokal dan Hapus Cloud terpisah satu sama lain.</div>
+            <div class="btn-row">
+              <button class="btn btn-danger btn-sm" id="btnClearMasterLocal" style="flex:1;">🗑️ Clear SKU Lokal</button>
+              <button class="btn btn-danger btn-sm" id="btnClearMasterCloud" style="flex:1;">🗑️ Clear SKU Cloud (Firestore)</button>
             </div>
           </div>
 
@@ -1113,6 +1217,22 @@ window.copyToClipboard = function(text) {
   navigator.clipboard.writeText(text).then(()=>{ toast("✓ Tersalin: " + text, "good"); }).catch(err=>{ toast("Gagal menyalin", "bad"); });
 };
 
+/* ============ SIDEBAR MINIMIZE/COLLAPSE ============ */
+(function initSidebarToggle(){
+  const sidebarEl = document.querySelector(".sidebar");
+  const btnToggle = document.getElementById("btnToggleSidebar");
+  if (!sidebarEl || !btnToggle) return;
+
+  if (localStorage.getItem("sidebarCollapsed") === "true") {
+      sidebarEl.classList.add("collapsed");
+  }
+
+  btnToggle.addEventListener("click", () => {
+      sidebarEl.classList.toggle("collapsed");
+      localStorage.setItem("sidebarCollapsed", sidebarEl.classList.contains("collapsed") ? "true" : "false");
+  });
+})();
+
 const tabNames = [
   { id: "scan", nav: "navScan", tab: "tab-scan" },
   { id: "outbound", nav: "navOutbound", tab: "tab-outbound" },
@@ -1124,6 +1244,7 @@ const tabNames = [
   { id: "bincl", nav: "navBinCL", tab: "tab-bincl" },
   { id: "movement", nav: "navMovement", tab: "tab-movement" },
   { id: "historycctf", nav: "navHistoryCCTF", tab: "tab-historycctf" },
+  { id: "discrepancy", nav: "navDiscrepancy", tab: "tab-discrepancy" },
   { id: "master", nav: "navMaster", tab: "tab-master" },
   { id: "qrcode", nav: "navQRCode", tab: "tab-qrcode" }
 ];
@@ -1160,6 +1281,7 @@ function switchTab(activeId) {
   if(activeId === "search") {
     document.getElementById("advSearchInput").focus();
     performAdvSearch(document.getElementById("advSearchInput").value);
+    refreshBinOverviewStats();
   }
   if(activeId === "allscan") loadAllScan();
   if(activeId === "bincl") loadBinCL();
@@ -1177,6 +1299,7 @@ function switchTab(activeId) {
   }
   if(activeId === "master") refreshMasterStats();
   if(activeId === "qrcode") document.getElementById("qrTextInput").focus();
+  if(activeId === "discrepancy") loadDiscrepancy();
 }
 
 document.getElementById("navScan").onclick = () => switchTab("scan");
@@ -1189,6 +1312,7 @@ document.getElementById("navAllScan").onclick = () => switchTab("allscan");
 document.getElementById("navBinCL").onclick = () => switchTab("bincl");
 document.getElementById("navMovement").onclick = () => switchTab("movement");
 document.getElementById("navHistoryCCTF").onclick = () => switchTab("historycctf");
+document.getElementById("navDiscrepancy").onclick = () => switchTab("discrepancy");
 document.getElementById("navMaster").onclick = () => switchTab("master");
 document.getElementById("navQRCode").onclick = () => switchTab("qrcode");
 
@@ -1732,7 +1856,11 @@ document.getElementById("advSearchInput").addEventListener("input", (e) => {
   searchTimeout = setTimeout(() => { performAdvSearch(e.target.value); }, 300);
 });
 
+let advSearchRequestId = 0;
 async function performAdvSearch(query) {
+  const myRequestId = ++advSearchRequestId; // penanda: hanya hasil dari pencarian TERBARU yang boleh dirender,
+                                             // mencegah hasil pencarian lama "menimpa" hasil yang lebih baru
+                                             // saat mengetik cepat (race condition pada operasi async IndexedDB).
   try {
       const tbody = document.getElementById("advSearchBody");
       const statFind = document.getElementById("advSearchQty");
@@ -1740,15 +1868,17 @@ async function performAdvSearch(query) {
       const q = query.toLowerCase().trim();
       
       if (!q) {
-         tbody.innerHTML = `<tr><td colspan="5" class="hint" style="text-align:center;">Gunakan kolom pencarian di atas</td></tr>`;
+         if (myRequestId !== advSearchRequestId) return;
+         tbody.innerHTML = `<tr><td colspan="6" class="hint" style="text-align:center;">Gunakan kolom pencarian di atas</td></tr>`;
          statFind.textContent = "0";
          if (binStatsContainer) binStatsContainer.innerHTML = `<span class="hint" style="font-size:11px;">Belum ada pencarian</span>`;
          return;
       }
       
-      tbody.innerHTML = `<tr><td colspan="5" class="hint" style="text-align:center;">Mencari...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" class="hint" style="text-align:center;">Mencari...</td></tr>`;
 
       const allRows = await idbGetAllScans();
+      if (myRequestId !== advSearchRequestId) return; // ada pencarian baru yang menyusul, batalkan render hasil lama ini
       const validRows = allRows.filter(r => r !== null && r !== undefined);
 
       const deactivatedBins = JSON.parse(localStorage.getItem('deactivatedBins') || '[]');
@@ -1783,7 +1913,8 @@ async function performAdvSearch(query) {
               binStatsContainer.innerHTML = binKeys.map(b => {
                   const qty = binCounts[b];
                   const safeB = String(b).replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                  return `<div class="bin-stat-badge${qty === 0 ? ' empty' : ''}" data-bin="${safeB}" title="Klik untuk lihat isi Bin ${safeB}"><span class="b-name">${safeB}</span><span class="b-qty">${qty}</span></div>`;
+                  const cls = qty === 0 ? ' empty' : (qty <= 5 ? ' low' : '');
+                  return `<div class="bin-stat-badge${cls}" data-bin="${safeB}" title="Klik untuk lihat isi Bin ${safeB}"><span class="b-name">${safeB}</span><span class="b-qty">${qty}</span></div>`;
               }).join('');
               binStatsContainer.querySelectorAll(".bin-stat-badge").forEach(el => {
                   el.addEventListener("click", () => viewBinContents(el.getAttribute("data-bin")));
@@ -1794,7 +1925,7 @@ async function performAdvSearch(query) {
       tbody.innerHTML = "";
 
       if (matched.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="5" class="hint" style="text-align:center;">Data tidak ditemukan di Stok Aktif</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="6" class="hint" style="text-align:center;">Data tidak ditemukan di Stok Aktif</td></tr>`;
           return;
       }
 
@@ -1803,12 +1934,17 @@ async function performAdvSearch(query) {
           const tr = document.createElement("tr");
           const jam = r.ts ? new Date(r.ts).toLocaleString("id-ID") : "-";
           const safeNama = r.nama ? r.nama.replace(/</g, "&lt;").replace(/>/g, "&gt;") : 'N/A';
+          const isRetur = r.type === 'RETUR';
+          const remarkCell = isRetur
+            ? `<span class="badge warning" title="Ditandai sebagai barang Retur">R - RETUR</span>`
+            : `<span class="hint">-</span>`;
           
           tr.innerHTML = `
             <td>${jam}</td>
             <td style="font-weight:bold;">${r.bin || '-'}</td>
             <td class="sku">${r.sku} <button class="btn-copy" onclick="copyToClipboard('${r.sku}')" style="padding: 2px 4px; font-size: 9px; margin-left: 4px;">Copy</button></td>
             <td>${safeNama}</td>
+            <td>${remarkCell}</td>
             <td style="white-space:nowrap; text-align:center;">
                <button class="btn-copy" onclick="processSales('${r.sku}', '${r.bin}')" title="Catat Sales / Kurangi Qty">💸 Sales</button>
                <button class="btn-copy" onclick="processTransfer('${r.sku}', '${r.bin}')" title="Pindahkan Item ke Bin Lain">📦 Transfer</button>
@@ -1819,13 +1955,13 @@ async function performAdvSearch(query) {
 
       if (matched.length > 500) {
           const tr = document.createElement("tr");
-          tr.innerHTML = `<td colspan="5" class="hint" style="text-align:center;">Menampilkan 500 item teratas...</td>`;
+          tr.innerHTML = `<td colspan="6" class="hint" style="text-align:center;">Menampilkan 500 item teratas...</td>`;
           tbody.appendChild(tr);
       }
   } catch (err) {
       console.error(err);
       const tbody = document.getElementById("advSearchBody");
-      if(tbody) tbody.innerHTML = `<tr><td colspan="5" class="hint" style="text-align:center; color:red;">Pencarian gagal: ${err.message}</td></tr>`;
+      if(tbody) tbody.innerHTML = `<tr><td colspan="6" class="hint" style="text-align:center; color:red;">Pencarian gagal: ${err.message}</td></tr>`;
   }
 }
 
@@ -1848,11 +1984,89 @@ async function getBinQtyMap() {
   return binQty;
 }
 
+async function refreshBinOverviewStats() {
+  try {
+      const binQty = await getBinQtyMap();
+      const allBinCodes = new Set([...masterBins, ...Object.keys(binQty)]);
+      const total = allBinCodes.size;
+      const empty = [...allBinCodes].filter(b => !binQty[b] || binQty[b] === 0).length;
+      const low = [...allBinCodes].filter(b => binQty[b] && binQty[b] > 0 && binQty[b] <= 5).length;
+      const elTotal = document.getElementById("statAllBinCount");
+      const elEmpty = document.getElementById("statEmptyBinCount");
+      const elLow = document.getElementById("statLowBinCount");
+      if (elTotal) elTotal.textContent = total;
+      if (elEmpty) elEmpty.textContent = empty;
+      if (elLow) elLow.textContent = low;
+  } catch (e) { console.error(e); }
+}
+
+async function showFilteredBinsOverview(filterFn, emptyMessage, loadingMessage, tableMessage) {
+  const container = document.getElementById("advSearchBinStats");
+  const input = document.getElementById("advSearchInput");
+  if (input) input.value = "";
+  if (container) container.innerHTML = `<span class="hint" style="font-size:11px;">${loadingMessage}</span>`;
+
+  try {
+      const binQty = await getBinQtyMap();
+      const allBinCodes = new Set([...masterBins, ...Object.keys(binQty)]);
+      // Rak gudang hanya A-H; urutkan alfabetis (otomatis A → H) berdasarkan huruf rak di awal kode Bin.
+      const matchedBins = [...allBinCodes]
+          .filter(b => filterFn(binQty[b] || 0))
+          .sort((a, b) => a.localeCompare(b));
+
+      const tbody = document.getElementById("advSearchBody");
+      const statFind = document.getElementById("advSearchQty");
+      if (statFind) statFind.textContent = "0";
+      if (tbody) tbody.innerHTML = `<tr><td colspan="6" class="hint" style="text-align:center;">${tableMessage}</td></tr>`;
+
+      if (!container) return;
+      if (matchedBins.length === 0) {
+          container.innerHTML = `<span class="hint" style="font-size:11px; color:var(--success);">${emptyMessage}</span>`;
+          return;
+      }
+
+      container.innerHTML = matchedBins.map(b => {
+          const qty = binQty[b] || 0;
+          const safeB = String(b).replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          const cls = qty === 0 ? ' empty' : (qty <= 5 ? ' low' : '');
+          return `<div class="bin-stat-badge${cls}" data-bin="${safeB}" title="Klik untuk lihat isi Bin ${safeB}"><span class="b-name">${safeB}</span><span class="b-qty">${qty}</span></div>`;
+      }).join('');
+      container.querySelectorAll(".bin-stat-badge").forEach(el => {
+          el.addEventListener("click", () => viewBinContents(el.getAttribute("data-bin")));
+      });
+  } catch (err) {
+      console.error(err);
+      if (container) container.innerHTML = `<span class="hint" style="font-size:11px; color:var(--danger);">Gagal memuat data Bin.</span>`;
+  }
+}
+
+function showEmptyBinsOverview() {
+  return showFilteredBinsOverview(
+      qty => qty === 0,
+      "🎉 Tidak ada Bin kosong saat ini — semua Bin terisi stok.",
+      "Memuat Bin kosong...",
+      "Menampilkan seluruh Bin kosong — klik salah satu Bin di atas untuk melihat isinya."
+  );
+}
+
+function showLowStockBinsOverview() {
+  return showFilteredBinsOverview(
+      qty => qty > 0 && qty <= 5,
+      "✓ Tidak ada Bin dengan stok rendah (qty 1-5) saat ini.",
+      "Memuat Bin stok rendah...",
+      "Menampilkan Bin dengan stok rendah (qty ≤ 5) yang perlu di-restock — klik salah satu Bin di atas untuk melihat isinya."
+  );
+}
+
+document.getElementById("statEmptyBinCard").addEventListener("click", showEmptyBinsOverview);
+document.getElementById("statLowBinCard").addEventListener("click", showLowStockBinsOverview);
+
 async function renderBinOverview() {
   // Sudah digabung ke dalam performAdvSearch() -- fungsi ini dipertahankan sebagai alias
   // agar pemanggilan lama tetap aman, cukup menjalankan ulang query pencarian saat ini.
   const input = document.getElementById("advSearchInput");
   await performAdvSearch(input ? input.value : "");
+  await refreshBinOverviewStats();
 }
 
 window.viewBinContents = function(bin) {
@@ -1878,6 +2092,7 @@ document.getElementById("btnCreateBin").onclick = () => {
   const searchInputEl = document.getElementById("advSearchInput");
   if (searchInputEl) searchInputEl.value = code;
   performAdvSearch(code);
+  refreshBinOverviewStats();
   toast(`✓ Bin ${code} berhasil dibuat.`, "good");
 };
 
@@ -1909,6 +2124,7 @@ document.getElementById("btnDeleteBin").onclick = async () => {
       const searchInputEl = document.getElementById("advSearchInput");
       if (searchInputEl) searchInputEl.value = "";
       performAdvSearch("");
+      refreshBinOverviewStats();
       toast(`🗑️ Bin ${code} berhasil dihapus.`, "good");
   } catch (err) {
       console.error(err);
@@ -2301,6 +2517,431 @@ async function renameSkuInDataInduk(oldSku, newSku, bin, qty) {
       toast("Gagal mengganti SKU.", "bad");
   }
 }
+
+/* ============================================================
+   DISCREPANCY (Rekonsiliasi OH vs Fisik Data Induk)
+   ============================================================ */
+let discrepancyOHData = JSON.parse(localStorage.getItem('discrepancyOHData') || '{}');   // { SKU: { oh: number, nama: string } }
+let discrepancyOHMeta = JSON.parse(localStorage.getItem('discrepancyOHMeta') || 'null'); // { fileName, ts, count }
+let discrepancyDataCache = []; // cache hasil rekonsiliasi penuh, agar pencarian tidak perlu hitung ulang tiap ketik
+let discrepancySelectedSkus = new Set(); // SKU yang dicentang checkbox (untuk fitur Filter Terpilih)
+let discrepancyViewMode = 'all'; // 'all' | 'selisih' | 'selected'
+
+function saveDiscrepancyOH() {
+  localStorage.setItem('discrepancyOHData', JSON.stringify(discrepancyOHData));
+  localStorage.setItem('discrepancyOHMeta', JSON.stringify(discrepancyOHMeta));
+}
+
+function renderDiscrepancyOHInfo() {
+  const infoEl = document.getElementById("discrepancyOHInfo");
+  if (!infoEl) return;
+  if (!discrepancyOHMeta) {
+      infoEl.title = "Belum ada data OH diupload. Klik untuk upload.";
+  } else {
+      const tanggal = new Date(discrepancyOHMeta.ts).toLocaleString("id-ID");
+      infoEl.title = `File terakhir: ${discrepancyOHMeta.fileName} · ${discrepancyOHMeta.count} SKU · diupload ${tanggal}. Klik untuk upload ulang.`;
+  }
+}
+
+document.getElementById("fileDiscrepancyOH").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  toast("Memproses file OH...", "warning");
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+      try {
+          const wb = XLSX.read(evt.target.result, { type: "array" });
+          const ws = wb.Sheets[wb.SheetNames[0]];
+          const rows = XLSX.utils.sheet_to_json(ws, { defval: "" });
+
+          const newOHData = {};
+          let count = 0;
+          for (let r of rows) {
+              if (!r) continue;
+              const keys = Object.keys(r);
+              const skuKey = keys.find(k => k.trim().toLowerCase() === "sku" || k.trim().toLowerCase().includes("sku"));
+              const ohKey = keys.find(k => {
+                  const kl = k.trim().toLowerCase();
+                  return kl === "oh" || kl.includes("on hand") || kl.includes("onhand") || kl.includes("qty") || kl.includes("quantity") || kl.includes("stock");
+              });
+              const namaKey = keys.find(k => {
+                  const kl = k.trim().toLowerCase();
+                  return kl.includes("nama") || kl.includes("name") || kl.includes("deskripsi") || kl.includes("description");
+              });
+
+              const skuVal = skuKey ? String(r[skuKey]).trim() : null;
+              if (!skuVal) continue;
+              const ohVal = ohKey ? parseFloat(String(r[ohKey]).replace(/[^0-9.-]/g, "")) || 0 : 0;
+              const namaVal = namaKey ? String(r[namaKey]).trim() : "";
+
+              newOHData[skuVal.toUpperCase()] = { oh: ohVal, nama: namaVal, skuOriginal: skuVal };
+              count++;
+          }
+
+          if (count === 0) {
+              toast("Tidak ada baris valid ditemukan. Pastikan file punya kolom SKU dan OH/Qty.", "bad");
+              return;
+          }
+
+          discrepancyOHData = newOHData;
+          discrepancyOHMeta = { fileName: file.name, ts: new Date().toISOString(), count: count };
+          saveDiscrepancyOH();
+          renderDiscrepancyOHInfo();
+          document.getElementById("fileDiscrepancyOH").value = "";
+          loadDiscrepancy();
+          toast(`✓ Data OH berhasil diupload (${count} SKU). Rekonsiliasi otomatis diperbarui.`, "good");
+      } catch (err) {
+          console.error(err);
+          toast("Gagal memproses file OH.", "bad");
+      }
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+document.getElementById("btnClearDiscrepancyOH").onclick = () => {
+  if (!discrepancyOHMeta) { toast("Belum ada data OH untuk dihapus.", "warning"); return; }
+  if (!confirm("Hapus data OH yang sudah diupload? Rekonsiliasi akan kembali kosong sampai upload ulang.")) return;
+  discrepancyOHData = {};
+  discrepancyOHMeta = null;
+  saveDiscrepancyOH();
+  renderDiscrepancyOHInfo();
+  loadDiscrepancy();
+  toast("✓ Data OH dihapus.", "good");
+};
+
+async function loadDiscrepancy() {
+  renderDiscrepancyOHInfo();
+  const tbody = document.getElementById("discrepancyBody");
+  if (!tbody) return;
+
+  const ohKeys = Object.keys(discrepancyOHData);
+  if (ohKeys.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="11" class="hint" style="text-align:center; padding:24px;">Upload data OH terlebih dahulu untuk memulai rekonsiliasi.</td></tr>`;
+      ["statDiscTotal","statDiscOHQty","statDiscFisikQty","statDiscInboundQty","statDiscOutboundQty","statDiscDiffQty"].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = "0";
+      });
+      discrepancyDataCache = [];
+      return;
+  }
+
+  tbody.innerHTML = `<tr><td colspan="11" class="hint" style="text-align:center;">Memproses rekonsiliasi...</td></tr>`;
+
+  try {
+      const allScansRaw = await idbGetAllScans();
+      const activeRows = allScansRaw.filter(r => r !== null && r !== undefined && r.type !== 'OUT');
+
+      // Pivot Fisik per SKU: total qty, breakdown per Bin, nama barang
+      const fisikGroups = {}; // { SKU_UPPER: { fisik, nama, bins: { bin: qty } } }
+      activeRows.forEach(r => {
+          const skuU = (r.sku || '-').toUpperCase();
+          if (!fisikGroups[skuU]) fisikGroups[skuU] = { fisik: 0, nama: r.nama || '', bins: {} };
+          fisikGroups[skuU].fisik += 1;
+          if (!fisikGroups[skuU].nama && r.nama) fisikGroups[skuU].nama = r.nama;
+          const binU = (r.bin || '-').toUpperCase();
+          fisikGroups[skuU].bins[binU] = (fisikGroups[skuU].bins[binU] || 0) + 1;
+      });
+
+      // Total Inbound / Outbound per SKU dari histori Tracking Movement.
+      // Inbound = semua stok MASUK (Inbound biasa + Retur). Outbound = semua stok KELUAR (Outbound biasa + Sales),
+      // supaya barang yang keluar lewat tombol "Sales" (di tab Pencarian) tetap ikut terhitung, bukan cuma Outbound tab saja.
+      const allMoves = await idbGetAllMovements();
+      const validMoves = allMoves.filter(m => m !== null && m !== undefined);
+      const moveGroups = {}; // { SKU_UPPER: { inbound, outbound } }
+      validMoves.forEach(m => {
+          if (!m.sku) return;
+          const skuU = m.sku.toUpperCase();
+          if (!moveGroups[skuU]) moveGroups[skuU] = { inbound: 0, outbound: 0 };
+          if (m.type === 'INBOUND' || m.type === 'RETUR') moveGroups[skuU].inbound += 1;
+          else if (m.type === 'OUTBOUND' || m.type === 'SALES') moveGroups[skuU].outbound += 1;
+      });
+
+      // Union semua SKU: dari data OH ∪ dari stok Fisik
+      const allSkuSet = new Set([...ohKeys, ...Object.keys(fisikGroups)]);
+
+      const results = [...allSkuSet].map(skuU => {
+          const ohEntry = discrepancyOHData[skuU];
+          const fisikEntry = fisikGroups[skuU];
+          const moveEntry = moveGroups[skuU] || { inbound: 0, outbound: 0 };
+
+          const oh = ohEntry ? ohEntry.oh : 0;
+          const fisik = fisikEntry ? fisikEntry.fisik : 0;
+          const nama = (ohEntry && ohEntry.nama) || (fisikEntry && fisikEntry.nama) || 'N/A';
+          const diff = fisik - oh;
+          const bins = fisikEntry ? fisikEntry.bins : {};
+          const displaySku = (ohEntry && ohEntry.skuOriginal) || (fisikEntry && Object.keys(bins).length ? skuU : skuU) || skuU;
+
+          let remark, remarkClass;
+          if (!ohEntry) { remark = "TIDAK ADA DI OH"; remarkClass = "warning"; }
+          else if (!fisikEntry || fisik === 0) { remark = "TIDAK ADA FISIK"; remarkClass = "bad"; }
+          else if (diff === 0) { remark = "MATCH"; remarkClass = "good"; }
+          else if (diff > 0) { remark = "LEBIH (SURPLUS)"; remarkClass = "transfer"; }
+          else { remark = "KURANG (SHORTAGE)"; remarkClass = "bad"; }
+
+          return { sku: displaySku, nama, oh, fisik, inbound: moveEntry.inbound, outbound: moveEntry.outbound, diff, remark, remarkClass, bins };
+      }).sort((a, b) => a.sku.localeCompare(b.sku));
+
+      discrepancyDataCache = results;
+      renderDiscrepancyTable(document.getElementById("discSearchInput").value);
+  } catch (err) {
+      console.error(err);
+      tbody.innerHTML = `<tr><td colspan="11" class="hint" style="text-align:center; color:red;">Gagal memproses rekonsiliasi: ${err.message}</td></tr>`;
+  }
+}
+
+function getDiscrepancyFilteredRows(query) {
+  const q = (query || "").toLowerCase().trim();
+  let rows = !q ? discrepancyDataCache : discrepancyDataCache.filter(d =>
+      d.sku.toLowerCase().includes(q) ||
+      String(d.nama).toLowerCase().includes(q) ||
+      Object.keys(d.bins).some(b => b.toLowerCase().includes(q))
+  );
+
+  if (discrepancyViewMode === 'selisih') {
+      rows = rows.filter(d => d.remark !== "MATCH");
+  } else if (discrepancyViewMode === 'selected') {
+      rows = rows.filter(d => discrepancySelectedSkus.has(d.sku));
+  }
+  return rows;
+}
+
+function renderDiscrepancyTable(query) {
+  const tbody = document.getElementById("discrepancyBody");
+  if (!tbody) return;
+
+  const filtered = getDiscrepancyFilteredRows(query);
+
+  // Statistik card mengikuti data yang SEDANG tampil (hormati pencarian + mode filter Selisih/Terpilih),
+  // supaya jadi ringkasan langsung dari apa yang terlihat di tabel saat ini.
+  const sumOH = filtered.reduce((s, d) => s + d.oh, 0);
+  const sumFisik = filtered.reduce((s, d) => s + d.fisik, 0);
+  const sumInbound = filtered.reduce((s, d) => s + d.inbound, 0);
+  const sumOutbound = filtered.reduce((s, d) => s + d.outbound, 0);
+  const sumDiff = filtered.reduce((s, d) => s + d.diff, 0);
+
+  document.getElementById("statDiscTotal").textContent = filtered.length;
+  document.getElementById("statDiscOHQty").textContent = sumOH;
+  document.getElementById("statDiscFisikQty").textContent = sumFisik;
+  document.getElementById("statDiscInboundQty").textContent = sumInbound;
+  document.getElementById("statDiscOutboundQty").textContent = sumOutbound;
+  document.getElementById("statDiscDiffQty").textContent = (sumDiff > 0 ? '+' : '') + sumDiff;
+
+  document.getElementById("discSelectAllCheckbox").checked = filtered.length > 0 && filtered.every(d => discrepancySelectedSkus.has(d.sku));
+
+  tbody.innerHTML = "";
+  if (filtered.length === 0) {
+      let emptyMsg = 'Tidak ada data untuk direkonsiliasi.';
+      if (discrepancyDataCache.length > 0) {
+          if (discrepancyViewMode === 'selisih') emptyMsg = 'Tidak ada baris selisih — semua data MATCH. 🎉';
+          else if (discrepancyViewMode === 'selected') emptyMsg = 'Belum ada baris yang dicentang.';
+          else emptyMsg = 'Tidak ada baris yang cocok dengan pencarian.';
+      }
+      tbody.innerHTML = `<tr><td colspan="11" class="hint" style="text-align:center; padding:24px;">${emptyMsg}</td></tr>`;
+      return;
+  }
+
+  const DISC_RENDER_LIMIT = 200;
+  const renderRows = filtered.slice(0, DISC_RENDER_LIMIT);
+
+  renderRows.forEach(d => {
+      const tr = document.createElement("tr");
+      const safeNama = String(d.nama).replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const safeSkuAttr = d.sku.replace(/"/g, "&quot;");
+
+      const binKeys = Object.keys(d.bins).sort();
+      const binHtml = binKeys.length === 0
+          ? `<span class="hint">-</span>`
+          : binKeys.map(b => `${b}=<span style="color:var(--success); font-weight:800;">${d.bins[b]}</span>`).join(', ');
+
+      const diffColor = d.diff === 0 ? 'var(--success)' : 'var(--danger)';
+      const diffSign = d.diff > 0 ? '+' : '';
+      const isChecked = discrepancySelectedSkus.has(d.sku);
+
+      tr.innerHTML = `
+        <td style="text-align:center;"><input type="checkbox" class="disc-row-checkbox" data-sku="${safeSkuAttr}" ${isChecked ? 'checked' : ''} style="width:auto; margin:0;"></td>
+        <td class="sku">${d.sku}</td>
+        <td>${safeNama}</td>
+        <td style="text-align:center; font-weight:bold;">${d.oh}</td>
+        <td style="text-align:center; font-weight:bold; color:var(--success);">${d.fisik}</td>
+        <td style="text-align:center; color:var(--success);">${d.inbound}</td>
+        <td style="text-align:center; color:var(--danger);">${d.outbound}</td>
+        <td style="text-align:center; font-weight:800; color:${diffColor};">${diffSign}${d.diff}</td>
+        <td><span class="badge ${d.remarkClass}">${d.remark}</span></td>
+        <td style="font-family: var(--font-mono); font-size:12px;">${binHtml}</td>
+        <td>
+          <div style="display:flex; gap:4px; align-items:center;">
+            <select class="input-sm disc-action-select" data-sku="${safeSkuAttr}" style="width:auto; padding:4px 6px; font-size:11px; flex:1;">
+              <option value="SALES">Sales (-)</option>
+              <option value="INBOUND">Inbound (+)</option>
+              <option value="RETUR">Retur (+)</option>
+            </select>
+            <button class="btn btn-accent btn-sm disc-action-process" data-sku="${safeSkuAttr}" style="padding:4px 10px; font-size:11px; white-space:nowrap;">Proses</button>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+  });
+
+  if (filtered.length > DISC_RENDER_LIMIT) {
+      const trMore = document.createElement("tr");
+      trMore.innerHTML = `<td colspan="11" class="hint" style="text-align:center; padding:10px;">Menampilkan ${DISC_RENDER_LIMIT} dari ${filtered.length} baris. Gunakan pencarian/filter untuk mempersempit hasil.</td>`;
+      tbody.appendChild(trMore);
+  }
+
+  tbody.querySelectorAll(".disc-action-process").forEach(btn => {
+      btn.addEventListener("click", () => {
+          const sku = btn.getAttribute("data-sku");
+          const row = tbody.querySelector(`.disc-action-select[data-sku="${CSS.escape(sku)}"]`);
+          const actionType = row ? row.value : "SALES";
+          processDiscrepancyAction(sku, actionType);
+      });
+  });
+
+  tbody.querySelectorAll(".disc-row-checkbox").forEach(cb => {
+      cb.addEventListener("change", () => {
+          const sku = cb.getAttribute("data-sku");
+          if (cb.checked) discrepancySelectedSkus.add(sku);
+          else discrepancySelectedSkus.delete(sku);
+          document.getElementById("discSelectAllCheckbox").checked = filtered.length > 0 && filtered.every(d => discrepancySelectedSkus.has(d.sku));
+      });
+  });
+}
+
+async function processDiscrepancyAction(sku, actionType) {
+  const rowData = discrepancyDataCache.find(d => d.sku === sku);
+  if (!rowData) { toast("Data SKU tidak ditemukan, coba Refresh dahulu.", "bad"); return; }
+
+  try {
+      if (actionType === "SALES") {
+          const binKeys = Object.keys(rowData.bins);
+          if (binKeys.length === 0) { toast(`Tidak ada stok fisik untuk SKU "${sku}", tidak bisa proses Sales.`, "bad"); return; }
+
+          const binList = binKeys.map(b => `${b} (qty: ${rowData.bins[b]})`).join("\n");
+          const bin = prompt(`Proses SALES untuk SKU: ${sku}\n\nBin tersedia:\n${binList}\n\nKetik kode Bin sumber:`, binKeys[0]);
+          if (!bin) return;
+          const binNorm = bin.trim().toUpperCase();
+          const availableQty = rowData.bins[binNorm];
+          if (!availableQty) { toast(`Bin "${binNorm}" tidak memiliki stok SKU ini.`, "bad"); return; }
+
+          const qtyStr = prompt(`Berapa Qty yang mau di-Sales dari Bin ${binNorm}? (Tersedia: ${availableQty})`, "1");
+          if (!qtyStr) return;
+          const qty = parseInt(qtyStr, 10);
+          if (!qty || qty <= 0) { toast("Qty tidak valid.", "bad"); return; }
+          if (qty > availableQty) { toast(`Qty melebihi stok tersedia di Bin ${binNorm} (${availableQty}).`, "bad"); return; }
+
+          const remark = prompt("Remark / nomor SO (opsional):", "Revisi Discrepancy") || "Revisi Discrepancy";
+          if (!confirm(`Proses SALES ${qty} unit SKU "${sku}" dari Bin ${binNorm}?`)) return;
+
+          let successCount = 0;
+          for (let i = 0; i < qty; i++) {
+              const ok = await executeDeduction(sku, binNorm, "SALES", remark);
+              if (ok) successCount++; else break;
+          }
+          toast(`✓ SALES berhasil memotong ${successCount} unit SKU "${sku}".`, "good");
+
+      } else if (actionType === "INBOUND" || actionType === "RETUR") {
+          const binInput = prompt(`Proses ${actionType} untuk SKU: ${sku}\n\nKetik kode Bin tujuan:`, Object.keys(rowData.bins)[0] || "");
+          if (!binInput) return;
+          const binNorm = binInput.trim().toUpperCase();
+
+          const qtyStr = prompt(`Berapa Qty yang mau ditambahkan (${actionType}) ke Bin ${binNorm}?`, "1");
+          if (!qtyStr) return;
+          const qty = parseInt(qtyStr, 10);
+          if (!qty || qty <= 0) { toast("Qty tidak valid.", "bad"); return; }
+
+          const docNo = actionType === "RETUR" ? (prompt("No. Dokumen (opsional, akan diawali 'R'):", "R") || "R") : (prompt("No. Dokumen (opsional):", "") || "");
+          if (!confirm(`Proses ${actionType} ${qty} unit SKU "${sku}" ke Bin ${binNorm}?`)) return;
+
+          let namaProduk = rowData.nama && rowData.nama !== 'N/A' ? rowData.nama : null;
+          if (!namaProduk) {
+              try {
+                  let product = await idbGetMaster(sku);
+                  if (!product) {
+                      const doc = await db.collection(COL_MASTER).doc(sku).get();
+                      if (doc.exists) product = { sku, nama: doc.data().nama || "" };
+                  }
+                  if (product && product.nama) namaProduk = product.nama;
+              } catch (e) { /* offline, lanjut tanpa nama */ }
+          }
+
+          const remarkText = actionType === "RETUR" ? "Retur Barang (Revisi Discrepancy)" : "Scanned IN (Revisi Discrepancy)";
+          for (let i = 0; i < qty; i++) {
+              const entry = {
+                  id: generateID(), sku, nama: namaProduk || null, found: !!namaProduk, bin: binNorm, docNo: docNo || "",
+                  ts: new Date().toISOString(), sessionActive: false, type: actionType, remark: remarkText
+              };
+              await idbAddScan(entry);
+              await recordMovement(entry.id, actionType, sku, namaProduk || "-", binNorm, remarkText, docNo);
+          }
+          toast(`✓ ${actionType} berhasil menambah ${qty} unit SKU "${sku}" ke Bin ${binNorm}.`, "good");
+      }
+
+      await loadDiscrepancy();
+      if (!document.getElementById("tab-allscan").classList.contains("hidden")) loadAllScan();
+      if (!document.getElementById("tab-search").classList.contains("hidden")) performAdvSearch(document.getElementById("advSearchInput").value);
+      if (!document.getElementById("tab-pivot").classList.contains("hidden")) loadPivot();
+  } catch (err) {
+      console.error(err);
+      toast("Gagal memproses aksi revisi.", "bad");
+  }
+}
+
+function setDiscrepancyViewMode(mode) {
+  discrepancyViewMode = mode;
+  document.getElementById("btnFilterSelisih").classList.toggle("btn-warning", mode !== 'selisih');
+  document.getElementById("btnFilterSelisih").classList.toggle("btn-accent", mode === 'selisih');
+  document.getElementById("btnFilterReset").classList.toggle("hidden", mode === 'all');
+  renderDiscrepancyTable(document.getElementById("discSearchInput").value);
+}
+
+document.getElementById("btnRefreshDiscrepancy").onclick = () => loadDiscrepancy();
+document.getElementById("discSearchInput").addEventListener("input", (e) => {
+  renderDiscrepancyTable(e.target.value);
+});
+
+document.getElementById("discSelectAllCheckbox").addEventListener("change", (e) => {
+  const filtered = getDiscrepancyFilteredRows(document.getElementById("discSearchInput").value);
+  if (e.target.checked) filtered.forEach(d => discrepancySelectedSkus.add(d.sku));
+  else filtered.forEach(d => discrepancySelectedSkus.delete(d.sku));
+  renderDiscrepancyTable(document.getElementById("discSearchInput").value);
+});
+
+document.getElementById("btnFilterSelisih").onclick = () => {
+  setDiscrepancyViewMode(discrepancyViewMode === 'selisih' ? 'all' : 'selisih');
+};
+
+document.getElementById("btnFilterSelected").onclick = () => {
+  if (discrepancySelectedSkus.size === 0) { toast("Centang minimal 1 baris (checkbox) terlebih dahulu.", "warning"); return; }
+  setDiscrepancyViewMode('selected');
+};
+
+document.getElementById("btnFilterReset").onclick = () => {
+  setDiscrepancyViewMode('all');
+};
+
+document.getElementById("btnExportDiscrepancy").onclick = () => {
+  if (discrepancyDataCache.length === 0) { toast("Tidak ada data untuk diexport.", "warning"); return; }
+  const rowsToExport = getDiscrepancyFilteredRows(document.getElementById("discSearchInput").value);
+  if (rowsToExport.length === 0) { toast("Tidak ada baris untuk diexport pada filter saat ini.", "warning"); return; }
+
+  const wsData = rowsToExport.map(d => ({
+      "SKU": d.sku,
+      "Nama Barang": d.nama,
+      "OH": d.oh,
+      "Fisik (Qty)": d.fisik,
+      "Inbound": d.inbound,
+      "Outbound": d.outbound,
+      "Diff": d.diff,
+      "Remark": d.remark,
+      "Lokasi Bin": Object.keys(d.bins).sort().map(b => `${b}=${d.bins[b]}`).join(', ')
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(wsData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Discrepancy");
+  XLSX.writeFile(wb, `Discrepancy_OH_vs_Fisik_${new Date().toISOString().slice(0,10)}.xlsx`);
+  toast("✓ Export berhasil", "good");
+};
 
 document.getElementById("btnExportAllScan").onclick = async ()=>{
   const rows = await idbGetAllScans();
@@ -2845,12 +3486,93 @@ document.getElementById("btnPullMaster").onclick = async ()=>{
 };
 
 async function refreshMasterStats(){
+  let local = 0, cloud = null;
   try{
-      const local = await idbCountMaster();
+      local = await idbCountMaster();
       const statLocal = document.getElementById("statMasterLocal");
       if(statLocal) statLocal.textContent = local;
   } catch(e) { console.error(e); }
+
+  const statCloud = document.getElementById("statMasterCloud");
+  const syncStatus = document.getElementById("masterSyncStatus");
+  let cloudErr = null;
+  try{
+      // Aggregate count query - tidak perlu download semua dokumen, cukup hitungannya saja.
+      const snap = await db.collection(COL_MASTER).count().get();
+      cloud = snap.data().count;
+      if(statCloud) statCloud.textContent = cloud;
+  } catch(e) {
+      console.warn("Aggregate count() gagal/tidak didukung, mencoba metode fallback:", e);
+      try{
+          // Fallback: query manual & hitung jumlah dokumen (khusus dukungan browser/SDK/rules yang tidak izinkan count()).
+          const snap2 = await db.collection(COL_MASTER).get();
+          cloud = snap2.size;
+          if(statCloud) statCloud.textContent = cloud;
+      } catch(e2) {
+          console.error(e2);
+          cloudErr = e2.message || String(e2);
+          if(statCloud) statCloud.textContent = "N/A";
+      }
+  }
+
+  if(syncStatus) {
+      if (cloud === null) {
+          syncStatus.innerHTML = `<span style="color:var(--danger);">Gagal memeriksa jumlah SKU di Cloud${cloudErr ? ': ' + cloudErr : ' (offline?)'}</span>`;
+      } else if (local === cloud) {
+          syncStatus.innerHTML = `<span style="color:var(--success);">✓ Lokal &amp; Cloud sinkron (${local} SKU)</span>`;
+      } else {
+          syncStatus.innerHTML = `<span style="color:var(--warning);">⚠ Lokal (${local}) dan Cloud (${cloud}) berbeda — klik "Tarik Master Data Cloud ke Lokal" untuk menyamakan.</span>`;
+      }
+  }
 }
+
+document.getElementById("btnClearMasterLocal").onclick = async () => {
+  const pass = prompt("Masukkan Password Administrator untuk menghapus SKU Lokal:");
+  if (pass === null) return;
+  if (pass !== "admin123") { toast("Password salah! Akses ditolak.", "bad"); return; }
+  if (!confirm("Hapus SEMUA Master SKU di Cache Lokal (browser ini saja)?\n\nData di Firestore Cloud TIDAK akan terhapus, dan bisa ditarik ulang kapan saja lewat 'Tarik Master Data Cloud ke Lokal'.")) return;
+
+  try {
+      await idbClearMaster();
+      await refreshMasterStats();
+      toast("✓ Master SKU Lokal berhasil dihapus.", "good");
+  } catch (err) {
+      console.error(err);
+      toast("Gagal menghapus Master SKU Lokal.", "bad");
+  }
+};
+
+document.getElementById("btnClearMasterCloud").onclick = async () => {
+  const pass = prompt("Masukkan Password Administrator untuk menghapus SKU di Cloud (Firestore):");
+  if (pass === null) return;
+  if (pass !== "admin123") { toast("Password salah! Akses ditolak.", "bad"); return; }
+  if (!confirm("⚠️ PERINGATAN: Ini akan menghapus SEMUA Master SKU di Firestore Cloud secara PERMANEN untuk SEMUA pengguna aplikasi ini, bukan hanya di browser Anda.\n\nTindakan ini tidak bisa dibatalkan. Lanjutkan?")) return;
+  if (!confirm("Konfirmasi sekali lagi: Anda yakin ingin menghapus seluruh Master SKU di Cloud?")) return;
+
+  const btn = document.getElementById("btnClearMasterCloud");
+  btn.disabled = true;
+  toast("Menghapus Master SKU di Cloud...", "warning");
+
+  try {
+      let totalDeleted = 0;
+      while (true) {
+          const snap = await db.collection(COL_MASTER).limit(450).get();
+          if (snap.empty) break;
+          const batch = db.batch();
+          snap.docs.forEach(doc => batch.delete(doc.ref));
+          await batch.commit();
+          totalDeleted += snap.docs.length;
+          if (snap.docs.length < 450) break;
+      }
+      await refreshMasterStats();
+      toast(`✓ ${totalDeleted} Master SKU di Cloud berhasil dihapus.`, "good");
+  } catch (err) {
+      console.error(err);
+      toast("Gagal menghapus Master SKU di Cloud: " + err.message, "bad");
+  } finally {
+      btn.disabled = false;
+  }
+};
 
 /* ============================================================
    BUAT BARCODE QR (ukuran bisa diatur besar/kecil)
