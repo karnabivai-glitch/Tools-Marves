@@ -302,6 +302,7 @@
           <button class="nav-item" id="navMovement">📜 Tracking Movement</button>
           <button class="nav-item" id="navHistoryCCTF">📜 History CC & Transfer</button>
           <button class="nav-item" id="navDiscrepancy">⚖️ Discrepancy</button>
+          <button class="nav-item" id="navMovementAnalysis">📈 Fast/Slow/Dead Stock</button>
         </div>
       </div>
       
@@ -652,6 +653,23 @@
           </div>
         </div>
         </div>
+
+        <div class="card" style="margin: 20px 0 0 0; border: 1px solid var(--accent);">
+          <h3 class="card-header" style="display:flex; align-items:center; gap:8px;">🚀 Transfer Otomatis (Seluruh Isi Bin)</h3>
+          <div class="hint" style="margin-bottom: 14px;">Pindahkan <b>seluruh isi Bin Asal</b> ke Bin Tujuan sekaligus tanpa perlu scan satu-satu. Cukup isi Bin Asal &amp; Bin Tujuan, sistem otomatis mengambil semua SKU &amp; qty yang ada di Bin Asal lalu memindahkannya secara akurat setelah Anda konfirmasi.</div>
+          <div style="display:flex; gap: 10px; align-items:flex-end; flex-wrap:wrap;">
+            <div style="flex:1; min-width:180px;">
+              <div class="lbl" style="font-size:11px; margin-bottom:6px; color:var(--text-muted); font-weight:bold; text-transform:uppercase;">Bin Asal</div>
+              <input id="tfAutoBinFrom" class="bin-input input-sm" type="text" placeholder="Contoh: A-1-00001" autocomplete="off" style="margin-bottom:0;">
+            </div>
+            <div style="flex:1; min-width:180px;">
+              <div class="lbl" style="font-size:11px; margin-bottom:6px; color:var(--text-muted); font-weight:bold; text-transform:uppercase;">Bin Tujuan</div>
+              <input id="tfAutoBinTo" class="bin-input input-sm" type="text" placeholder="Contoh: B-2-00004" autocomplete="off" style="margin-bottom:0;">
+            </div>
+            <button class="btn btn-accent" id="btnAutoTransferBin" style="white-space:nowrap;">🚀 Proses Transfer Otomatis</button>
+          </div>
+          <div id="tfAutoResult" style="margin-top: 14px;"></div>
+        </div>
       </section>
 
       <!-- ============================ TAB: PIVOT (REKAP) ============================ -->
@@ -882,6 +900,79 @@
               </tr></thead>
               <tbody id="discrepancyBody">
                 <tr><td colspan="11" class="hint" style="text-align:center;">Upload data OH terlebih dahulu untuk memulai rekonsiliasi.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ TAB: FAST/SLOW/DEAD STOCK & AGING ======================== -->
+      <section id="tab-movementanalysis" class="hidden" style="height: 100%;">
+        <div class="card" style="display: flex; flex-direction: column; height: 100%; padding: 16px 20px; margin-bottom: 0;">
+
+          <div style="display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
+             <div class="stat-card" style="margin:0; flex:1; min-width:100px; padding: 10px 6px;">
+                <div class="num" id="maStatTotal" style="font-size:20px;">0</div>
+                <div class="lbl" style="font-size:9px;">Total SKU</div>
+             </div>
+             <div class="stat-card" style="margin:0; flex:1; min-width:100px; padding: 10px 6px; border-bottom: 3px solid var(--success);">
+                <div class="num" id="maStatFast" style="font-size:20px; color:var(--success);">0</div>
+                <div class="lbl" style="font-size:9px;">Fast Moving</div>
+             </div>
+             <div class="stat-card" style="margin:0; flex:1; min-width:100px; padding: 10px 6px; border-bottom: 3px solid var(--warning);">
+                <div class="num" id="maStatSlow" style="font-size:20px; color:var(--warning);">0</div>
+                <div class="lbl" style="font-size:9px;">Slow Moving</div>
+             </div>
+             <div class="stat-card" style="margin:0; flex:1; min-width:100px; padding: 10px 6px; border-bottom: 3px solid var(--danger);">
+                <div class="num" id="maStatDead" style="font-size:20px; color:var(--danger);">0</div>
+                <div class="lbl" style="font-size:9px;">Dead Stock</div>
+             </div>
+             <div class="stat-card" style="margin:0; flex:1; min-width:100px; padding: 10px 6px;">
+                <div class="num" id="maStatNew" style="font-size:20px; color:var(--text-muted);">0</div>
+                <div class="lbl" style="font-size:9px;">Baru/Blm Terjual</div>
+             </div>
+          </div>
+
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom: 10px; padding: 10px 12px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 6px;">
+             <div style="display:flex; align-items:center; gap:6px;">
+                <span class="hint" style="white-space:nowrap;">Periode Cepat/Lambat:</span>
+                <input type="number" id="maPeriodDays" class="input-sm" value="30" min="1" style="width:70px; padding:6px 8px;"> <span class="hint">hari</span>
+             </div>
+             <div style="display:flex; align-items:center; gap:6px;">
+                <span class="hint" style="white-space:nowrap;">Ambang Fast Moving:</span>
+                <input type="number" id="maFastThreshold" class="input-sm" value="10" min="1" style="width:70px; padding:6px 8px;"> <span class="hint">qty keluar</span>
+             </div>
+             <div style="display:flex; align-items:center; gap:6px;">
+                <span class="hint" style="white-space:nowrap;">Ambang Dead Stock:</span>
+                <input type="number" id="maDeadDays" class="input-sm" value="90" min="1" style="width:70px; padding:6px 8px;"> <span class="hint">hari tanpa keluar</span>
+             </div>
+             <button class="btn btn-accent btn-sm" id="btnApplyMovementAnalysis">✔ Terapkan</button>
+          </div>
+
+          <div class="toolbar-row" style="margin-bottom: 8px;">
+            <input type="text" id="maSearchInput" class="input-sm toolbar-search" placeholder="🔍 Cari SKU / Nama / Bin..." autocomplete="off">
+            <button class="btn btn-ghost btn-sm" id="btnMaFilterFast" title="Tampilkan hanya Fast Moving">🟢 Fast</button>
+            <button class="btn btn-ghost btn-sm" id="btnMaFilterSlow" title="Tampilkan hanya Slow Moving">🟡 Slow</button>
+            <button class="btn btn-ghost btn-sm" id="btnMaFilterDead" title="Tampilkan hanya Dead Stock">🔴 Dead</button>
+            <button class="btn btn-ghost btn-sm hidden" id="btnMaFilterReset" title="Kembali menampilkan semua">↺</button>
+            <div class="toolbar-spacer"></div>
+            <button class="btn btn-ghost btn-sm" id="btnRefreshMovementAnalysis" title="Muat Ulang">🔄</button>
+            <button class="btn btn-ghost btn-sm" id="btnExportMovementAnalysis" title="Export Excel">⬇️ Export</button>
+          </div>
+
+          <div class="scroll-table fill">
+            <table>
+              <thead><tr>
+                <th>SKU</th><th>Nama Barang</th>
+                <th style="text-align:center;">Fisik (Qty)</th>
+                <th style="text-align:center;">Outbound (Periode)</th>
+                <th>Terakhir Keluar</th>
+                <th style="text-align:center;">Aging (Hari)</th>
+                <th>Kategori</th>
+                <th style="min-width:180px;">Lokasi Bin</th>
+              </tr></thead>
+              <tbody id="movementAnalysisBody">
+                <tr><td colspan="8" class="hint" style="text-align:center;">Memuat data...</td></tr>
               </tbody>
             </table>
           </div>
@@ -1245,6 +1336,7 @@ const tabNames = [
   { id: "movement", nav: "navMovement", tab: "tab-movement" },
   { id: "historycctf", nav: "navHistoryCCTF", tab: "tab-historycctf" },
   { id: "discrepancy", nav: "navDiscrepancy", tab: "tab-discrepancy" },
+  { id: "movementanalysis", nav: "navMovementAnalysis", tab: "tab-movementanalysis" },
   { id: "master", nav: "navMaster", tab: "tab-master" },
   { id: "qrcode", nav: "navQRCode", tab: "tab-qrcode" }
 ];
@@ -1300,6 +1392,7 @@ function switchTab(activeId) {
   if(activeId === "master") refreshMasterStats();
   if(activeId === "qrcode") document.getElementById("qrTextInput").focus();
   if(activeId === "discrepancy") loadDiscrepancy();
+  if(activeId === "movementanalysis") loadMovementAnalysis();
 }
 
 document.getElementById("navScan").onclick = () => switchTab("scan");
@@ -1313,6 +1406,7 @@ document.getElementById("navBinCL").onclick = () => switchTab("bincl");
 document.getElementById("navMovement").onclick = () => switchTab("movement");
 document.getElementById("navHistoryCCTF").onclick = () => switchTab("historycctf");
 document.getElementById("navDiscrepancy").onclick = () => switchTab("discrepancy");
+document.getElementById("navMovementAnalysis").onclick = () => switchTab("movementanalysis");
 document.getElementById("navMaster").onclick = () => switchTab("master");
 document.getElementById("navQRCode").onclick = () => switchTab("qrcode");
 
@@ -1843,6 +1937,81 @@ document.getElementById("btnExecTransfer").onclick = async () => {
   } catch (err) {
       console.error(err);
       toast("Gagal melakukan Eksekusi Transfer Bin", "bad");
+  }
+};
+
+/* ============================================================
+   TRANSFER OTOMATIS (Seluruh Isi Bin, langsung eksekusi tanpa staging)
+   ============================================================ */
+document.getElementById("btnAutoTransferBin").onclick = async () => {
+  const fromBin = document.getElementById("tfAutoBinFrom").value.trim().toUpperCase();
+  const toBin = document.getElementById("tfAutoBinTo").value.trim().toUpperCase();
+  const resultBox = document.getElementById("tfAutoResult");
+  const btn = document.getElementById("btnAutoTransferBin");
+
+  if (!fromBin || !toBin) { toast("Bin Asal dan Bin Tujuan wajib diisi!", "bad"); return; }
+  if (fromBin === toBin) { toast("Bin Asal dan Bin Tujuan tidak boleh sama!", "bad"); return; }
+
+  try {
+      const rows = await idbGetAllScans();
+      const validRows = rows.filter(r => r !== null && r !== undefined);
+      const sourceItems = validRows.filter(r => r.type !== 'OUT' && (r.bin || '-').toUpperCase() === fromBin);
+
+      if (sourceItems.length === 0) {
+          resultBox.innerHTML = `<div class="result notfound">
+            <div class="nama">Bin "${fromBin}" kosong atau tidak ditemukan — tidak ada yang bisa dipindahkan.</div>
+          </div>`;
+          toast(`Bin "${fromBin}" kosong / tidak ditemukan.`, "bad");
+          return;
+      }
+
+      // Ringkasan isi Bin Asal per SKU, untuk ditunjukkan sebelum konfirmasi
+      const skuSummary = {};
+      sourceItems.forEach(r => {
+          const key = r.sku || '-';
+          if (!skuSummary[key]) skuSummary[key] = { nama: r.nama || 'N/A', qty: 0 };
+          skuSummary[key].qty += 1;
+      });
+      const summaryLines = Object.keys(skuSummary).sort().map(sku => `• ${sku} (${skuSummary[sku].nama}) — ${skuSummary[sku].qty} unit`).join("\n");
+      const totalUnit = sourceItems.length;
+      const totalSku = Object.keys(skuSummary).length;
+
+      if (!confirm(`Pindahkan SELURUH isi Bin "${fromBin}" ke Bin "${toBin}"?\n\nTotal: ${totalSku} SKU, ${totalUnit} unit.\n\n${summaryLines}\n\nStok akan berpindah permanen di Data Induk. Lanjutkan?`)) return;
+
+      btn.disabled = true;
+      toast(`Memindahkan seluruh isi Bin "${fromBin}"...`, "warning");
+
+      let successCount = 0;
+      for (let item of sourceItems) {
+          item.bin = toBin;
+          await new Promise((res) => {
+              const tx = idb.transaction("scanlog", "readwrite");
+              tx.objectStore("scanlog").put(item);
+              tx.oncomplete = res;
+          });
+          await recordMovement(item.id, "TRANSFER", item.sku, item.nama, `${fromBin} -> ${toBin}`, "Transfer Otomatis (Seluruh Isi Bin)");
+          successCount++;
+      }
+
+      resultBox.innerHTML = `<div class="result found">
+        <div class="sku"><span class="badge muted">DARI: ${fromBin}</span> <span class="badge transfer">KE: ${toBin}</span></div>
+        <div class="nama">${totalSku} SKU (${successCount} unit) berhasil dipindahkan</div>
+        <div style="margin-top:4px"><span class="badge good">✓ SELESAI</span></div>
+      </div>`;
+
+      document.getElementById("tfAutoBinFrom").value = "";
+      document.getElementById("tfAutoBinTo").value = "";
+
+      if (!document.getElementById("tab-allscan").classList.contains("hidden")) loadAllScan();
+      if (!document.getElementById("tab-search").classList.contains("hidden")) renderBinOverview();
+      if (!document.getElementById("tab-pivot").classList.contains("hidden")) loadPivot();
+
+      toast(`✓ Transfer Otomatis berhasil: ${totalSku} SKU (${successCount} unit) dari "${fromBin}" ke "${toBin}".`, "good");
+  } catch (err) {
+      console.error(err);
+      toast("Gagal melakukan Transfer Otomatis", "bad");
+  } finally {
+      btn.disabled = false;
   }
 };
 
@@ -2940,6 +3109,218 @@ document.getElementById("btnExportDiscrepancy").onclick = () => {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Discrepancy");
   XLSX.writeFile(wb, `Discrepancy_OH_vs_Fisik_${new Date().toISOString().slice(0,10)}.xlsx`);
+  toast("✓ Export berhasil", "good");
+};
+
+/* ============================================================
+   FAST / SLOW MOVING, DEAD STOCK & AGING ANALYSIS
+   ============================================================
+   LOGIKA:
+   1. Aging per SKU = umur (hari) unit TERTUA yang masih ada di stok fisik saat ini
+      (dihitung dari waktu inbound paling lama di antara unit yang belum keluar).
+   2. Kecepatan gerak dihitung dari qty keluar (movement tipe OUTBOUND + SALES)
+      dalam "Periode Cepat/Lambat" (default 30 hari) yang bisa diatur user.
+   3. Klasifikasi per SKU (urutan pengecekan dari yang paling spesifik):
+      a. DEAD STOCK   : tidak ada aktivitas keluar sama sekali dalam "Ambang Dead Stock" hari
+                         (baik karena terakhir keluar sudah lama, atau memang belum pernah
+                         keluar sejak lama/aging-nya sudah melewati ambang tsb).
+      b. FAST MOVING   : qty keluar pada periode >= Ambang Fast Moving.
+      c. SLOW MOVING   : ada aktivitas keluar pada periode tapi di bawah ambang Fast Moving.
+      d. BARU/BELUM TERJUAL : belum pernah ada outbound sama sekali, tapi aging-nya masih
+                         di bawah Ambang Dead Stock (jadi belum tentu mati, mungkin memang
+                         baru datang dan belum sempat terjual).
+   ============================================================ */
+let movementAnalysisCache = [];
+let movementAnalysisViewMode = 'all'; // 'all' | 'fast' | 'slow' | 'dead'
+
+async function loadMovementAnalysis() {
+  const tbody = document.getElementById("movementAnalysisBody");
+  if (!tbody) return;
+  tbody.innerHTML = `<tr><td colspan="8" class="hint" style="text-align:center;">Memproses analisa pergerakan stok...</td></tr>`;
+
+  const periodDays = parseInt(document.getElementById("maPeriodDays").value, 10) || 30;
+  const fastThreshold = parseInt(document.getElementById("maFastThreshold").value, 10) || 10;
+  const deadDays = parseInt(document.getElementById("maDeadDays").value, 10) || 90;
+
+  try {
+      const now = Date.now();
+      const DAY_MS = 24 * 60 * 60 * 1000;
+
+      // 1) Pivot stok fisik saat ini per SKU: total qty, breakdown Bin, dan tanggal inbound TERTUA (basis Aging)
+      const allScans = await idbGetAllScans();
+      const activeRows = allScans.filter(r => r !== null && r !== undefined && r.type !== 'OUT');
+      const stockGroups = {};
+      activeRows.forEach(r => {
+          const sku = r.sku;
+          if (!sku) return;
+          if (!stockGroups[sku]) stockGroups[sku] = { fisik: 0, bins: {}, oldestTs: r.ts, nama: r.nama || '' };
+          const g = stockGroups[sku];
+          g.fisik += 1;
+          const binU = (r.bin || '-').toUpperCase();
+          g.bins[binU] = (g.bins[binU] || 0) + 1;
+          if (!g.nama && r.nama) g.nama = r.nama;
+          if (r.ts && (!g.oldestTs || r.ts < g.oldestTs)) g.oldestTs = r.ts;
+      });
+
+      // 2) Histori movement keluar (OUTBOUND + SALES) per SKU: qty dalam periode, dan tanggal keluar terakhir (all-time)
+      const allMoves = await idbGetAllMovements();
+      const validMoves = allMoves.filter(m => m !== null && m !== undefined);
+      const moveStats = {};
+      validMoves.forEach(m => {
+          if (!m.sku || m.sku === 'MULTIPLE') return;
+          if (m.type !== 'OUTBOUND' && m.type !== 'SALES') return;
+          if (!moveStats[m.sku]) moveStats[m.sku] = { outPeriod: 0, lastOutTs: null, totalOutAllTime: 0 };
+          const ms = moveStats[m.sku];
+          ms.totalOutAllTime += 1;
+          if (!ms.lastOutTs || m.ts > ms.lastOutTs) ms.lastOutTs = m.ts;
+          if (m.ts && (now - new Date(m.ts).getTime()) <= periodDays * DAY_MS) ms.outPeriod += 1;
+      });
+
+      // 3) Gabungkan & klasifikasikan setiap SKU yang masih punya stok fisik
+      const results = Object.keys(stockGroups).map(sku => {
+          const stock = stockGroups[sku];
+          const move = moveStats[sku] || { outPeriod: 0, lastOutTs: null, totalOutAllTime: 0 };
+          const agingDays = stock.oldestTs ? Math.floor((now - new Date(stock.oldestTs).getTime()) / DAY_MS) : 0;
+          const daysSinceLastOut = move.lastOutTs ? Math.floor((now - new Date(move.lastOutTs).getTime()) / DAY_MS) : null;
+
+          let category, categoryClass;
+          if ((daysSinceLastOut !== null && daysSinceLastOut >= deadDays) || (move.totalOutAllTime === 0 && agingDays >= deadDays)) {
+              category = "DEAD STOCK"; categoryClass = "bad";
+          } else if (move.outPeriod >= fastThreshold) {
+              category = "FAST MOVING"; categoryClass = "good";
+          } else if (move.outPeriod >= 1) {
+              category = "SLOW MOVING"; categoryClass = "warning";
+          } else {
+              category = "BARU / BELUM TERJUAL"; categoryClass = "muted";
+          }
+
+          return {
+              sku, nama: stock.nama || 'N/A', fisik: stock.fisik,
+              outPeriod: move.outPeriod,
+              lastOutTs: move.lastOutTs,
+              agingDays, category, categoryClass, bins: stock.bins
+          };
+      }).sort((a, b) => b.agingDays - a.agingDays); // default: yang paling lama mengendap di atas
+
+      movementAnalysisCache = results;
+      renderMovementAnalysisTable(document.getElementById("maSearchInput").value);
+  } catch (err) {
+      console.error(err);
+      tbody.innerHTML = `<tr><td colspan="8" class="hint" style="text-align:center; color:red;">Gagal memproses analisa: ${err.message}</td></tr>`;
+  }
+}
+
+function getMovementAnalysisFilteredRows(query) {
+  const q = (query || "").toLowerCase().trim();
+  let rows = !q ? movementAnalysisCache : movementAnalysisCache.filter(d =>
+      d.sku.toLowerCase().includes(q) || String(d.nama).toLowerCase().includes(q) || Object.keys(d.bins).some(b => b.toLowerCase().includes(q))
+  );
+  if (movementAnalysisViewMode === 'fast') rows = rows.filter(d => d.category === "FAST MOVING");
+  else if (movementAnalysisViewMode === 'slow') rows = rows.filter(d => d.category === "SLOW MOVING");
+  else if (movementAnalysisViewMode === 'dead') rows = rows.filter(d => d.category === "DEAD STOCK");
+  return rows;
+}
+
+function renderMovementAnalysisTable(query) {
+  const tbody = document.getElementById("movementAnalysisBody");
+  if (!tbody) return;
+
+  const filtered = getMovementAnalysisFilteredRows(query);
+
+  document.getElementById("maStatTotal").textContent = movementAnalysisCache.length;
+  document.getElementById("maStatFast").textContent = movementAnalysisCache.filter(d => d.category === "FAST MOVING").length;
+  document.getElementById("maStatSlow").textContent = movementAnalysisCache.filter(d => d.category === "SLOW MOVING").length;
+  document.getElementById("maStatDead").textContent = movementAnalysisCache.filter(d => d.category === "DEAD STOCK").length;
+  document.getElementById("maStatNew").textContent = movementAnalysisCache.filter(d => d.category === "BARU / BELUM TERJUAL").length;
+
+  tbody.innerHTML = "";
+  if (filtered.length === 0) {
+      let msg = 'Tidak ada data.';
+      if (movementAnalysisCache.length > 0) {
+          if (movementAnalysisViewMode === 'fast') msg = 'Tidak ada SKU Fast Moving pada kriteria saat ini.';
+          else if (movementAnalysisViewMode === 'slow') msg = 'Tidak ada SKU Slow Moving pada kriteria saat ini.';
+          else if (movementAnalysisViewMode === 'dead') msg = 'Tidak ada SKU Dead Stock pada kriteria saat ini. 🎉';
+          else msg = 'Tidak ada baris yang cocok dengan pencarian.';
+      } else {
+          msg = 'Belum ada data stok fisik untuk dianalisa.';
+      }
+      tbody.innerHTML = `<tr><td colspan="8" class="hint" style="text-align:center; padding:24px;">${msg}</td></tr>`;
+      return;
+  }
+
+  const MA_RENDER_LIMIT = 200;
+  const renderRows = filtered.slice(0, MA_RENDER_LIMIT);
+
+  renderRows.forEach(d => {
+      const tr = document.createElement("tr");
+      const safeNama = String(d.nama).replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const binKeys = Object.keys(d.bins).sort();
+      const binHtml = binKeys.length === 0 ? `<span class="hint">-</span>` : binKeys.map(b => `${b}=<span style="color:var(--success); font-weight:800;">${d.bins[b]}</span>`).join(', ');
+      const lastOutText = d.lastOutTs ? new Date(d.lastOutTs).toLocaleDateString("id-ID") : "-";
+
+      let agingColor = 'var(--success)';
+      if (d.agingDays >= 90) agingColor = 'var(--danger)';
+      else if (d.agingDays >= 60) agingColor = 'var(--warning)';
+      else if (d.agingDays >= 30) agingColor = '#b8860b';
+
+      tr.innerHTML = `
+        <td class="sku">${d.sku}</td>
+        <td>${safeNama}</td>
+        <td style="text-align:center; font-weight:bold;">${d.fisik}</td>
+        <td style="text-align:center; color:var(--success); font-weight:bold;">${d.outPeriod}</td>
+        <td>${lastOutText}</td>
+        <td style="text-align:center; font-weight:800; color:${agingColor};">${d.agingDays}</td>
+        <td><span class="badge ${d.categoryClass}">${d.category}</span></td>
+        <td style="font-family: var(--font-mono); font-size:12px;">${binHtml}</td>
+      `;
+      tbody.appendChild(tr);
+  });
+
+  if (filtered.length > MA_RENDER_LIMIT) {
+      const trMore = document.createElement("tr");
+      trMore.innerHTML = `<td colspan="8" class="hint" style="text-align:center; padding:10px;">Menampilkan ${MA_RENDER_LIMIT} dari ${filtered.length} baris. Gunakan pencarian/filter untuk mempersempit hasil.</td>`;
+      tbody.appendChild(trMore);
+  }
+}
+
+function setMovementAnalysisViewMode(mode) {
+  movementAnalysisViewMode = mode;
+  document.getElementById("btnMaFilterReset").classList.toggle("hidden", mode === 'all');
+  ["btnMaFilterFast", "btnMaFilterSlow", "btnMaFilterDead"].forEach(id => document.getElementById(id).classList.remove("btn-accent"));
+  if (mode === 'fast') document.getElementById("btnMaFilterFast").classList.add("btn-accent");
+  else if (mode === 'slow') document.getElementById("btnMaFilterSlow").classList.add("btn-accent");
+  else if (mode === 'dead') document.getElementById("btnMaFilterDead").classList.add("btn-accent");
+  renderMovementAnalysisTable(document.getElementById("maSearchInput").value);
+}
+
+document.getElementById("btnApplyMovementAnalysis").onclick = () => loadMovementAnalysis();
+document.getElementById("btnRefreshMovementAnalysis").onclick = () => loadMovementAnalysis();
+document.getElementById("maSearchInput").addEventListener("input", (e) => renderMovementAnalysisTable(e.target.value));
+document.getElementById("btnMaFilterFast").onclick = () => setMovementAnalysisViewMode(movementAnalysisViewMode === 'fast' ? 'all' : 'fast');
+document.getElementById("btnMaFilterSlow").onclick = () => setMovementAnalysisViewMode(movementAnalysisViewMode === 'slow' ? 'all' : 'slow');
+document.getElementById("btnMaFilterDead").onclick = () => setMovementAnalysisViewMode(movementAnalysisViewMode === 'dead' ? 'all' : 'dead');
+document.getElementById("btnMaFilterReset").onclick = () => setMovementAnalysisViewMode('all');
+
+document.getElementById("btnExportMovementAnalysis").onclick = () => {
+  if (movementAnalysisCache.length === 0) { toast("Tidak ada data untuk diexport.", "warning"); return; }
+  const rowsToExport = getMovementAnalysisFilteredRows(document.getElementById("maSearchInput").value);
+  if (rowsToExport.length === 0) { toast("Tidak ada baris untuk diexport pada filter saat ini.", "warning"); return; }
+
+  const wsData = rowsToExport.map(d => ({
+      "SKU": d.sku,
+      "Nama Barang": d.nama,
+      "Fisik (Qty)": d.fisik,
+      "Outbound (Periode)": d.outPeriod,
+      "Terakhir Keluar": d.lastOutTs ? new Date(d.lastOutTs).toLocaleString("id-ID") : "-",
+      "Aging (Hari)": d.agingDays,
+      "Kategori": d.category,
+      "Lokasi Bin": Object.keys(d.bins).sort().map(b => `${b}=${d.bins[b]}`).join(', ')
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(wsData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Movement Analysis");
+  XLSX.writeFile(wb, `Fast_Slow_Dead_Stock_${new Date().toISOString().slice(0,10)}.xlsx`);
   toast("✓ Export berhasil", "good");
 };
 
