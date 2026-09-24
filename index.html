@@ -12,6 +12,18 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/firebase-firestore-compat.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.3/chart.umd.min.js" onerror="this.dataset.failed='1'"></script>
+<script>
+  // Fallback: kalau CDN utama (cdnjs) gagal dimuat (diblokir firewall/ad-blocker/jaringan lambat),
+  // coba muat ulang Chart.js dari CDN cadangan (jsdelivr) supaya grafik tetap bisa tampil.
+  window.addEventListener("DOMContentLoaded", function () {
+    if (typeof Chart === "undefined") {
+      var fallback = document.createElement("script");
+      fallback.src = "https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js";
+      document.head.appendChild(fallback);
+    }
+  });
+</script>
 
 <style>
   :root {
@@ -211,6 +223,36 @@
   .hint { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
   .hidden { display: none !important; }
 
+  /* ===== Tab Fast/Slow/Dead Stock: layout lebar & padat ===== */
+  .section-container.wide { max-width: none; }
+  .content-area.tight { padding: 12px 14px; }
+  .ma-card { display:flex; flex-direction:column; height:100%; padding:10px 12px; margin-bottom:0; }
+  .ma-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+  .ma-chips { display:inline-flex; border:1px solid var(--border-light); border-radius:var(--radius); overflow:hidden; background:var(--bg-card); }
+  .ma-chip { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; font-size:12px; font-weight:600; color:var(--text-main); background:transparent; border:0; border-right:1px solid var(--border); cursor:pointer; white-space:nowrap; }
+  .ma-chip:last-child { border-right:0; }
+  .ma-chip:hover { background:var(--bg-hover); }
+  .ma-chip.on { background:var(--accent); color:#fff; }
+  .ma-chip b { font-family:var(--font-mono); font-size:12px; }
+  .ma-chip .dot { width:8px; height:8px; border-radius:50%; flex:0 0 auto; }
+  .ma-chip.on .dot { box-shadow:0 0 0 2px rgba(255,255,255,0.6); }
+  .ma-params { display:inline-flex; align-items:center; gap:12px; padding:3px 10px; background:var(--bg-input); border:1px solid var(--border); border-radius:var(--radius); }
+  .ma-params label { display:inline-flex; align-items:center; gap:5px; font-size:12px; color:var(--text-muted); white-space:nowrap; }
+  .ma-params input[type=number] { width:58px; padding:4px 6px; font-size:12px; font-family:var(--font-mono); background:var(--bg-input); border:1px solid var(--border-light); border-radius:var(--radius); color:var(--text-main); text-align:center; }
+  .ma-params input[type=number]:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-glow); }
+  .ma-search { flex:1 1 220px; min-width:180px; max-width:360px; }
+  .ma-table { font-size:12px; }
+  .ma-table th, .ma-table td { padding:5px 10px; white-space:nowrap; }
+  .ma-table th { font-size:10px; white-space:normal; line-height:1.2; vertical-align:bottom; }
+  .ma-table td.nm { width:100%; max-width:0; overflow:hidden; text-overflow:ellipsis; }
+  .ma-table .bn { display:inline-block; white-space:nowrap; margin-right:8px; }
+  .ma-table td.bin { white-space:normal; width:300px; min-width:240px; font-family:var(--font-mono); font-size:11px; line-height:1.35; }
+  .ma-table .c { text-align:center; }
+  .ma-table .grp { border-left:1px solid var(--border); }
+  .ma-table td.dt { font-family:var(--font-mono); font-size:11.5px; color:var(--text-main); }
+  .ma-table .zero { color:var(--border-light); }
+  .ma-table .badge { min-width:44px; text-align:center; }
+
   .toast {
     position: fixed; top: 20px; right: 20px;
     background: var(--bg-card); border: 1px solid var(--border); border-left: 4px solid var(--border-light); color: var(--text-main);
@@ -259,6 +301,19 @@
   .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .summary-grid .stat-card { padding: 14px 8px; }
   @media (max-width: 480px) { .summary-grid { grid-template-columns: 1fr; } }
+
+  /* Dashboard Report: galeri gambar & print */
+  .dash-gallery-item { position: relative; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; background: var(--bg-card); }
+  .dash-gallery-item img { width: 100%; height: 110px; object-fit: cover; display: block; }
+  .dash-gallery-item .cap { font-size: 11px; padding: 6px 8px; color: var(--text-muted); border-top: 1px solid var(--border); }
+  .dash-gallery-item .del-btn { position: absolute; top: 4px; right: 4px; background: rgba(187,0,0,0.85); color: #fff; border: none; border-radius: 4px; width: 22px; height: 22px; cursor: pointer; font-size: 12px; line-height: 1; }  @media print {
+    body * { visibility: hidden; }
+    .shell-bar, .sidebar { display: none !important; }
+    #dashboardPrintArea, #dashboardPrintArea * { visibility: visible; }
+    #dashboardPrintArea { position: absolute; left: 0; top: 0; width: 100%; }
+    .no-print { display: none !important; }
+    .content-area { overflow: visible !important; }
+  }
 </style>
 </head>
 <body>
@@ -303,6 +358,13 @@
           <button class="nav-item" id="navHistoryCCTF">📜 History CC & Transfer</button>
           <button class="nav-item" id="navDiscrepancy">⚖️ Discrepancy</button>
           <button class="nav-item" id="navMovementAnalysis">📈 Fast/Slow/Dead Stock</button>
+        </div>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-group-title">Laporan <span>▼</span></div>
+        <div class="nav-group-items">
+          <button class="nav-item" id="navDashboardReport">🖥️ Dashboard Report</button>
         </div>
       </div>
       
@@ -414,6 +476,10 @@
               <select id="inboundType" class="input-sm" style="margin-bottom: 12px; font-weight: bold; color: var(--accent);">
                  <option value="INBOUND">Tipe: BARANG BARU (INBOUND)</option>
                  <option value="RETUR">Tipe: BARANG KEMBALI (RETUR)</option>
+              </select>
+              <select id="returChannel" class="input-sm hidden" style="margin-bottom: 10px; font-weight: bold; color: var(--warning);">
+                 <option value="LIVE">Channel Retur: LIVE</option>
+                 <option value="METRO">Channel Retur: METRO</option>
               </select>
               <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                 <input id="binInput" class="bin-input input-sm" type="text" placeholder="Lokasi Bin (Opsional)" autocomplete="off" style="margin-bottom: 0; flex: 1;">
@@ -908,74 +974,136 @@
 
       <!-- ============================ TAB: FAST/SLOW/DEAD STOCK & AGING ======================== -->
       <section id="tab-movementanalysis" class="hidden" style="height: 100%;">
-        <div class="card" style="display: flex; flex-direction: column; height: 100%; padding: 16px 20px; margin-bottom: 0;">
+        <div class="card ma-card">
 
-          <div style="display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
-             <div class="stat-card" style="margin:0; flex:1; min-width:100px; padding: 10px 6px;">
-                <div class="num" id="maStatTotal" style="font-size:20px;">0</div>
-                <div class="lbl" style="font-size:9px;">Total SKU</div>
-             </div>
-             <div class="stat-card" style="margin:0; flex:1; min-width:100px; padding: 10px 6px; border-bottom: 3px solid var(--success);">
-                <div class="num" id="maStatFast" style="font-size:20px; color:var(--success);">0</div>
-                <div class="lbl" style="font-size:9px;">Fast Moving</div>
-             </div>
-             <div class="stat-card" style="margin:0; flex:1; min-width:100px; padding: 10px 6px; border-bottom: 3px solid var(--warning);">
-                <div class="num" id="maStatSlow" style="font-size:20px; color:var(--warning);">0</div>
-                <div class="lbl" style="font-size:9px;">Slow Moving</div>
-             </div>
-             <div class="stat-card" style="margin:0; flex:1; min-width:100px; padding: 10px 6px; border-bottom: 3px solid var(--danger);">
-                <div class="num" id="maStatDead" style="font-size:20px; color:var(--danger);">0</div>
-                <div class="lbl" style="font-size:9px;">Dead Stock</div>
-             </div>
-             <div class="stat-card" style="margin:0; flex:1; min-width:100px; padding: 10px 6px;">
-                <div class="num" id="maStatNew" style="font-size:20px; color:var(--text-muted);">0</div>
-                <div class="lbl" style="font-size:9px;">Baru/Blm Terjual</div>
-             </div>
-          </div>
-
-          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom: 10px; padding: 10px 12px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 6px;">
-             <div style="display:flex; align-items:center; gap:6px;">
-                <span class="hint" style="white-space:nowrap;">Periode Cepat/Lambat:</span>
-                <input type="number" id="maPeriodDays" class="input-sm" value="30" min="1" style="width:70px; padding:6px 8px;"> <span class="hint">hari</span>
-             </div>
-             <div style="display:flex; align-items:center; gap:6px;">
-                <span class="hint" style="white-space:nowrap;">Ambang Fast Moving:</span>
-                <input type="number" id="maFastThreshold" class="input-sm" value="10" min="1" style="width:70px; padding:6px 8px;"> <span class="hint">qty keluar</span>
-             </div>
-             <div style="display:flex; align-items:center; gap:6px;">
-                <span class="hint" style="white-space:nowrap;">Ambang Dead Stock:</span>
-                <input type="number" id="maDeadDays" class="input-sm" value="90" min="1" style="width:70px; padding:6px 8px;"> <span class="hint">hari tanpa keluar</span>
-             </div>
-             <button class="btn btn-accent btn-sm" id="btnApplyMovementAnalysis">✔ Terapkan</button>
-          </div>
-
-          <div class="toolbar-row" style="margin-bottom: 8px;">
-            <input type="text" id="maSearchInput" class="input-sm toolbar-search" placeholder="🔍 Cari SKU / Nama / Bin..." autocomplete="off">
-            <button class="btn btn-ghost btn-sm" id="btnMaFilterFast" title="Tampilkan hanya Fast Moving">🟢 Fast</button>
-            <button class="btn btn-ghost btn-sm" id="btnMaFilterSlow" title="Tampilkan hanya Slow Moving">🟡 Slow</button>
-            <button class="btn btn-ghost btn-sm" id="btnMaFilterDead" title="Tampilkan hanya Dead Stock">🔴 Dead</button>
-            <button class="btn btn-ghost btn-sm hidden" id="btnMaFilterReset" title="Kembali menampilkan semua">↺</button>
+          <div class="ma-row">
+            <div class="ma-chips" role="group" aria-label="Filter kategori">
+              <button class="ma-chip on" id="btnMaFilterReset" title="Tampilkan semua SKU">Semua <b id="maStatTotal">0</b></button>
+              <button class="ma-chip" id="btnMaFilterFast" title="Tampilkan hanya Fast Moving"><i class="dot" style="background:var(--success)"></i>Fast <b id="maStatFast">0</b></button>
+              <button class="ma-chip" id="btnMaFilterSlow" title="Tampilkan hanya Slow Moving"><i class="dot" style="background:var(--warning)"></i>Slow <b id="maStatSlow">0</b></button>
+              <button class="ma-chip" id="btnMaFilterDead" title="Tampilkan hanya Dead Stock"><i class="dot" style="background:var(--danger)"></i>Dead <b id="maStatDead">0</b></button>
+              <button class="ma-chip" id="btnMaFilterNew" title="Tampilkan Baru / Belum Terjual + Restock Baru"><i class="dot" style="background:#9aa7b5"></i>Baru <b id="maStatNew">0</b></button>
+            </div>
+            <span class="toolbar-count" id="maRowCount"></span>
             <div class="toolbar-spacer"></div>
-            <button class="btn btn-ghost btn-sm" id="btnRefreshMovementAnalysis" title="Muat Ulang">🔄</button>
-            <button class="btn btn-ghost btn-sm" id="btnExportMovementAnalysis" title="Export Excel">⬇️ Export</button>
+            <button class="btn btn-ghost btn-sm" id="btnRefreshMovementAnalysis" title="Muat ulang data">🔄</button>
+            <button class="btn btn-ghost btn-sm" id="btnExportMovementAnalysis" title="Export ke Excel">⬇️ Export</button>
+          </div>
+
+          <div class="ma-row">
+            <input type="text" id="maSearchInput" class="input-sm ma-search" placeholder="🔍 Cari SKU / Nama / Bin..." autocomplete="off">
+            <div class="ma-params">
+              <label title="Rentang hari yang dipakai untuk menghitung Inbound & Outbound Periode">Periode <input type="number" id="maPeriodDays" value="30" min="1"> hari</label>
+              <label title="Outbound periode minimal sekian qty agar dianggap Fast Moving">Fast ≥ <input type="number" id="maFastThreshold" value="10" min="1"> qty</label>
+              <label title="Tidak ada barang keluar selama sekian hari dianggap Dead Stock">Dead ≥ <input type="number" id="maDeadDays" value="90" min="1"> hari</label>
+              <button class="btn btn-accent btn-sm" id="btnApplyMovementAnalysis">✔ Terapkan</button>
+            </div>
           </div>
 
           <div class="scroll-table fill">
-            <table>
+            <table class="ma-table">
               <thead><tr>
                 <th>SKU</th><th>Nama Barang</th>
-                <th style="text-align:center;">Fisik (Qty)</th>
-                <th style="text-align:center;">Outbound (Periode)</th>
-                <th>Terakhir Keluar</th>
-                <th style="text-align:center;">Aging (Hari)</th>
-                <th>Kategori</th>
-                <th style="min-width:180px;">Lokasi Bin</th>
+                <th class="c" title="Qty fisik saat ini">Fisik</th>
+                <th class="grp" title="Tanggal barang pertama kali masuk / saldo awal">Awal Masuk</th>
+                <th class="c" title="Qty inbound (INBOUND + RETUR) dalam periode">Inbound Periode</th>
+                <th title="Tanggal inbound paling akhir">Inbound Terakhir</th>
+                <th class="c grp" title="Qty keluar (OUTBOUND + SALES) dalam periode">Outbound Periode</th>
+                <th title="Tanggal keluar paling akhir">Keluar Terakhir</th>
+                <th class="c grp" title="Umur unit tertua yang masih ada di stok. Tanda ≈ = perkiraan dari log inbound karena unit pernah ter-reset Cycle Count">Aging (Hari)</th>
+                <th class="c">Kategori</th>
+                <th class="grp">Lokasi Bin</th>
               </tr></thead>
               <tbody id="movementAnalysisBody">
-                <tr><td colspan="8" class="hint" style="text-align:center;">Memuat data...</td></tr>
+                <tr><td colspan="11" class="hint" style="text-align:center;">Memuat data...</td></tr>
               </tbody>
             </table>
           </div>
+        </div>
+      </section>
+
+      <!-- ============================ TAB: DASHBOARD REPORT ======================== -->
+      <section id="tab-dashboardreport" class="hidden">
+        <div id="dashboardPrintArea">
+
+          <!-- Header / Branding -->
+          <div class="card" style="margin-bottom: 16px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px;">
+             <div style="display:flex; align-items:center; gap:14px;">
+                <div id="dashLogoPreview" style="width:56px; height:56px; border-radius: 8px; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; overflow:hidden; background: var(--bg-input); flex-shrink:0;">
+                   <span style="font-size:22px;">🏢</span>
+                </div>
+                <div>
+                   <div style="font-size:18px; font-weight:800; color:var(--text-main);">Dashboard Report — Marves Gudang RTS</div>
+                   <div class="hint" id="dashGeneratedAt">Dibuat: -</div>
+                </div>
+             </div>
+             <div style="display:flex; gap:8px; flex-wrap:wrap;" class="no-print">
+                <input type="file" id="fileDashLogo" accept="image/*" style="display:none;">
+                <button class="btn btn-ghost btn-sm" onclick="document.getElementById('fileDashLogo').click()">🖼️ Upload Logo</button>
+                <button class="btn btn-ghost btn-sm" id="btnRefreshDashboard">🔄 Refresh</button>
+                <button class="btn btn-accent btn-sm" id="btnPrintDashboard">🖨️ Print / Export PDF</button>
+             </div>
+          </div>
+
+          <!-- KPI Cards -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 16px;">
+             <div class="stat-card" style="margin:0; border-bottom: 3px solid var(--accent);">
+                <div class="num" id="dashKpiSku" style="color:var(--accent);">0</div>
+                <div class="lbl">Total SKU Aktif</div>
+             </div>
+             <div class="stat-card" style="margin:0; border-bottom: 3px solid var(--accent);">
+                <div class="num" id="dashKpiQty" style="color:var(--accent);">0</div>
+                <div class="lbl">Total Qty Stok</div>
+             </div>
+             <div class="stat-card" style="margin:0;">
+                <div class="num" id="dashKpiBins" style="">0</div>
+                <div class="lbl">Bin Terpakai</div>
+             </div>
+             <div class="stat-card" style="margin:0; border-bottom: 3px solid var(--success);">
+                <div class="num" id="dashKpiInbound" style="color:var(--success);">0</div>
+                <div class="lbl">Inbound (30 Hari)</div>
+             </div>
+             <div class="stat-card" style="margin:0; border-bottom: 3px solid var(--danger);">
+                <div class="num" id="dashKpiOutbound" style="color:var(--danger);">0</div>
+                <div class="lbl">Outbound (30 Hari)</div>
+             </div>
+             <div class="stat-card" style="margin:0; border-bottom: 3px solid var(--warning);">
+                <div class="num" id="dashKpiEmptyBin" style="color:var(--warning);">0</div>
+                <div class="lbl">Bin Kosong</div>
+             </div>
+             <div class="stat-card" style="margin:0; border-bottom: 3px solid var(--danger);">
+                <div class="num" id="dashKpiDead" style="color:var(--danger);">0</div>
+                <div class="lbl">Dead Stock SKU</div>
+             </div>
+             <div class="stat-card" style="margin:0; border-bottom: 3px solid var(--danger);">
+                <div class="num" id="dashKpiDiscrepancy" style="color:var(--danger);">0</div>
+                <div class="lbl">SKU Selisih</div>
+             </div>
+          </div>
+
+          <!-- Charts Grid -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+             <div class="card" style="margin:0;">
+                <h3 class="card-header">Tren Inbound vs Outbound (14 Hari Terakhir)</h3>
+                <div style="position:relative; height:260px;"><canvas id="chartTrend"></canvas></div>
+             </div>
+             <div class="card" style="margin:0;">
+                <h3 class="card-header">Kategori Stok (Fast/Slow/Dead)</h3>
+                <div style="position:relative; height:260px;"><canvas id="chartCategory"></canvas></div>
+             </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+             <div class="card" style="margin:0;">
+                <h3 class="card-header">Top 10 SKU Berdasarkan Qty Stok</h3>
+                <div style="position:relative; height:280px;"><canvas id="chartTopSku"></canvas></div>
+             </div>
+             <div class="card" style="margin:0;">
+                <h3 class="card-header">Distribusi Stok per Rak (A-H)</h3>
+                <div style="position:relative; height:280px;"><canvas id="chartRak"></canvas></div>
+             </div>
+          </div>
+
         </div>
       </section>
 
@@ -1337,6 +1465,7 @@ const tabNames = [
   { id: "historycctf", nav: "navHistoryCCTF", tab: "tab-historycctf" },
   { id: "discrepancy", nav: "navDiscrepancy", tab: "tab-discrepancy" },
   { id: "movementanalysis", nav: "navMovementAnalysis", tab: "tab-movementanalysis" },
+  { id: "dashboardreport", nav: "navDashboardReport", tab: "tab-dashboardreport" },
   { id: "master", nav: "navMaster", tab: "tab-master" },
   { id: "qrcode", nav: "navQRCode", tab: "tab-qrcode" }
 ];
@@ -1357,6 +1486,10 @@ function switchTab(activeId) {
           }
       }
   }
+
+  { const wide = activeId === "movementanalysis";
+    const sc = document.querySelector(".section-container"); if (sc) sc.classList.toggle("wide", wide);
+    const ca = document.querySelector(".content-area"); if (ca) ca.classList.toggle("tight", wide); }
 
   tabNames.forEach(t => {
     const tabEl = document.getElementById(t.tab);
@@ -1393,6 +1526,7 @@ function switchTab(activeId) {
   if(activeId === "qrcode") document.getElementById("qrTextInput").focus();
   if(activeId === "discrepancy") loadDiscrepancy();
   if(activeId === "movementanalysis") loadMovementAnalysis();
+  if(activeId === "dashboardreport") loadDashboardReport();
 }
 
 document.getElementById("navScan").onclick = () => switchTab("scan");
@@ -1407,6 +1541,7 @@ document.getElementById("navMovement").onclick = () => switchTab("movement");
 document.getElementById("navHistoryCCTF").onclick = () => switchTab("historycctf");
 document.getElementById("navDiscrepancy").onclick = () => switchTab("discrepancy");
 document.getElementById("navMovementAnalysis").onclick = () => switchTab("movementanalysis");
+document.getElementById("navDashboardReport").onclick = () => switchTab("dashboardreport");
 document.getElementById("navMaster").onclick = () => switchTab("master");
 document.getElementById("navQRCode").onclick = () => switchTab("qrcode");
 
@@ -1424,10 +1559,13 @@ const inboundType = document.getElementById("inboundType");
 // Saat dibalik ke INBOUND lagi, awalan "R" otomatis (yang belum diketik lanjut oleh user) dibersihkan kembali.
 inboundType.addEventListener("change", () => {
   const val = docNoInput.value.trim().toUpperCase();
+  const returChannelEl = document.getElementById("returChannel");
   if (inboundType.value === "RETUR") {
       if (!val) docNoInput.value = "R";
+      if (returChannelEl) returChannelEl.classList.remove("hidden");
   } else {
       if (val === "R") docNoInput.value = "";
+      if (returChannelEl) returChannelEl.classList.add("hidden");
   }
 });
 
@@ -1467,13 +1605,14 @@ async function handleScan(sku){
   const binValue = binInput.value.trim().toUpperCase() || "-";
   const docNoValue = docNoInput.value.trim().toUpperCase();
   const typeValue = inboundType.value; 
+  const returChannelValue = typeValue === "RETUR" ? document.getElementById("returChannel").value : "";
   const resultBox = document.getElementById("scanResult");
   
   if(product){
     resultBox.innerHTML = `<div class="result found">
       <div class="sku"><span class="badge muted">BIN: ${binValue}</span>${docNoValue ? ` <span class="badge transfer">DOK: ${docNoValue}</span>` : ""} ${sku}</div>
       <div class="nama">${product.nama}</div>
-      <div style="margin-top:4px"><span class="badge good">✓ DITEMUKAN (${typeValue})</span></div>
+      <div style="margin-top:4px"><span class="badge good">✓ DITEMUKAN (${typeValue}${returChannelValue ? " " + returChannelValue : ""})</span></div>
     </div>`;
   }else{
     resultBox.innerHTML = `<div class="result notfound">
@@ -1484,7 +1623,8 @@ async function handleScan(sku){
   }
 
   const entry = {
-    id: generateID(), sku, nama: product ? product.nama : null, found: !!product, bin: binValue, docNo: docNoValue || "", ts: new Date().toISOString(), sessionActive: true, type: typeValue, remark: typeValue === "RETUR" ? "Retur Barang" : "Scanned IN"
+    id: generateID(), sku, nama: product ? product.nama : null, found: !!product, bin: binValue, docNo: docNoValue || "", ts: new Date().toISOString(), sessionActive: true, type: typeValue, returChannel: returChannelValue,
+    remark: typeValue === "RETUR" ? `Retur Barang (${returChannelValue})` : "Scanned IN"
   };
   
   await idbAddScan(entry);
@@ -1759,15 +1899,35 @@ document.getElementById("btnExecCC").onclick = async () => {
   try {
       const rows = await idbGetAllScans();
       const validRows = rows.filter(r => r !== null && r !== undefined);
-      const localIdsToDelete = validRows.filter(r => r.type !== 'OUT' && uniqueBins.includes(r.bin)).map(r => r.id);
+      const rowsToDelete = validRows.filter(r => r.type !== 'OUT' && uniqueBins.includes(r.bin));
+      const localIdsToDelete = rowsToDelete.map(r => r.id);
+
+      // Simpan tanggal asli unit lama (per SKU+Bin, cadangan per SKU) supaya Aging tidak ter-reset oleh Cycle Count.
+      // Unit yang tanggalnya sendiri sudah hasil reset CC lama (tanpa tsKept) tetap dianggap tidak terpercaya.
+      const skuKey = (v) => String(v || '').trim().toUpperCase();
+      const poolSB = {}, poolS = {};
+      rowsToDelete.slice().sort((a, b) => String(a.ts || '').localeCompare(String(b.ts || ''))).forEach(r => {
+          if (!r.ts) return;
+          const it = { ts: r.ts, rel: !(r.remark === "Cycle Count Result" && !r.tsKept), used: false };
+          const k1 = skuKey(r.sku) + "|" + (r.bin || '-'), k2 = skuKey(r.sku);
+          (poolSB[k1] = poolSB[k1] || []).push(it);
+          (poolS[k2] = poolS[k2] || []).push(it);
+      });
+      const takeOldTs = (sku, bin) => {
+          const it = (poolSB[skuKey(sku) + "|" + (bin || '-')] || []).find(x => !x.used) || (poolS[skuKey(sku)] || []).find(x => !x.used);
+          if (it) it.used = true;
+          return it || null;
+      };
 
       for(let id of localIdsToDelete) { await idbDeleteScan(id); }
       await recordMovement("CC_CLEAR", "CC_CLEAR", "-", "-", uniqueBins.join(","), `Clear Bin Sebelum Cycle Count (${localIdsToDelete.length} item dihapus)`);
 
       for(let item of sessionCCScans) {
+          const kept = takeOldTs(item.sku, item.bin);
           const entry = {
-              id: item.id, sku: item.sku, nama: item.nama, found: item.found, bin: item.bin, ts: new Date().toISOString(), type: "IN", remark: "Cycle Count Result", sessionActive: false 
+              id: item.id, sku: item.sku, nama: item.nama, found: item.found, bin: item.bin, ts: kept ? kept.ts : new Date().toISOString(), type: "IN", remark: "Cycle Count Result", sessionActive: false 
           };
+          if (kept && kept.rel) entry.tsKept = true; // tanggal asli terpercaya -> aging akurat
           await idbAddScan(entry);
       }
       await recordMovement("CC_INSERT", "CYCLE_COUNT", "MULTIPLE", "Batch CC", uniqueBins.join(","), `Insert ${sessionCCScans.length} item hasil Cycle Count`);
@@ -2105,7 +2265,7 @@ async function performAdvSearch(query) {
           const safeNama = r.nama ? r.nama.replace(/</g, "&lt;").replace(/>/g, "&gt;") : 'N/A';
           const isRetur = r.type === 'RETUR';
           const remarkCell = isRetur
-            ? `<span class="badge warning" title="Ditandai sebagai barang Retur">R - RETUR</span>`
+            ? `<span class="badge warning" title="Ditandai sebagai barang Retur${r.returChannel ? ' - ' + r.returChannel : ''}">R${r.returChannel ? ' ' + r.returChannel : ''}</span>`
             : `<span class="hint">-</span>`;
           
           tr.innerHTML = `
@@ -2512,7 +2672,7 @@ async function loadAllScan(){
         const safeNama = r.nama ? r.nama.replace(/</g, "&lt;").replace(/>/g, "&gt;") : 'N/A';
         const isRetur = r.type === 'RETUR';
         const remarkCell = isRetur
-          ? `<span class="badge warning" title="Ditandai sebagai barang Retur">R - RETUR</span>`
+          ? `<span class="badge warning" title="Ditandai sebagai barang Retur${r.returChannel ? ' - ' + r.returChannel : ''}">R${r.returChannel ? ' ' + r.returChannel : ''}</span>`
           : `<span class="hint">-</span>`;
         
         tr.innerHTML = `
@@ -3118,6 +3278,8 @@ document.getElementById("btnExportDiscrepancy").onclick = () => {
    LOGIKA:
    1. Aging per SKU = umur (hari) unit TERTUA yang masih ada di stok fisik saat ini
       (dihitung dari waktu inbound paling lama di antara unit yang belum keluar).
+      Cycle Count kini mempertahankan tanggal asli unit (flag tsKept). Untuk unit hasil Cycle Count
+      lama yang tanggalnya sudah ter-reset, aging diperkirakan dari log inbound (FIFO, ditandai ≈).
    2. Kecepatan gerak dihitung dari qty keluar (movement tipe OUTBOUND + SALES)
       dalam "Periode Cepat/Lambat" (default 30 hari) yang bisa diatur user.
    3. Klasifikasi per SKU (urutan pengecekan dari yang paling spesifik):
@@ -3129,14 +3291,27 @@ document.getElementById("btnExportDiscrepancy").onclick = () => {
       d. BARU/BELUM TERJUAL : belum pernah ada outbound sama sekali, tapi aging-nya masih
                          di bawah Ambang Dead Stock (jadi belum tentu mati, mungkin memang
                          baru datang dan belum sempat terjual).
+      e. RESTOCK BARU  : SKU ini sudah pernah terjual sebelumnya dan menurut histori keluar
+                         seharusnya sudah Dead Stock, TAPI baru saja menerima inbound baru
+                         (dalam "Ambang Dead Stock" hari terakhir) -> diberi kesempatan dulu,
+                         belum divonis mati.
    ============================================================ */
 let movementAnalysisCache = [];
-let movementAnalysisViewMode = 'all'; // 'all' | 'fast' | 'slow' | 'dead'
+let movementAnalysisViewMode = 'all'; // 'all' | 'fast' | 'slow' | 'dead' | 'new'
+
+// Format tanggal ringkas untuk tabel (mis. 24 Sep 26); tooltip memakai tanggal & jam lengkap
+function maFmtDate(ts) {
+  if (!ts) return `<span class="zero">-</span>`;
+  const d = new Date(ts);
+  if (isNaN(d)) return `<span class="zero">-</span>`;
+  return `<span title="${d.toLocaleString('id-ID')}">${d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: '2-digit' })}</span>`;
+}
+const MA_BADGE_LABEL = { "FAST MOVING": "FAST", "SLOW MOVING": "SLOW", "DEAD STOCK": "DEAD", "BARU / BELUM TERJUAL": "BARU", "RESTOCK BARU": "RESTOCK" };
 
 async function loadMovementAnalysis() {
   const tbody = document.getElementById("movementAnalysisBody");
   if (!tbody) return;
-  tbody.innerHTML = `<tr><td colspan="8" class="hint" style="text-align:center;">Memproses analisa pergerakan stok...</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="11" class="hint" style="text-align:center;">Memproses analisa pergerakan stok...</td></tr>`;
 
   const periodDays = parseInt(document.getElementById("maPeriodDays").value, 10) || 30;
   const fastThreshold = parseInt(document.getElementById("maFastThreshold").value, 10) || 10;
@@ -3153,9 +3328,17 @@ async function loadMovementAnalysis() {
       activeRows.forEach(r => {
           const sku = r.sku;
           if (!sku) return;
-          if (!stockGroups[sku]) stockGroups[sku] = { fisik: 0, bins: {}, oldestTs: r.ts, nama: r.nama || '' };
+          if (!stockGroups[sku]) stockGroups[sku] = { fisik: 0, bins: {}, oldestTs: null, relOldestTs: null, nama: r.nama || '', newestTs: null, scanInPeriod: 0, resetCnt: 0 };
           const g = stockGroups[sku];
           g.fisik += 1;
+          // Unit hasil Cycle Count lama (sebelum tanggal asli dipertahankan) punya ts = waktu CC, bukan waktu inbound
+          if (r.remark === "Cycle Count Result" && !r.tsKept) {
+              g.resetCnt += 1;
+          } else if (r.ts) {
+              if (!g.relOldestTs || r.ts < g.relOldestTs) g.relOldestTs = r.ts;
+              if (!g.newestTs || r.ts > g.newestTs) g.newestTs = r.ts;
+              if ((now - new Date(r.ts).getTime()) <= periodDays * DAY_MS) g.scanInPeriod += 1;
+          }
           const binU = (r.bin || '-').toUpperCase();
           g.bins[binU] = (g.bins[binU] || 0) + 1;
           if (!g.nama && r.nama) g.nama = r.nama;
@@ -3166,8 +3349,18 @@ async function loadMovementAnalysis() {
       const allMoves = await idbGetAllMovements();
       const validMoves = allMoves.filter(m => m !== null && m !== undefined);
       const moveStats = {};
+      const inStats = {}; // inbound (INBOUND + RETUR): qty periode, tanggal pertama & terakhir
       validMoves.forEach(m => {
           if (!m.sku || m.sku === 'MULTIPLE') return;
+          if (m.type === 'INBOUND' || m.type === 'RETUR') {
+              if (!inStats[m.sku]) inStats[m.sku] = { inPeriod: 0, firstInTs: null, lastInTs: null, list: [] };
+              const is = inStats[m.sku];
+              if (m.ts) is.list.push(m.ts);
+              if (m.ts && (!is.firstInTs || m.ts < is.firstInTs)) is.firstInTs = m.ts;
+              if (m.ts && (!is.lastInTs || m.ts > is.lastInTs)) is.lastInTs = m.ts;
+              if (m.ts && (now - new Date(m.ts).getTime()) <= periodDays * DAY_MS) is.inPeriod += 1;
+              return;
+          }
           if (m.type !== 'OUTBOUND' && m.type !== 'SALES') return;
           if (!moveStats[m.sku]) moveStats[m.sku] = { outPeriod: 0, lastOutTs: null, totalOutAllTime: 0 };
           const ms = moveStats[m.sku];
@@ -3180,11 +3373,40 @@ async function loadMovementAnalysis() {
       const results = Object.keys(stockGroups).map(sku => {
           const stock = stockGroups[sku];
           const move = moveStats[sku] || { outPeriod: 0, lastOutTs: null, totalOutAllTime: 0 };
-          const agingDays = stock.oldestTs ? Math.floor((now - new Date(stock.oldestTs).getTime()) / DAY_MS) : 0;
+          // Aging: umur unit tertua yang masih ada. Jika ada unit yang tanggalnya ter-reset Cycle Count,
+          // perkirakan dari log inbound dengan prinsip FIFO: stok sekarang = N inbound TERBARU, jadi unit tertua = inbound ke-N dari belakang.
+          let agingBaseTs = stock.oldestTs, agingSrc = null;
+          if (stock.resetCnt > 0) {
+              const inbList = inStats[sku] && inStats[sku].list;
+              if (inbList && inbList.length) {
+                  const sorted = inbList.slice().sort();
+                  const estTs = sorted[Math.max(0, sorted.length - stock.fisik)];
+                  agingBaseTs = [stock.relOldestTs, estTs].filter(Boolean).sort()[0];
+                  agingSrc = 'log';
+              } else {
+                  agingSrc = 'reset';
+              }
+          }
+          const agingDays = agingBaseTs ? Math.max(0, Math.floor((now - new Date(agingBaseTs).getTime()) / DAY_MS)) : 0;
           const daysSinceLastOut = move.lastOutTs ? Math.floor((now - new Date(move.lastOutTs).getTime()) / DAY_MS) : null;
 
+          // Inbound: utamakan log movement; jika SKU belum punya log inbound, pakai data scan stok sebagai cadangan
+          const inb = inStats[sku];
+          const firstInTs = [inb && inb.firstInTs, agingBaseTs].filter(Boolean).sort()[0] || null;
+          const lastInTs = inb ? inb.lastInTs : (stock.newestTs || null);
+          const inPeriod = inb ? inb.inPeriod : stock.scanInPeriod;
+          const daysSinceLastIn = lastInTs ? Math.floor((now - new Date(lastInTs).getTime()) / DAY_MS) : null;
+          // Restock baru: SKU ini akan dianggap Dead Stock berdasar histori keluar, TAPI baru saja
+          // menerima inbound (dalam "Ambang Dead Stock" hari) sehingga belum sempat punya kesempatan terjual lagi.
+          const isRecentlyRestocked = daysSinceLastIn !== null && daysSinceLastIn < deadDays;
+
           let category, categoryClass;
-          if ((daysSinceLastOut !== null && daysSinceLastOut >= deadDays) || (move.totalOutAllTime === 0 && agingDays >= deadDays)) {
+          const wouldBeDead = (daysSinceLastOut !== null && daysSinceLastOut >= deadDays) || (move.totalOutAllTime === 0 && agingDays >= deadDays);
+          if (wouldBeDead && isRecentlyRestocked && move.totalOutAllTime > 0) {
+              category = "RESTOCK BARU"; categoryClass = "transfer";
+          } else if (wouldBeDead && isRecentlyRestocked) {
+              category = "BARU / BELUM TERJUAL"; categoryClass = "muted";
+          } else if (wouldBeDead) {
               category = "DEAD STOCK"; categoryClass = "bad";
           } else if (move.outPeriod >= fastThreshold) {
               category = "FAST MOVING"; categoryClass = "good";
@@ -3196,9 +3418,10 @@ async function loadMovementAnalysis() {
 
           return {
               sku, nama: stock.nama || 'N/A', fisik: stock.fisik,
+              firstInTs, lastInTs, inPeriod,
               outPeriod: move.outPeriod,
               lastOutTs: move.lastOutTs,
-              agingDays, category, categoryClass, bins: stock.bins
+              agingDays, agingSrc, category, categoryClass, bins: stock.bins
           };
       }).sort((a, b) => b.agingDays - a.agingDays); // default: yang paling lama mengendap di atas
 
@@ -3206,7 +3429,7 @@ async function loadMovementAnalysis() {
       renderMovementAnalysisTable(document.getElementById("maSearchInput").value);
   } catch (err) {
       console.error(err);
-      tbody.innerHTML = `<tr><td colspan="8" class="hint" style="text-align:center; color:red;">Gagal memproses analisa: ${err.message}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="11" class="hint" style="text-align:center; color:red;">Gagal memproses analisa: ${err.message}</td></tr>`;
   }
 }
 
@@ -3218,6 +3441,7 @@ function getMovementAnalysisFilteredRows(query) {
   if (movementAnalysisViewMode === 'fast') rows = rows.filter(d => d.category === "FAST MOVING");
   else if (movementAnalysisViewMode === 'slow') rows = rows.filter(d => d.category === "SLOW MOVING");
   else if (movementAnalysisViewMode === 'dead') rows = rows.filter(d => d.category === "DEAD STOCK");
+  else if (movementAnalysisViewMode === 'new') rows = rows.filter(d => d.category === "BARU / BELUM TERJUAL" || d.category === "RESTOCK BARU");
   return rows;
 }
 
@@ -3231,7 +3455,10 @@ function renderMovementAnalysisTable(query) {
   document.getElementById("maStatFast").textContent = movementAnalysisCache.filter(d => d.category === "FAST MOVING").length;
   document.getElementById("maStatSlow").textContent = movementAnalysisCache.filter(d => d.category === "SLOW MOVING").length;
   document.getElementById("maStatDead").textContent = movementAnalysisCache.filter(d => d.category === "DEAD STOCK").length;
-  document.getElementById("maStatNew").textContent = movementAnalysisCache.filter(d => d.category === "BARU / BELUM TERJUAL").length;
+  document.getElementById("maStatNew").textContent = movementAnalysisCache.filter(d => d.category === "BARU / BELUM TERJUAL" || d.category === "RESTOCK BARU").length;
+
+  const cntEl = document.getElementById("maRowCount");
+  if (cntEl) cntEl.innerHTML = `Menampilkan <b>${Math.min(filtered.length, 200)}</b> dari <b>${filtered.length}</b> SKU`;
 
   tbody.innerHTML = "";
   if (filtered.length === 0) {
@@ -3240,11 +3467,12 @@ function renderMovementAnalysisTable(query) {
           if (movementAnalysisViewMode === 'fast') msg = 'Tidak ada SKU Fast Moving pada kriteria saat ini.';
           else if (movementAnalysisViewMode === 'slow') msg = 'Tidak ada SKU Slow Moving pada kriteria saat ini.';
           else if (movementAnalysisViewMode === 'dead') msg = 'Tidak ada SKU Dead Stock pada kriteria saat ini. 🎉';
+          else if (movementAnalysisViewMode === 'new') msg = 'Tidak ada SKU Baru / Belum Terjual pada kriteria saat ini.';
           else msg = 'Tidak ada baris yang cocok dengan pencarian.';
       } else {
           msg = 'Belum ada data stok fisik untuk dianalisa.';
       }
-      tbody.innerHTML = `<tr><td colspan="8" class="hint" style="text-align:center; padding:24px;">${msg}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="11" class="hint" style="text-align:center; padding:24px;">${msg}</td></tr>`;
       return;
   }
 
@@ -3255,41 +3483,41 @@ function renderMovementAnalysisTable(query) {
       const tr = document.createElement("tr");
       const safeNama = String(d.nama).replace(/</g, "&lt;").replace(/>/g, "&gt;");
       const binKeys = Object.keys(d.bins).sort();
-      const binHtml = binKeys.length === 0 ? `<span class="hint">-</span>` : binKeys.map(b => `${b}=<span style="color:var(--success); font-weight:800;">${d.bins[b]}</span>`).join(', ');
-      const lastOutText = d.lastOutTs ? new Date(d.lastOutTs).toLocaleDateString("id-ID") : "-";
-
+      const binHtml = binKeys.length === 0 ? `<span class="hint">-</span>` : binKeys.map(b => `<span class="bn">${b}=<span style="color:var(--success); font-weight:800;">${d.bins[b]}</span></span>`).join(' ');
       let agingColor = 'var(--success)';
       if (d.agingDays >= 90) agingColor = 'var(--danger)';
       else if (d.agingDays >= 60) agingColor = 'var(--warning)';
       else if (d.agingDays >= 30) agingColor = '#b8860b';
 
+      const numCell = (v, color) => v > 0 ? `<span style="color:${color}; font-weight:700;">${v}</span>` : `<span class="zero">0</span>`;
+
       tr.innerHTML = `
         <td class="sku">${d.sku}</td>
-        <td>${safeNama}</td>
-        <td style="text-align:center; font-weight:bold;">${d.fisik}</td>
-        <td style="text-align:center; color:var(--success); font-weight:bold;">${d.outPeriod}</td>
-        <td>${lastOutText}</td>
-        <td style="text-align:center; font-weight:800; color:${agingColor};">${d.agingDays}</td>
-        <td><span class="badge ${d.categoryClass}">${d.category}</span></td>
-        <td style="font-family: var(--font-mono); font-size:12px;">${binHtml}</td>
+        <td class="nm" title="${safeNama.replace(/"/g, '&quot;')}">${safeNama}</td>
+        <td class="c" style="font-weight:700;">${d.fisik}</td>
+        <td class="dt grp">${maFmtDate(d.firstInTs)}</td>
+        <td class="c">${numCell(d.inPeriod, 'var(--accent-hover)')}</td>
+        <td class="dt">${maFmtDate(d.lastInTs)}</td>
+        <td class="c grp">${numCell(d.outPeriod, 'var(--success)')}</td>
+        <td class="dt">${maFmtDate(d.lastOutTs)}</td>
+        <td class="c grp" style="font-weight:800; color:${agingColor};"${d.agingSrc ? ` title="${d.agingSrc === 'log' ? 'Perkiraan: sebagian unit pernah ter-reset Cycle Count, umur dihitung dari log inbound (FIFO)' : 'Kurang akurat: tanggal unit ter-reset Cycle Count dan tidak ada log inbound'}"` : ''}>${d.agingSrc ? (d.agingSrc === 'log' ? '≈' : '≈?') : ''}${d.agingDays}</td>
+        <td class="c"><span class="badge ${d.categoryClass}" title="${d.category}">${MA_BADGE_LABEL[d.category] || d.category}</span></td>
+        <td class="bin grp">${binHtml}</td>
       `;
       tbody.appendChild(tr);
   });
 
   if (filtered.length > MA_RENDER_LIMIT) {
       const trMore = document.createElement("tr");
-      trMore.innerHTML = `<td colspan="8" class="hint" style="text-align:center; padding:10px;">Menampilkan ${MA_RENDER_LIMIT} dari ${filtered.length} baris. Gunakan pencarian/filter untuk mempersempit hasil.</td>`;
+      trMore.innerHTML = `<td colspan="11" class="hint" style="text-align:center; padding:10px;">Menampilkan ${MA_RENDER_LIMIT} dari ${filtered.length} baris. Gunakan pencarian/filter untuk mempersempit hasil.</td>`;
       tbody.appendChild(trMore);
   }
 }
 
 function setMovementAnalysisViewMode(mode) {
   movementAnalysisViewMode = mode;
-  document.getElementById("btnMaFilterReset").classList.toggle("hidden", mode === 'all');
-  ["btnMaFilterFast", "btnMaFilterSlow", "btnMaFilterDead"].forEach(id => document.getElementById(id).classList.remove("btn-accent"));
-  if (mode === 'fast') document.getElementById("btnMaFilterFast").classList.add("btn-accent");
-  else if (mode === 'slow') document.getElementById("btnMaFilterSlow").classList.add("btn-accent");
-  else if (mode === 'dead') document.getElementById("btnMaFilterDead").classList.add("btn-accent");
+  const chipIds = { all: "btnMaFilterReset", fast: "btnMaFilterFast", slow: "btnMaFilterSlow", dead: "btnMaFilterDead", new: "btnMaFilterNew" };
+  Object.keys(chipIds).forEach(m => document.getElementById(chipIds[m]).classList.toggle("on", m === mode));
   renderMovementAnalysisTable(document.getElementById("maSearchInput").value);
 }
 
@@ -3300,6 +3528,7 @@ document.getElementById("btnMaFilterFast").onclick = () => setMovementAnalysisVi
 document.getElementById("btnMaFilterSlow").onclick = () => setMovementAnalysisViewMode(movementAnalysisViewMode === 'slow' ? 'all' : 'slow');
 document.getElementById("btnMaFilterDead").onclick = () => setMovementAnalysisViewMode(movementAnalysisViewMode === 'dead' ? 'all' : 'dead');
 document.getElementById("btnMaFilterReset").onclick = () => setMovementAnalysisViewMode('all');
+document.getElementById("btnMaFilterNew").onclick = () => setMovementAnalysisViewMode(movementAnalysisViewMode === 'new' ? 'all' : 'new');
 
 document.getElementById("btnExportMovementAnalysis").onclick = () => {
   if (movementAnalysisCache.length === 0) { toast("Tidak ada data untuk diexport.", "warning"); return; }
@@ -3310,9 +3539,13 @@ document.getElementById("btnExportMovementAnalysis").onclick = () => {
       "SKU": d.sku,
       "Nama Barang": d.nama,
       "Fisik (Qty)": d.fisik,
+      "Awal Masuk": d.firstInTs ? new Date(d.firstInTs).toLocaleString("id-ID") : "-",
+      "Inbound (Periode)": d.inPeriod,
+      "Inbound Terakhir": d.lastInTs ? new Date(d.lastInTs).toLocaleString("id-ID") : "-",
       "Outbound (Periode)": d.outPeriod,
       "Terakhir Keluar": d.lastOutTs ? new Date(d.lastOutTs).toLocaleString("id-ID") : "-",
       "Aging (Hari)": d.agingDays,
+      "Basis Aging": d.agingSrc === 'log' ? "Perkiraan (log inbound FIFO)" : (d.agingSrc === 'reset' ? "Kurang akurat (ter-reset Cycle Count)" : "Tanggal scan"),
       "Kategori": d.category,
       "Lokasi Bin": Object.keys(d.bins).sort().map(b => `${b}=${d.bins[b]}`).join(', ')
   }));
@@ -3323,6 +3556,231 @@ document.getElementById("btnExportMovementAnalysis").onclick = () => {
   XLSX.writeFile(wb, `Fast_Slow_Dead_Stock_${new Date().toISOString().slice(0,10)}.xlsx`);
   toast("✓ Export berhasil", "good");
 };
+
+/* ============================================================
+   DASHBOARD REPORT (KPI + Chart + Galeri Foto untuk presentasi ke Owner)
+   ============================================================ */
+let dashCharts = {}; // simpan instance Chart.js supaya bisa di-destroy sebelum digambar ulang saat Refresh
+const DASH_RACKS = ['A','B','C','D','E','F','G','H'];
+
+/**
+ * Format angka bergaya akuntansi Indonesia: titik sebagai pemisah ribuan, koma untuk desimal.
+ * Contoh: 12345 -> "12.345", 1234567.5 -> "1.234.567,5"
+ */
+function formatAccounting(num) {
+  const n = Number(num);
+  if (isNaN(n)) return String(num);
+  return n.toLocaleString("id-ID");
+}
+const DASH_CHART_COLORS = ['#5b9bd5','#4caf82','#d9a256','#e07a7a','#5c3ebf','#3ba5a5','#c77dbf','#8a9aa8'];
+
+function compressImageFile(file, maxWidth = 900, quality = 0.72) {
+  return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+              let w = img.width, h = img.height;
+              if (w > maxWidth) { h = Math.round(h * (maxWidth / w)); w = maxWidth; }
+              const canvas = document.createElement("canvas");
+              canvas.width = w; canvas.height = h;
+              const ctx = canvas.getContext("2d");
+              ctx.drawImage(img, 0, 0, w, h);
+              resolve(canvas.toDataURL("image/jpeg", quality));
+          };
+          img.onerror = reject;
+          img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+  });
+}
+
+function renderDashLogo() {
+  const logo = localStorage.getItem("dashboardLogo");
+  const el = document.getElementById("dashLogoPreview");
+  if (!el) return;
+  el.innerHTML = logo ? `<img src="${logo}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="font-size:22px;">🏢</span>`;
+}
+
+document.getElementById("fileDashLogo").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  try {
+      const dataUrl = await compressImageFile(file, 300, 0.8);
+      localStorage.setItem("dashboardLogo", dataUrl);
+      renderDashLogo();
+      toast("✓ Logo berhasil diupload.", "good");
+  } catch (err) {
+      console.error(err);
+      toast("Gagal upload logo.", "bad");
+  } finally {
+      e.target.value = "";
+  }
+});
+
+document.getElementById("btnPrintDashboard").onclick = () => window.print();
+document.getElementById("btnRefreshDashboard").onclick = () => loadDashboardReport();
+
+async function loadDashboardReport() {
+  document.getElementById("dashGeneratedAt").textContent = "Dibuat: " + new Date().toLocaleString("id-ID");
+  renderDashLogo();
+
+  try {
+      const now = Date.now();
+      const DAY_MS = 24 * 60 * 60 * 1000;
+
+      // ---- Data dasar ----
+      const allScansRaw = await idbGetAllScans();
+      const activeRows = allScansRaw.filter(r => r !== null && r !== undefined && r.type !== 'OUT');
+      const allMovesRaw = await idbGetAllMovements();
+      const validMoves = allMovesRaw.filter(m => m !== null && m !== undefined);
+      const binQty = await getBinQtyMap();
+      const allBinCodes = new Set([...masterBins, ...Object.keys(binQty)]);
+
+      // ---- KPI ----
+      const skuQtyMap = {}; // sku -> qty
+      const binsUsed = new Set();
+      activeRows.forEach(r => {
+          if (!r.sku) return;
+          skuQtyMap[r.sku] = (skuQtyMap[r.sku] || 0) + 1;
+          if (r.bin && r.bin !== '-') binsUsed.add(r.bin.toUpperCase());
+      });
+      const totalSku = Object.keys(skuQtyMap).length;
+      const totalQty = activeRows.length;
+      const emptyBinCount = [...allBinCodes].filter(b => !binQty[b] || binQty[b] === 0).length;
+
+      let inbound30 = 0, outbound30 = 0;
+      validMoves.forEach(m => {
+          if (!m.ts) return;
+          if (now - new Date(m.ts).getTime() > 30 * DAY_MS) return;
+          if (m.type === 'INBOUND' || m.type === 'RETUR') inbound30++;
+          else if (m.type === 'OUTBOUND' || m.type === 'SALES') outbound30++;
+      });
+
+      document.getElementById("dashKpiSku").textContent = formatAccounting(totalSku);
+      document.getElementById("dashKpiQty").textContent = formatAccounting(totalQty);
+      document.getElementById("dashKpiBins").textContent = formatAccounting(binsUsed.size);
+      document.getElementById("dashKpiInbound").textContent = formatAccounting(inbound30);
+      document.getElementById("dashKpiOutbound").textContent = formatAccounting(outbound30);
+      document.getElementById("dashKpiEmptyBin").textContent = formatAccounting(emptyBinCount);
+
+      // Dead Stock KPI: pakai logika yang sama seperti tab Fast/Slow/Dead Stock (ambang default 30/10/90)
+      await loadMovementAnalysis();
+      const deadCount = movementAnalysisCache.filter(d => d.category === "DEAD STOCK").length;
+      document.getElementById("dashKpiDead").textContent = formatAccounting(deadCount);
+
+      // Discrepancy KPI: hanya terisi jika data OH sudah pernah diupload di tab Discrepancy
+      const diffCount = discrepancyDataCache.filter(d => d.remark !== "MATCH").length;
+      document.getElementById("dashKpiDiscrepancy").textContent = formatAccounting(diffCount);
+
+      // ---- Chart 1: Tren Inbound vs Outbound 14 hari terakhir ----
+      const days = [];
+      const inboundSeries = [];
+      const outboundSeries = [];
+      for (let i = 13; i >= 0; i--) {
+          const dayStart = new Date(now - i * DAY_MS);
+          const label = dayStart.toLocaleDateString("id-ID", { day: '2-digit', month: '2-digit' });
+          days.push(label);
+          const dayStartMs = new Date(dayStart.getFullYear(), dayStart.getMonth(), dayStart.getDate()).getTime();
+          const dayEndMs = dayStartMs + DAY_MS;
+          let inC = 0, outC = 0;
+          validMoves.forEach(m => {
+              if (!m.ts) return;
+              const t = new Date(m.ts).getTime();
+              if (t < dayStartMs || t >= dayEndMs) return;
+              if (m.type === 'INBOUND' || m.type === 'RETUR') inC++;
+              else if (m.type === 'OUTBOUND' || m.type === 'SALES') outC++;
+          });
+          inboundSeries.push(inC);
+          outboundSeries.push(outC);
+      }
+      renderDashChart('chartTrend', 'bar', {
+          labels: days,
+          datasets: [
+              { label: 'Inbound', data: inboundSeries, backgroundColor: '#4caf82' },
+              { label: 'Outbound', data: outboundSeries, backgroundColor: '#e07a7a' }
+          ]
+      }, { scales: { y: { beginAtZero: true, ticks: { precision: 0, callback: (v) => formatAccounting(v) } } } });
+
+      // ---- Chart 2: Kategori Stok (Fast/Slow/Dead/Baru) ----
+      const catCounts = { "FAST MOVING": 0, "SLOW MOVING": 0, "DEAD STOCK": 0, "BARU / BELUM TERJUAL": 0, "RESTOCK BARU": 0 };
+      movementAnalysisCache.forEach(d => { if (catCounts[d.category] !== undefined) catCounts[d.category]++; });
+      renderDashChart('chartCategory', 'doughnut', {
+          labels: ['Fast Moving', 'Slow Moving', 'Dead Stock', 'Baru/Blm Terjual', 'Restock Baru'],
+          datasets: [{ data: [catCounts["FAST MOVING"], catCounts["SLOW MOVING"], catCounts["DEAD STOCK"], catCounts["BARU / BELUM TERJUAL"], catCounts["RESTOCK BARU"]], backgroundColor: ['#4caf82', '#d9a256', '#e07a7a', '#9aa7b5', '#5c3ebf'] }]
+      });
+
+      // ---- Chart 3: Top 10 SKU by Qty ----
+      const topSkus = Object.entries(skuQtyMap).sort((a, b) => b[1] - a[1]).slice(0, 10);
+      renderDashChart('chartTopSku', 'bar', {
+          labels: topSkus.map(x => x[0]),
+          datasets: [{ label: 'Qty', data: topSkus.map(x => x[1]), backgroundColor: '#5b9bd5' }]
+      }, { indexAxis: 'y', scales: { x: { beginAtZero: true, ticks: { precision: 0, callback: (v) => formatAccounting(v) } } } });
+
+      // ---- Chart 4: Distribusi Stok per Rak (A-H, sisanya digabung "Lainnya") ----
+      const rakQty = {}; DASH_RACKS.forEach(r => rakQty[r] = 0);
+      let rakOther = 0;
+      activeRows.forEach(r => {
+          const bin = (r.bin || '').toUpperCase();
+          const rack = bin.charAt(0);
+          if (DASH_RACKS.includes(rack)) rakQty[rack]++; else rakOther++;
+      });
+      const rakLabels = DASH_RACKS.filter(r => rakQty[r] > 0);
+      const rakData = rakLabels.map(r => rakQty[r]);
+      if (rakOther > 0) { rakLabels.push('Lainnya'); rakData.push(rakOther); }
+      renderDashChart('chartRak', 'pie', {
+          labels: rakLabels.length ? rakLabels : ['Tidak ada data'],
+          datasets: [{ data: rakData.length ? rakData : [1], backgroundColor: DASH_CHART_COLORS }]
+      });
+
+  } catch (err) {
+      console.error(err);
+      toast("Gagal memuat Dashboard Report.", "bad");
+  }
+}
+
+function renderDashChart(canvasId, type, data, extraOptions) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+
+  if (typeof Chart === "undefined") {
+      // Library grafik gagal dimuat (mis. koneksi ke CDN diblokir) — beri tahu pengguna secara jelas
+      // alih-alih membiarkan area chart kosong tanpa keterangan.
+      canvas.style.display = "none";
+      let errEl = canvas.parentElement.querySelector(".chart-load-error");
+      if (!errEl) {
+          errEl = document.createElement("div");
+          errEl.className = "chart-load-error hint";
+          errEl.style.cssText = "display:flex; align-items:center; justify-content:center; height:100%; text-align:center; color:var(--danger); padding: 0 16px;";
+          canvas.parentElement.appendChild(errEl);
+      }
+      errEl.textContent = "⚠ Gagal memuat library grafik (Chart.js). Periksa koneksi internet Anda, lalu klik Refresh.";
+      return;
+  }
+
+  // Jika sebelumnya sempat gagal lalu berhasil dimuat (mis. via fallback CDN), bersihkan pesan error & tampilkan lagi kanvasnya
+  const oldErr = canvas.parentElement.querySelector(".chart-load-error");
+  if (oldErr) oldErr.remove();
+  canvas.style.display = "";
+
+  if (dashCharts[canvasId]) dashCharts[canvasId].destroy();
+  dashCharts[canvasId] = new Chart(canvas.getContext('2d'), {
+      type,
+      data,
+      options: Object.assign({
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+              legend: { display: type === 'doughnut' || type === 'pie' || (data.datasets && data.datasets.length > 1), position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+              tooltip: { callbacks: { label: (ctx) => {
+                  const val = typeof ctx.parsed === 'object' ? (ctx.parsed.y ?? ctx.parsed.x ?? ctx.parsed) : ctx.parsed;
+                  const label = ctx.dataset.label ? ctx.dataset.label + ': ' : (ctx.label ? ctx.label + ': ' : '');
+                  return label + formatAccounting(val);
+              } } }
+          }
+      }, extraOptions || {})
+  });
+}
 
 document.getElementById("btnExportAllScan").onclick = async ()=>{
   const rows = await idbGetAllScans();
