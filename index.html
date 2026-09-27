@@ -247,11 +247,82 @@
   .ma-table td.nm { width:100%; max-width:0; overflow:hidden; text-overflow:ellipsis; }
   .ma-table .bn { display:inline-block; white-space:nowrap; margin-right:8px; }
   .ma-table td.bin { white-space:normal; width:300px; min-width:240px; font-family:var(--font-mono); font-size:11px; line-height:1.35; }
-  .ma-table .c { text-align:center; }
+  .c { text-align:center; }
   .ma-table .grp { border-left:1px solid var(--border); }
   .ma-table td.dt { font-family:var(--font-mono); font-size:11.5px; color:var(--text-main); }
   .ma-table .zero { color:var(--border-light); }
   .ma-table .badge { min-width:44px; text-align:center; }
+  .ma-table tbody tr.ma-main-row { cursor:pointer; }
+  .ma-table tbody tr.ma-main-row:hover { background:var(--bg-hover); }
+  .ma-table tbody tr.ma-main-row.open { background:var(--bg-hover); }
+  .ma-table .ma-caret { display:inline-block; width:14px; color:var(--text-muted); transition:transform 0.15s; }
+  .ma-table tr.ma-main-row.open .ma-caret { transform:rotate(90deg); color:var(--accent); }
+  .ma-detail-row td { padding:0 !important; background:var(--bg-app); border-bottom:1px solid var(--border); }
+  .ma-detail-wrap { padding:8px 14px 12px 34px; }
+  .ma-detail-wrap table { width:auto; min-width:420px; border-collapse:collapse; font-size:11.5px; }
+  .ma-detail-wrap th { text-align:left; padding:3px 14px 3px 0; color:var(--text-muted); font-weight:700; text-transform:uppercase; font-size:10px; border-bottom:1px solid var(--border-light); }
+  .ma-detail-wrap td { padding:3px 14px 3px 0; white-space:nowrap; }
+  .ma-detail-wrap .lbl { color:var(--text-muted); font-size:11px; margin-bottom:4px; }
+
+  /* ===== Tab Stock Opname Harian ===== */
+  .op-toolbar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+  .op-searchbox { position:relative; flex:1 1 260px; min-width:220px; max-width:420px; }
+  .op-suggest { position:absolute; top:100%; left:0; right:0; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); margin-top:2px; max-height:260px; overflow-y:auto; z-index:50; box-shadow:0 6px 18px rgba(0,0,0,0.12); }
+  .op-suggest-item { padding:7px 10px; cursor:pointer; font-size:12.5px; border-bottom:1px solid var(--border-light); }
+  .op-suggest-item:last-child { border-bottom:0; }
+  .op-suggest-item:hover, .op-suggest-item.hi { background:var(--bg-hover); }
+  .op-suggest-item .sk { font-weight:700; color:var(--accent-hover); font-family:var(--font-mono); font-size:11.5px; }
+  .op-suggest-item .nm { color:var(--text-main); }
+  .op-table th, .op-table td { padding:6px 10px; }
+  .op-table td.qty-input input { width:70px; padding:5px 6px; font-size:12.5px; font-family:var(--font-mono); text-align:center; background:var(--bg-input); border:1px solid var(--border-light); border-radius:var(--radius); color:var(--text-main); }
+  .op-table td.qty-input input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-glow); }
+  .op-table td.bin-input input { width:110px; padding:5px 6px; font-size:12px; font-family:var(--font-mono); background:var(--bg-input); border:1px solid var(--border-light); border-radius:var(--radius); color:var(--text-main); text-transform:uppercase; }
+  .op-table td.bin-input input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-glow); }
+  .op-selisih-ok { color:var(--success); font-weight:800; }
+  .op-selisih-lebih { color:var(--accent-hover); font-weight:800; }
+  .op-selisih-kurang { color:var(--danger); font-weight:800; }
+  .op-status-pending { color:var(--text-muted); font-style:italic; }
+  .op-hist-row { cursor:pointer; }
+  .op-hist-row:hover { background:var(--bg-hover); }
+  .op-hist-detail td { padding:0 !important; background:var(--bg-app); border-bottom:1px solid var(--border); }
+  .op-acc-bar { display:inline-block; width:60px; height:7px; border-radius:4px; background:var(--border-light); overflow:hidden; vertical-align:middle; margin-right:6px; }
+  .op-acc-bar > span { display:block; height:100%; background:var(--success); }
+  .op-scanbar { display:flex; gap:8px; align-items:center; margin-bottom:10px; padding:8px; background:var(--bg-input); border:1px solid var(--border); border-radius:var(--radius); }
+  .op-scanbar input#opCurrentBin { flex:1; text-transform:uppercase; }
+  .op-livecount { font-family:var(--font-mono); font-weight:800; font-size:14px; color:var(--accent-hover); }
+  .op-livecount.zero { color:var(--text-muted); font-weight:600; }
+  .op-trace-row { display:flex; flex-direction:column; gap:3px; }
+  .op-trace-row1 { display:flex; gap:3px; }
+  .op-trace-row select, .op-trace-row input { font-size:11px; padding:3px 4px; background:var(--bg-input); border:1px solid var(--border-light); border-radius:var(--radius); color:var(--text-main); }
+  .op-trace-row select { width:78px; flex:0 0 auto; }
+  .op-trace-row input[type=number] { width:52px; flex:0 0 auto; font-family:var(--font-mono); text-align:center; }
+  .op-trace-row input[type=text] { flex:1; min-width:60px; }
+  .op-trace-row button { flex:0 0 auto; padding:3px 6px; font-size:11px; }
+  .op-evidence-btn { padding:2px 7px !important; font-size:10.5px !important; }
+  .op-evidence-wrap { padding:8px 14px 12px 14px; }
+  .op-evidence-wrap table { width:auto; min-width:340px; border-collapse:collapse; font-size:11.5px; }
+  .op-evidence-wrap th { text-align:left; padding:3px 12px 3px 0; color:var(--text-muted); font-weight:700; text-transform:uppercase; font-size:10px; border-bottom:1px solid var(--border-light); }
+  .op-evidence-wrap td { padding:3px 12px 3px 0; white-space:nowrap; }
+  .op-hist-wrap { padding:10px 16px 14px 16px; overflow-x:auto; }
+  .op-hist-table { width:100%; border-collapse:collapse; font-size:12px; }
+  .op-hist-table th, .op-hist-table td { padding:7px 12px; border-bottom:1px solid var(--border-light); vertical-align:middle; }
+  .op-hist-table th { text-align:left; color:var(--text-muted); font-weight:700; text-transform:uppercase; font-size:10px; border-bottom:1px solid var(--border); }
+  .op-hist-table th.c, .op-hist-table td.c { text-align:center; }
+  .op-hist-table tbody tr:last-child td { border-bottom:0; }
+  .op-hist-detail-wrap { padding:10px 14px 14px 34px; }
+  .op-hist-detail-wrap table { width:100%; border-collapse:collapse; font-size:12px; table-layout:fixed; }
+  .op-hist-detail-wrap th { text-align:center; padding:6px 8px; color:var(--text-muted); font-weight:700; text-transform:uppercase; font-size:10px; border-bottom:1px solid var(--border); background:var(--bg-input); }
+  .op-hist-detail-wrap th:first-child, .op-hist-detail-wrap th:nth-child(2) { text-align:left; }
+  .op-hist-detail-wrap td { padding:6px 8px; border-bottom:1px solid var(--border-light); vertical-align:middle; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .op-hist-detail-wrap tbody tr:hover { background:var(--bg-hover); }
+  .op-hist-detail-wrap td.remark-cell { white-space:normal; text-overflow:clip; font-size:11.5px; color:var(--text-muted); }
+  .op-hist-detail-wrap col.col-sku { width:100px; }
+  .op-hist-detail-wrap col.col-nama { width:auto; }
+  .op-hist-detail-wrap col.col-num { width:75px; }
+  .op-hist-detail-wrap col.col-bin { width:90px; }
+  .op-hist-detail-wrap col.col-trace { width:90px; }
+  .op-hist-detail-wrap col.col-remark { width:180px; }
+  .op-hist-detail-wrap col.col-bukti { width:60px; }
 
   .toast {
     position: fixed; top: 20px; right: 20px;
@@ -345,6 +416,7 @@
           <button class="nav-item active" id="navScan">📷 Inbound / Retur</button>
           <button class="nav-item" id="navOutbound">📤 Outbound (Keluar)</button>
           <button class="nav-item" id="navCycleCount">🔄 Cycle Count Bin</button>
+          <button class="nav-item" id="navOpname">📋 Stock Opname Harian</button>
           <button class="nav-item" id="navTransferBin">🔀 Transfer Bin</button>
         </div>
       </div>
@@ -374,6 +446,7 @@
           <button class="nav-item locked" id="navAllScan">🔒 Stok Fisik (Lokal)</button>
           <button class="nav-item locked" id="navBinCL">🔒 Data Bin CL</button>
           <button class="nav-item" id="navMaster">📦 Master Produk (Cloud)</button>
+          <button class="nav-item" id="navRfidMap">🏷️ Mapping RFID (UID)</button>
         </div>
       </div>
 
@@ -439,7 +512,7 @@
            <div style="display: flex; gap: 10px;">
               <div class="stat-card" style="margin: 0; flex: 1; border-bottom: 3px solid var(--accent);">
                 <div class="num" id="statTotal" style="color: var(--accent);">0</div>
-                <div class="lbl">Masuk</div>
+                <div class="lbl">Staging</div>
               </div>
               <div class="stat-card" style="margin: 0; flex: 1;">
                 <div class="num" id="statFound">0</div>
@@ -472,7 +545,7 @@
         <div style="display: contents;">
           <div style="display: flex; flex-direction: column;">
             <div class="card" style="margin: 0; flex: 1;">
-              <h3 class="card-header">Pemindaian INBOUND / RETUR</h3>
+              <h3 class="card-header">Pemindaian INBOUND / RETUR (Staging)</h3>
               <select id="inboundType" class="input-sm" style="margin-bottom: 12px; font-weight: bold; color: var(--accent);">
                  <option value="INBOUND">Tipe: BARANG BARU (INBOUND)</option>
                  <option value="RETUR">Tipe: BARANG KEMBALI (RETUR)</option>
@@ -486,21 +559,24 @@
                 <input id="docNoInput" class="input-sm" type="text" placeholder="No. Dokumen Inbound" autocomplete="off" style="flex: 1;">
               </div>
               <input id="scanInput" class="scan-input" type="text" placeholder="Tembak barcode..." autocomplete="off" autofocus>
-              <div class="hint" style="margin-top:10px;">Scanner otomatis mengetik + Enter. Menambah stok lokal.</div>
+              <div class="hint" style="margin-top:10px;">Item masuk ke Staging dulu (belum tersimpan ke Data Induk). Klik "🚀 Eksekusi Inbound" untuk menyimpan semuanya sekaligus.</div>
               <div id="scanResult"></div>
             </div>
           </div>
 
           <div style="display: flex; flex-direction: column;">
             <div class="card" style="margin: 0; display: flex; flex-direction: column; flex: 1;">
-              <h3 class="card-header">Log Masuk Sesi Ini</h3>
+              <h3 class="card-header">Data Staging Inbound Sesi Ini</h3>
               <div class="btn-row" style="margin-bottom: 12px;">
-                <button class="btn btn-danger btn-sm" id="btnClearScan">🗑️ Tutup Sesi (Clear UI)</button>
+                <button class="btn btn-accent btn-sm" id="btnExecInbound">🚀 Eksekusi Inbound</button>
+                <button class="btn btn-danger btn-sm" id="btnClearScan">🗑️ Batal & Bersihkan Staging</button>
               </div>
               <div class="scroll-table" style="flex: 1;">
                 <table>
                   <thead><tr><th>Jam</th><th>Bin</th><th>SKU</th><th>Nama Barang</th><th style="text-align: center;">Aksi</th></tr></thead>
-                  <tbody id="scanLogBody"></tbody>
+                  <tbody id="scanLogBody">
+                    <tr><td colspan="5" class="hint" style="text-align:center;">Belum ada data staging.</td></tr>
+                  </tbody>
                 </table>
               </div>
             </div>
@@ -644,6 +720,73 @@
             </div>
           </div>
         </div>
+        </div>
+      </section>
+
+      <!-- ============================ TAB: STOCK OPNAME HARIAN ============================ -->
+      <section id="tab-opname" class="hidden" style="height: 100%;">
+        <div class="card" style="height:100%; display:flex; flex-direction:column; padding:10px 12px;">
+
+          <div class="op-toolbar">
+            <div>
+              <div style="font-size:14px; font-weight:800; color:var(--text-main);">Stock Opname Harian</div>
+              <div class="hint" id="opTodayLabel">-</div>
+            </div>
+            <div class="toolbar-spacer"></div>
+            <div class="stat-card" style="margin:0; padding:6px 14px;"><div class="num" id="opStatTarget" style="font-size:18px;">0</div><div class="lbl">Target</div></div>
+            <div class="stat-card" style="margin:0; padding:6px 14px;"><div class="num" id="opStatDone" style="font-size:18px; color:var(--success);">0</div><div class="lbl">Dihitung</div></div>
+            <div class="stat-card" style="margin:0; padding:6px 14px;"><div class="num" id="opStatDiff" style="font-size:18px; color:var(--danger);">0</div><div class="lbl">Selisih</div></div>
+            <div class="stat-card" style="margin:0; padding:6px 14px;"><div class="num" id="opStatAcc" style="font-size:18px; color:var(--accent-hover);">-</div><div class="lbl">Akurasi</div></div>
+          </div>
+
+          <div class="op-toolbar">
+            <div class="op-searchbox">
+              <input type="text" id="opSkuSearch" class="input-sm" style="width:100%;" placeholder="🔍 Cari SKU / Nama untuk ditambah ke target..." autocomplete="off">
+              <div id="opSuggestBox" class="op-suggest hidden"></div>
+            </div>
+            <button class="btn btn-accent btn-sm" id="btnOpAddFast">⚡ Tambah Semua Fast Moving</button>
+            <button class="btn btn-danger btn-sm" id="btnOpClearTarget">🗑️ Kosongkan Target Hari Ini</button>
+            <div class="toolbar-spacer"></div>
+            <button class="btn btn-ghost btn-sm" id="btnOpRefresh" title="Muat ulang">🔄</button>
+            <button class="btn btn-ghost btn-sm" id="btnOpExport" title="Export Excel">⬇️ Export</button>
+            <button class="btn btn-ghost btn-sm" id="btnOpToggleHistory">📜 Riwayat</button>
+          </div>
+
+          <div id="opTargetView" style="flex:1; display:flex; flex-direction:column; min-height:0;">
+            <div class="op-scanbar">
+              <input type="text" id="opCurrentBin" class="input-sm" placeholder="📍 Bin lokasi saat ini (isi dulu sebelum scan)" autocomplete="off">
+              <input type="text" id="opScanInput" class="scan-input" placeholder="🔫 Tembak barcode / QR RFID untuk hitung fisik..." autocomplete="off" style="flex:2;">
+              <div id="opScanResult" class="hint" style="min-width:220px;"></div>
+            </div>
+
+            <div class="scroll-table fill">
+              <table class="op-table">
+                <thead><tr>
+                  <th>SKU</th><th>Nama Barang</th><th class="c">Sumber</th>
+                  <th class="c" title="Qty acuan dari kolom OH di tab Discrepancy (data ERP)">Qty Sistem (OH)</th>
+                  <th class="c" style="width:80px;" title="Terisi otomatis dari hasil scan">Qty Fisik</th>
+                  <th style="width:230px;" title="Catat temuan penyebab selisih (opsional)">Penelusuran</th>
+                  <th style="width:130px;">Bin Ditemukan</th>
+                  <th class="c">Selisih</th><th class="c">Status</th><th class="c">Aksi</th>
+                </tr></thead>
+                <tbody id="opTargetBody">
+                  <tr><td colspan="10" class="hint" style="text-align:center;">Memuat...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="opHistoryView" class="hidden" style="flex:1; display:flex; flex-direction:column; min-height:0;">
+            <div class="scroll-table fill">
+              <table class="op-table">
+                <thead><tr><th>Tanggal</th><th class="c">Target</th><th class="c">Dihitung</th><th class="c">Cocok</th><th class="c">Selisih</th><th>Akurasi</th><th class="c">Aksi</th></tr></thead>
+                <tbody id="opHistoryBody">
+                  <tr><td colspan="7" class="hint" style="text-align:center;">Memuat riwayat...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
         </div>
       </section>
 
@@ -829,9 +972,9 @@
           
           <div class="scroll-table" style="flex: 1;">
             <table>
-              <thead><tr><th>Waktu Masuk</th><th>Bin</th><th>SKU</th><th>Nama Barang</th><th>Remark</th><th style="text-align:center;">Aksi</th></tr></thead>
+              <thead><tr><th>Waktu Masuk</th><th>Bin</th><th>SKU</th><th>UID</th><th>Nama Barang</th><th>Remark</th><th style="text-align:center;">Aksi</th></tr></thead>
               <tbody id="allScanBody">
-                <tr><td colspan="6" class="hint" style="text-align:center;">Memuat data...</td></tr>
+                <tr><td colspan="7" class="hint" style="text-align:center;">Memuat data...</td></tr>
               </tbody>
             </table>
             <div id="allScanLoadMoreContainer" style="text-align:center; padding: 12px; display:none;">
@@ -1041,7 +1184,7 @@
                 <input type="file" id="fileDashLogo" accept="image/*" style="display:none;">
                 <button class="btn btn-ghost btn-sm" onclick="document.getElementById('fileDashLogo').click()">🖼️ Upload Logo</button>
                 <button class="btn btn-ghost btn-sm" id="btnRefreshDashboard">🔄 Refresh</button>
-                <button class="btn btn-accent btn-sm" id="btnPrintDashboard">🖨️ Print / Export PDF</button>
+                <button class="btn btn-accent btn-sm" id="btnPrintDashboard">⬇️ Export Excel</button>
              </div>
           </div>
 
@@ -1181,6 +1324,62 @@
         </div>
       </section>
 
+      <!-- ============================ TAB: MAPPING RFID (UID) ============================ -->
+      <section id="tab-rfidmap" class="hidden">
+        <div style="max-width: 700px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
+
+          <div class="hint" style="background:var(--bg-input); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px;">
+            Label baru sekarang berbentuk QR yang saat discan menghasilkan teks
+            <code>{"RFID_CODE":"xxxx"}</code>, bukan SKU langsung — karena tiap unit fisik
+            (walau SKU-nya sama) punya kode RFID unik sendiri-sendiri. Tabel di bawah ini
+            menerjemahkan kode RFID itu ke SKU aslinya. Setelah diimpor, proses scan di tab
+            Inbound / Outbound / Cycle Count Bin / Transfer Bin akan otomatis mengenali kode
+            RFID ini dan berjalan seperti biasa — tidak perlu ubah cara scan sama sekali.
+            Barcode SKU lama tetap berfungsi normal seperti sebelumnya.
+          </div>
+
+          <div style="display: flex; gap: 16px;">
+            <div class="stat-card" style="border-bottom: 3px solid var(--accent); padding: 24px; margin: 0; flex: 1;">
+              <div class="num" id="statRfidTotal" style="color: var(--accent); font-size: 36px;">0</div>
+              <div class="lbl" style="font-size: 12px;">Total Kode RFID Terdaftar</div>
+            </div>
+            <div class="stat-card" style="border-bottom: 3px solid var(--success); padding: 24px; margin: 0; flex: 1;">
+              <div class="num" id="statRfidSku" style="color: var(--success); font-size: 36px;">0</div>
+              <div class="lbl" style="font-size: 12px;">Jumlah SKU Unik Tercakup</div>
+            </div>
+          </div>
+
+          <div class="card" style="margin: 0;">
+            <h3 class="card-header">Import Tabel Pemetaan (Excel)</h3>
+            <div class="hint">Kolom wajib: <b>SKU</b> dan <b>RFID CODE</b> (nama kolom fleksibel, boleh ada baris judul/header lain di atasnya — sistem otomatis mencari baris headernya). Kolom Nama Produk bersifat opsional. Data baru akan menimpa (upsert) kode RFID yang sama.</div>
+            <div style="margin-top:16px;">
+              <input type="file" id="fileRfidMap" class="input-sm" accept=".xlsx,.xls,.csv">
+            </div>
+            <div id="rfidImportInfo" class="hint" style="margin-top:12px; font-weight: 600; color: var(--accent);"></div>
+            <div class="progress-wrap"><div class="progress-bar" id="rfidImportProgress"></div></div>
+          </div>
+
+          <div class="card" style="margin: 0;">
+            <h3 class="card-header">Cek Pemetaan</h3>
+            <div class="hint" style="margin-bottom:10px;">Cari berdasarkan Kode RFID atau SKU untuk memastikan datanya sudah benar.</div>
+            <input type="text" id="rfidCheckInput" class="input-sm" placeholder="🔍 Ketik Kode RFID atau SKU...">
+            <div class="scroll-table" style="margin-top:12px; max-height:320px;">
+              <table>
+                <thead><tr><th>Kode RFID</th><th>SKU</th><th>Nama Barang</th></tr></thead>
+                <tbody id="rfidCheckBody"><tr><td colspan="3" class="hint" style="text-align:center;">Ketik untuk mencari...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card" style="margin: 0; border-color: var(--danger);">
+            <h3 class="card-header" style="color: var(--danger);">⚠️ Zona Berbahaya — Hapus Semua Pemetaan</h3>
+            <div class="hint" style="margin-bottom: 16px;">Menghapus seluruh tabel pemetaan RFID → SKU dari perangkat ini. Barcode SKU lama tidak terpengaruh.</div>
+            <button class="btn btn-danger btn-sm" id="btnClearRfidMap" style="width:100%;">🗑️ Hapus Semua Pemetaan RFID</button>
+          </div>
+
+        </div>
+      </section>
+
       <!-- ============================ TAB: BUAT BARCODE QR ============================ -->
       <section id="tab-qrcode" class="hidden">
         <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
@@ -1301,7 +1500,7 @@ const COL_MASTER = "master_produk";
 
 let idb;
 const IDB_NAME = "scan_wms_db";
-const IDB_VERSION = 3; 
+const IDB_VERSION = 5; // v5: tambah object store "rfidmap" untuk pemetaan RFID_CODE (UID) -> SKU
 
 function openIDB(){
   return new Promise((resolve, reject)=>{
@@ -1311,11 +1510,229 @@ function openIDB(){
       if(!database.objectStoreNames.contains("master")) database.createObjectStore("master", { keyPath: "sku" });
       if(!database.objectStoreNames.contains("scanlog")) database.createObjectStore("scanlog", { keyPath: "id" });
       if(!database.objectStoreNames.contains("movementlog")) database.createObjectStore("movementlog", { keyPath: "id" });
+      if(!database.objectStoreNames.contains("opname")) database.createObjectStore("opname", { keyPath: "id" });
+      if(!database.objectStoreNames.contains("rfidmap")) database.createObjectStore("rfidmap", { keyPath: "code" });
     };
     req.onsuccess = (e)=>resolve(e.target.result);
     req.onerror = (e)=>reject(e);
   });
 }
+
+/* ============================================================
+   RFID MAP: pemetaan RFID_CODE (UID unik per unit fisik) -> SKU asli.
+   Label QR baru mengirim teks {"RFID_CODE":"xxxx"} saat discan, bukan SKU
+   langsung. Tabel ini dipakai untuk menerjemahkan kode itu jadi SKU asli
+   sebelum diproses oleh alur Inbound/Outbound/Cycle Count/Transfer Bin
+   yang sudah ada, supaya tidak ada perubahan pada alur tsb.
+   ============================================================ */
+function idbPutRfidBulk(list){
+  return new Promise((resolve, reject)=>{
+    if(!list || !list.length) return resolve();
+    const CHUNK = 3000;
+    let i = 0;
+    function nextChunk(){
+      const slice = list.slice(i, i + CHUNK);
+      if(!slice.length) return resolve();
+      const tx = idb.transaction("rfidmap", "readwrite");
+      const store = tx.objectStore("rfidmap");
+      slice.forEach(item => store.put(item));
+      tx.oncomplete = ()=>{ i += CHUNK; nextChunk(); };
+      tx.onerror = ()=>reject(tx.error);
+    }
+    nextChunk();
+  });
+}
+function idbGetAllRfid(){
+  return new Promise((resolve)=>{
+    const tx = idb.transaction("rfidmap", "readonly");
+    const req = tx.objectStore("rfidmap").getAll();
+    req.onsuccess = ()=>resolve(req.result || []);
+  });
+}
+function idbGetRfid(code){
+  return new Promise((resolve)=>{
+    const tx = idb.transaction("rfidmap", "readonly");
+    const req = tx.objectStore("rfidmap").get(code);
+    req.onsuccess = ()=>resolve(req.result || null);
+    req.onerror = ()=>resolve(null);
+  });
+}
+function idbClearRfid(){
+  return new Promise((resolve)=>{
+    const tx = idb.transaction("rfidmap", "readwrite");
+    tx.objectStore("rfidmap").clear();
+    tx.oncomplete = ()=>resolve();
+  });
+}
+
+let RFID_MAP = {}; // cache di memori: code (UPPERCASE) -> { sku, nama }
+async function primeRfidCache(){
+  try {
+    const all = await idbGetAllRfid();
+    RFID_MAP = {};
+    all.forEach(r => { RFID_MAP[r.code] = { sku: r.sku, nama: r.nama || '' }; });
+  } catch(e) { console.error("Gagal memuat cache RFID map:", e); }
+}
+
+// Deteksi apakah hasil scan berbentuk QR RFID {"RFID_CODE":"xxxx"} (bukan barcode SKU biasa).
+function extractRfidCode(raw){
+  const m = String(raw || '').match(/\{\s*["']?RFID_CODE["']?\s*:\s*"([^"]+)"\s*\}/i);
+  return m ? m[1].trim().toUpperCase() : null;
+}
+
+// Terjemahkan hasil scan mentah jadi { sku, uid }. uid diisi kode RFID kalau hasil scan
+// berformat RFID (supaya bisa disimpan sebagai kolom UID di Data Induk); uid null kalau
+// yang discan barcode SKU lama (tetap berjalan seperti biasa, tanpa perubahan).
+// Return null berarti dibatalkan (RFID belum terdaftar dan operator tidak mengisi SKU).
+async function resolveScanValue(raw, focusEl){
+  const code = extractRfidCode(raw);
+  if(!code) return { sku: raw, uid: null };
+
+  let mapped = RFID_MAP[code];
+  if(!mapped){
+    mapped = await idbGetRfid(code);
+    if(mapped) RFID_MAP[code] = mapped;
+  }
+  if(mapped) return { sku: mapped.sku, uid: code };
+
+  const input = prompt(`RFID "${code}" belum terdaftar di tabel pemetaan.\nMasukkan SKU untuk kode ini (kosongkan untuk batal):`);
+  if(!input || !input.trim()){
+    toast(`Dibatalkan: RFID ${code} belum terdaftar di pemetaan`, "bad");
+    if(focusEl) focusEl.focus();
+    return null;
+  }
+  const sku = input.trim().toUpperCase();
+  let product = await idbGetMaster(sku);
+  const nama = product ? (product.nama || '') : '';
+  await idbPutRfidBulk([{ code, sku, nama }]);
+  RFID_MAP[code] = { sku, nama };
+  toast(`RFID ${code} didaftarkan ke SKU ${sku}`, "good");
+  return { sku, uid: code };
+}
+
+/* ============================================================
+   TAB: MAPPING RFID (UID) — import Excel, cek, hapus
+   ============================================================ */
+async function loadRfidMapTab(){
+  await primeRfidCache();
+  renderRfidMapStats();
+  document.getElementById("rfidCheckInput").value = "";
+  renderRfidCheckResults("");
+}
+
+function renderRfidMapStats(){
+  const codes = Object.keys(RFID_MAP);
+  const skuSet = new Set(codes.map(c => RFID_MAP[c].sku));
+  document.getElementById("statRfidTotal").textContent = codes.length.toLocaleString("id-ID");
+  document.getElementById("statRfidSku").textContent = skuSet.size.toLocaleString("id-ID");
+}
+
+function renderRfidCheckResults(q){
+  const tbody = document.getElementById("rfidCheckBody");
+  if(!tbody) return;
+  const query = String(q || '').trim().toUpperCase();
+  if(!query){
+    tbody.innerHTML = `<tr><td colspan="3" class="hint" style="text-align:center;">Ketik untuk mencari...</td></tr>`;
+    return;
+  }
+  const entries = Object.entries(RFID_MAP).filter(([code, v]) =>
+    code.includes(query) || String(v.sku).toUpperCase().includes(query) || String(v.nama || '').toUpperCase().includes(query)
+  ).slice(0, 200);
+  if(!entries.length){
+    tbody.innerHTML = `<tr><td colspan="3" class="hint" style="text-align:center;">Tidak ditemukan.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = entries.map(([code, v]) => `<tr><td class="sku">${code}</td><td class="sku">${v.sku}</td><td>${v.nama || '-'}</td></tr>`).join('');
+}
+
+document.getElementById("rfidCheckInput").addEventListener("input", (e) => renderRfidCheckResults(e.target.value));
+
+document.getElementById("fileRfidMap").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if(!file) return;
+  const infoEl = document.getElementById("rfidImportInfo");
+  const progEl = document.getElementById("rfidImportProgress");
+  infoEl.textContent = "Membaca file...";
+  progEl.style.width = "10%";
+  const reader = new FileReader();
+  reader.onload = async (evt) => {
+    try{
+      const wb = XLSX.read(evt.target.result, { type: "array" });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
+
+      // Cari baris header (mengandung kolom SKU dan RFID), karena file bisa punya
+      // beberapa baris judul/laporan di atasnya sebelum baris header sebenarnya.
+      let headerRowIdx = -1, colSku = -1, colRfid = -1, colNama = -1;
+      for(let i = 0; i < aoa.length; i++){
+        const row = (aoa[i] || []).map(c => String(c || '').trim().toLowerCase());
+        const iSku = row.findIndex(c => c === "sku");
+        const iRfid = row.findIndex(c => c.includes("rfid"));
+        if(iSku !== -1 && iRfid !== -1){
+          headerRowIdx = i; colSku = iSku; colRfid = iRfid;
+          colNama = row.findIndex(c => c.includes("nama") || c.includes("produk"));
+          break;
+        }
+      }
+      if(headerRowIdx === -1){
+        toast("Kolom SKU dan RFID CODE tidak ditemukan di file ini.", "bad");
+        infoEl.textContent = ""; progEl.style.width = "0%";
+        document.getElementById("fileRfidMap").value = "";
+        return;
+      }
+
+      const list = [];
+      const skuSet = new Set();
+      for(let i = headerRowIdx + 1; i < aoa.length; i++){
+        const row = aoa[i] || [];
+        const sku = String(row[colSku] || '').trim();
+        const rfid = String(row[colRfid] || '').trim().toUpperCase();
+        if(!sku || !rfid) continue;
+        const nama = colNama >= 0 ? String(row[colNama] || '').trim() : '';
+        list.push({ code: rfid, sku, nama });
+        skuSet.add(sku);
+      }
+
+      if(!list.length){
+        toast("Tidak ada baris valid (SKU + RFID CODE) ditemukan.", "bad");
+        infoEl.textContent = ""; progEl.style.width = "0%";
+        document.getElementById("fileRfidMap").value = "";
+        return;
+      }
+
+      progEl.style.width = "50%";
+      infoEl.textContent = `Mengimpor ${list.length.toLocaleString("id-ID")} kode RFID (${skuSet.size.toLocaleString("id-ID")} SKU)...`;
+      await idbPutRfidBulk(list);
+      await primeRfidCache();
+      progEl.style.width = "100%";
+      renderRfidMapStats();
+      infoEl.textContent = `✓ Berhasil impor ${list.length.toLocaleString("id-ID")} kode RFID (${skuSet.size.toLocaleString("id-ID")} SKU). File: ${file.name}`;
+      toast(`✓ ${list.length.toLocaleString("id-ID")} kode RFID berhasil diimpor.`, "good");
+      document.getElementById("fileRfidMap").value = "";
+      setTimeout(() => { progEl.style.width = "0%"; }, 1500);
+    }catch(err){
+      console.error(err);
+      toast("Gagal memproses file pemetaan RFID.", "bad");
+      infoEl.textContent = ""; progEl.style.width = "0%";
+      document.getElementById("fileRfidMap").value = "";
+    }
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+document.getElementById("btnClearRfidMap").onclick = async () => {
+  const pass = prompt("Masukkan Password Administrator untuk menghapus seluruh pemetaan RFID:");
+  if(pass !== "admin123"){
+    if(pass !== null) toast("Password salah! Akses ditolak.", "bad");
+    return;
+  }
+  if(!confirm("Yakin ingin menghapus SELURUH tabel pemetaan RFID → SKU? Tindakan ini permanen.")) return;
+  await idbClearRfid();
+  await primeRfidCache();
+  renderRfidMapStats();
+  renderRfidCheckResults("");
+  toast("Seluruh pemetaan RFID telah dihapus.", "good");
+};
 
 function idbPutMasterBulk(items){
   return new Promise((resolve)=>{
@@ -1330,6 +1747,13 @@ function idbGetMaster(sku){
     const tx = idb.transaction("master", "readonly");
     const req = tx.objectStore("master").get(sku);
     req.onsuccess = ()=>resolve(req.result || null);
+  });
+}
+function idbGetAllMaster(){
+  return new Promise((resolve)=>{
+    const tx = idb.transaction("master", "readonly");
+    const req = tx.objectStore("master").getAll();
+    req.onsuccess = ()=>resolve(req.result || []);
   });
 }
 function idbCountMaster(){
@@ -1412,6 +1836,28 @@ function idbClearMovements(){
   });
 }
 
+function idbPutOpname(entry){
+  return new Promise((resolve)=>{
+    const tx = idb.transaction("opname", "readwrite");
+    tx.objectStore("opname").put(entry);
+    tx.oncomplete = ()=>resolve();
+  });
+}
+function idbDeleteOpname(id){
+  return new Promise((resolve)=>{
+    const tx = idb.transaction("opname", "readwrite");
+    tx.objectStore("opname").delete(id);
+    tx.oncomplete = ()=>resolve();
+  });
+}
+function idbGetAllOpname(){
+  return new Promise((resolve)=>{
+    const tx = idb.transaction("opname", "readonly");
+    const req = tx.objectStore("opname").getAll();
+    req.onsuccess = ()=>resolve(req.result || []);
+  });
+}
+
 async function recordMovement(ref_id, type, sku, nama, bin, remark, docNo = "") {
     const moveEntry = {
         id: generateMoveID(), ref_id: ref_id, type: type, sku: sku, nama: nama, bin: bin, remark: remark, docNo: docNo || "", ts: new Date().toISOString()
@@ -1456,6 +1902,7 @@ const tabNames = [
   { id: "scan", nav: "navScan", tab: "tab-scan" },
   { id: "outbound", nav: "navOutbound", tab: "tab-outbound" },
   { id: "cyclecount", nav: "navCycleCount", tab: "tab-cyclecount" },
+  { id: "opname", nav: "navOpname", tab: "tab-opname" },
   { id: "transferbin", nav: "navTransferBin", tab: "tab-transferbin" },
   { id: "pivot", nav: "navPivot", tab: "tab-pivot" },
   { id: "search", nav: "navSearchTab", tab: "tab-search" },
@@ -1467,6 +1914,7 @@ const tabNames = [
   { id: "movementanalysis", nav: "navMovementAnalysis", tab: "tab-movementanalysis" },
   { id: "dashboardreport", nav: "navDashboardReport", tab: "tab-dashboardreport" },
   { id: "master", nav: "navMaster", tab: "tab-master" },
+  { id: "rfidmap", nav: "navRfidMap", tab: "tab-rfidmap" },
   { id: "qrcode", nav: "navQRCode", tab: "tab-qrcode" }
 ];
 
@@ -1487,7 +1935,7 @@ function switchTab(activeId) {
       }
   }
 
-  { const wide = activeId === "movementanalysis";
+  { const wide = activeId === "movementanalysis" || activeId === "opname";
     const sc = document.querySelector(".section-container"); if (sc) sc.classList.toggle("wide", wide);
     const ca = document.querySelector(".content-area"); if (ca) ca.classList.toggle("tight", wide); }
 
@@ -1501,6 +1949,7 @@ function switchTab(activeId) {
   if(activeId === "scan") document.getElementById("scanInput").focus();
   if(activeId === "outbound") document.getElementById("outScanInput").focus();
   if(activeId === "cyclecount") document.getElementById("ccScanInput").focus();
+  if(activeId === "opname") loadOpnameTab();
   if(activeId === "transferbin") document.getElementById("tfScanInput").focus();
   if(activeId === "pivot") loadPivot();
   if(activeId === "search") {
@@ -1510,6 +1959,7 @@ function switchTab(activeId) {
   }
   if(activeId === "allscan") loadAllScan();
   if(activeId === "bincl") loadBinCL();
+  if(activeId === "rfidmap") loadRfidMapTab();
   if(activeId === "movement") {
     document.getElementById("moveSearchSku").value = "";
     document.getElementById("moveStartDate").value = "";
@@ -1532,6 +1982,7 @@ function switchTab(activeId) {
 document.getElementById("navScan").onclick = () => switchTab("scan");
 document.getElementById("navOutbound").onclick = () => switchTab("outbound");
 document.getElementById("navCycleCount").onclick = () => switchTab("cyclecount");
+document.getElementById("navOpname").onclick = () => switchTab("opname");
 document.getElementById("navTransferBin").onclick = () => switchTab("transferbin");
 document.getElementById("navPivot").onclick = () => switchTab("pivot");
 document.getElementById("navSearchTab").onclick = () => switchTab("search");
@@ -1543,6 +1994,7 @@ document.getElementById("navDiscrepancy").onclick = () => switchTab("discrepancy
 document.getElementById("navMovementAnalysis").onclick = () => switchTab("movementanalysis");
 document.getElementById("navDashboardReport").onclick = () => switchTab("dashboardreport");
 document.getElementById("navMaster").onclick = () => switchTab("master");
+document.getElementById("navRfidMap").onclick = () => switchTab("rfidmap");
 document.getElementById("navQRCode").onclick = () => switchTab("qrcode");
 
 /* ============================================================
@@ -1574,7 +2026,9 @@ scanInput.addEventListener("keydown", async (e)=>{
   const raw = scanInput.value.trim();
   scanInput.value = "";
   if(!raw) return;
-  await handleScan(raw);
+  const resolved = await resolveScanValue(raw, scanInput);
+  if(resolved === null) return;
+  await handleScan(resolved.sku, resolved.uid);
 });
 
 document.addEventListener("click", (e)=>{
@@ -1590,7 +2044,12 @@ async function getActiveSessionScans() {
   return rows.filter(r => r && r.sessionActive !== false && (r.type === "INBOUND" || r.type === "RETUR" || r.type === "IN"));
 }
 
-async function handleScan(sku){
+// Inbound sekarang bersifat STAGING (sama seperti Cycle Count Bin & Transfer Bin): hasil scan ditampung
+// dulu di sessionInboundScans (belum masuk Data Induk), baru benar-benar tersimpan setelah operator
+// menekan tombol "🚀 Eksekusi Inbound".
+let sessionInboundScans = [];
+
+async function handleScan(sku, uid){
   let product = await idbGetMaster(sku);
   if(!product){
     try{
@@ -1612,70 +2071,87 @@ async function handleScan(sku){
     resultBox.innerHTML = `<div class="result found">
       <div class="sku"><span class="badge muted">BIN: ${binValue}</span>${docNoValue ? ` <span class="badge transfer">DOK: ${docNoValue}</span>` : ""} ${sku}</div>
       <div class="nama">${product.nama}</div>
-      <div style="margin-top:4px"><span class="badge good">✓ DITEMUKAN (${typeValue}${returChannelValue ? " " + returChannelValue : ""})</span></div>
+      <div style="margin-top:4px"><span class="badge good">STAGED (${typeValue}${returChannelValue ? " " + returChannelValue : ""}) — BELUM EKSEKUSI</span></div>
     </div>`;
   }else{
     resultBox.innerHTML = `<div class="result notfound">
       <div class="sku"><span class="badge muted">BIN: ${binValue}</span>${docNoValue ? ` <span class="badge transfer">DOK: ${docNoValue}</span>` : ""} ${sku}</div>
       <div class="nama">SKU tidak ditemukan di database Master</div>
-      <div style="margin-top:4px"><span class="badge bad">⚠ TIDAK DIKENALI</span></div>
+      <div style="margin-top:4px"><span class="badge bad">⚠ TIDAK DIKENALI (tetap distaging)</span></div>
     </div>`;
   }
 
-  const entry = {
-    id: generateID(), sku, nama: product ? product.nama : null, found: !!product, bin: binValue, docNo: docNoValue || "", ts: new Date().toISOString(), sessionActive: true, type: typeValue, returChannel: returChannelValue,
+  sessionInboundScans.push({
+    id: generateID(), sku, uid: uid || null, nama: product ? product.nama : null, found: !!product, bin: binValue, docNo: docNoValue || "", ts: new Date().toISOString(), type: typeValue, returChannel: returChannelValue,
     remark: typeValue === "RETUR" ? `Retur Barang (${returChannelValue})` : "Scanned IN"
-  };
-  
-  await idbAddScan(entry);
-  await recordMovement(entry.id, typeValue, sku, product ? product.nama : "-", binValue, entry.remark, docNoValue);
-  
-  await loadScanLogFromIDB();
-  if(!document.getElementById("tab-search").classList.contains("hidden")) renderBinOverview();
+  });
+
+  renderInboundLog();
   scanInput.focus();
 }
 
-function updateStats(){
+document.getElementById("btnExecInbound").onclick = async () => {
+  if (sessionInboundScans.length === 0) { toast("Data Staging Inbound kosong!", "bad"); return; }
+  if (!confirm(`Eksekusi ${sessionInboundScans.length} item dari Staging ke Data Induk?`)) return;
+  try {
+      for (const item of sessionInboundScans) {
+          const entry = { id: item.id, sku: item.sku, uid: item.uid || null, nama: item.nama, found: item.found, bin: item.bin, docNo: item.docNo, ts: item.ts, sessionActive: true, type: item.type, returChannel: item.returChannel, remark: item.remark };
+          await idbAddScan(entry);
+          await recordMovement(entry.id, item.type, item.sku, item.nama || "-", item.bin, item.remark, item.docNo);
+      }
+      const count = sessionInboundScans.length;
+      sessionInboundScans = [];
+      renderInboundLog();
+      const scanResult = document.getElementById("scanResult");
+      if (scanResult) scanResult.innerHTML = "";
+      if(!document.getElementById("tab-search").classList.contains("hidden")) renderBinOverview();
+      if(!document.getElementById("tab-allscan").classList.contains("hidden")) loadAllScan();
+      if(!document.getElementById("tab-pivot").classList.contains("hidden")) loadPivot();
+      toast(`✓ ${count} item Inbound berhasil dieksekusi ke Data Induk`, "good");
+  } catch (err) {
+      console.error(err);
+      toast("Gagal eksekusi Inbound: " + err.message, "bad");
+  }
+};
+
+// Render Data Staging Inbound Sesi Ini langsung dari sessionInboundScans (in-memory) — BUKAN dari
+// Data Induk — karena item yang discan di sini belum tersimpan ke Data Induk sampai operator
+// menekan "🚀 Eksekusi Inbound". Pola ini sama seperti Cycle Count Bin & Transfer Bin.
+function renderInboundLog(){
+  sessionStats.total = sessionInboundScans.length;
+  sessionStats.found = sessionInboundScans.filter(r => r.found).length;
+  sessionStats.notfound = sessionInboundScans.filter(r => !r.found).length;
   document.getElementById("statTotal").textContent = sessionStats.total;
   document.getElementById("statFound").textContent = sessionStats.found;
   document.getElementById("statNotFound").textContent = sessionStats.notfound;
+
+  const tbody = document.getElementById("scanLogBody");
+  if(!tbody) return;
+  tbody.innerHTML = "";
+
+  if (sessionInboundScans.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" class="hint" style="text-align:center;">Belum ada data staging.</td></tr>`;
+      return;
+  }
+
+  sessionInboundScans.slice().reverse().slice(0, 50).forEach((r, idx) => {
+    const realIdx = sessionInboundScans.length - 1 - idx;
+    const tr = document.createElement("tr");
+    const jam = r.ts ? new Date(r.ts).toLocaleTimeString("id-ID") : "-";
+    tr.innerHTML = `
+      <td>${jam} <span class="badge ${r.type==='RETUR'?'warning':'good'}">${r.type}</span></td>
+      <td><span style="color:var(--accent); font-weight:bold;">${r.bin || '-'}</span>${r.docNo ? `<br><span style="font-size:10px; color:var(--text-muted);">DOK: ${r.docNo}</span>` : ''}</td>
+      <td class="sku">${r.sku}</td>
+      <td>${r.found ? r.nama : '<span class="badge bad">N/A</span>'}</td>
+      <td style="text-align:center;"><button class="btn-delete" onclick="removeInboundStage(${realIdx})" title="Hapus dari Staging">🗑️</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
 }
 
-async function loadScanLogFromIDB(){
-  try {
-      const rows = await getActiveSessionScans();
-      sessionStats = { total: rows.length, found: rows.filter(r=>r.found).length, notfound: rows.filter(r=>!r.found).length };
-      updateStats();
-      const tbody = document.getElementById("scanLogBody");
-      if(!tbody) return;
-      tbody.innerHTML = "";
-      
-      rows.slice().reverse().slice(0, 50).forEach(r => {
-        if(!r) return;
-        const tr = document.createElement("tr");
-        const jam = r.ts ? new Date(r.ts).toLocaleTimeString("id-ID") : "-";
-        tr.innerHTML = `
-          <td>${jam} <span class="badge ${r.type==='RETUR'?'warning':'good'}">${r.type}</span></td>
-          <td><span style="color:var(--accent); font-weight:bold;">${r.bin || '-'}</span>${r.docNo ? `<br><span style="font-size:10px; color:var(--text-muted);">DOK: ${r.docNo}</span>` : ''}</td>
-          <td class="sku">${r.sku}</td>
-          <td>${r.found ? r.nama : '<span class="badge bad">N/A</span>'}</td>
-          <td style="text-align:center;"><button class="btn-delete" onclick="undoInbound('${r.id}')" title="Batalkan Scan">🗑️</button></td>
-        `;
-        tbody.appendChild(tr);
-      });
-  } catch(e) { console.error(e); }
-}
-
-window.undoInbound = async function(id) {
-    if(!confirm("Batalkan scan Inbound/Retur ini?")) return;
-    try {
-        const rows = await idbGetAllScans();
-        const target = rows.find(r=>String(r.id) === String(id));
-        await idbDeleteScan(id);
-        if(target) await recordMovement(id, "DELETE", target.sku, target.nama, target.bin, "Undo Session");
-        await loadScanLogFromIDB();
-        toast("Dibatalkan.", "good");
-    } catch(e){}
+window.removeInboundStage = function(idx) {
+    sessionInboundScans.splice(idx, 1);
+    renderInboundLog();
 }
 
 /* ============================================================
@@ -1690,7 +2166,9 @@ outScanInput.addEventListener("keydown", async (e)=>{
   const raw = outScanInput.value.trim();
   outScanInput.value = "";
   if(!raw) return;
-  await handleOutboundScan(raw);
+  const resolved = await resolveScanValue(raw, outScanInput);
+  if(resolved === null) return;
+  await handleOutboundScan(resolved.sku);
 });
 
 async function handleOutboundScan(sku) {
@@ -1772,13 +2250,14 @@ async function loadOutboundLogFromIDB(){
   renderOutboundLog();
 }
 
-document.getElementById("btnClearScan").onclick = async ()=>{
-  if(!confirm("Tutup sesi INBOUND saat ini?")) return;
-  await idbClearSession(); 
-  await loadScanLogFromIDB();
+document.getElementById("btnClearScan").onclick = ()=>{
+  if(sessionInboundScans.length === 0){ toast("Data Staging Inbound sudah kosong", ""); return; }
+  if(!confirm("Batal dan bersihkan data Staging Inbound ini?")) return;
+  sessionInboundScans = [];
+  renderInboundLog();
   const scanResult = document.getElementById("scanResult");
   if(scanResult) scanResult.innerHTML = "";
-  toast("✓ Sesi Inbound ditutup", "good");
+  toast("✓ Staging Inbound dibersihkan", "good");
 };
 
 document.getElementById("btnClearOutboundScan").onclick = async ()=>{
@@ -1806,10 +2285,12 @@ ccScanInput.addEventListener("keydown", async (e)=>{
   const raw = ccScanInput.value.trim();
   ccScanInput.value = "";
   if(!raw) return;
-  await handleCCScan(raw);
+  const resolved = await resolveScanValue(raw, ccScanInput);
+  if(resolved === null) return;
+  await handleCCScan(resolved.sku, resolved.uid);
 });
 
-async function handleCCScan(sku) {
+async function handleCCScan(sku, uid) {
   const binValue = document.getElementById("ccBinInput").value.trim().toUpperCase();
   if (!binValue || binValue === "-") { toast("Lokasi Target Bin Wajib Diisi!", "bad"); return; }
   
@@ -1836,7 +2317,7 @@ async function handleCCScan(sku) {
   }
 
   sessionCCScans.push({
-      id: generateID(), sku: sku, nama: product ? product.nama : "Tidak Dikenali", found: !!product, bin: binValue, ts: new Date().toISOString()
+      id: generateID(), sku: sku, uid: uid || null, nama: product ? product.nama : "Tidak Dikenali", found: !!product, bin: binValue, ts: new Date().toISOString()
   });
   
   renderCCLog();
@@ -1925,7 +2406,7 @@ document.getElementById("btnExecCC").onclick = async () => {
       for(let item of sessionCCScans) {
           const kept = takeOldTs(item.sku, item.bin);
           const entry = {
-              id: item.id, sku: item.sku, nama: item.nama, found: item.found, bin: item.bin, ts: kept ? kept.ts : new Date().toISOString(), type: "IN", remark: "Cycle Count Result", sessionActive: false 
+              id: item.id, sku: item.sku, uid: item.uid || null, nama: item.nama, found: item.found, bin: item.bin, ts: kept ? kept.ts : new Date().toISOString(), type: "IN", remark: "Cycle Count Result", sessionActive: false 
           };
           if (kept && kept.rel) entry.tsKept = true; // tanggal asli terpercaya -> aging akurat
           await idbAddScan(entry);
@@ -1957,7 +2438,9 @@ tfScanInput.addEventListener("keydown", async (e) => {
   const raw = tfScanInput.value.trim();
   tfScanInput.value = "";
   if (!raw) return;
-  await handleTransferScan(raw);
+  const resolved = await resolveScanValue(raw, tfScanInput);
+  if (resolved === null) return;
+  await handleTransferScan(resolved.sku);
 });
 
 async function handleTransferScan(sku) {
@@ -2659,7 +3142,7 @@ async function loadAllScan(){
       tbody.innerHTML = "";
 
       if(validRows.length === 0){
-         tbody.innerHTML = `<tr><td colspan="6" class="hint" style="text-align:center; padding: 24px;">Data Induk Lokal Kosong.</td></tr>`;
+         tbody.innerHTML = `<tr><td colspan="7" class="hint" style="text-align:center; padding: 24px;">Data Induk Lokal Kosong.</td></tr>`;
          document.getElementById("allScanLoadMoreContainer").style.display = "none";
          return;
       }
@@ -2675,10 +3158,12 @@ async function loadAllScan(){
           ? `<span class="badge warning" title="Ditandai sebagai barang Retur${r.returChannel ? ' - ' + r.returChannel : ''}">R${r.returChannel ? ' ' + r.returChannel : ''}</span>`
           : `<span class="hint">-</span>`;
         
+        const uidCell = r.uid ? `<span class="sku" title="Kode RFID/UID unit ini">${r.uid}</span>` : `<span class="hint">-</span>`;
         tr.innerHTML = `
           <td>${jam}</td>
           <td style="color:var(--accent); font-weight:bold;">${r.bin || '-'}</td>
           <td class="sku">${r.sku || '-'}</td>
+          <td>${uidCell}</td>
           <td>${safeNama}</td>
           <td>${remarkCell}</td>
           <td style="text-align:center;"><button class="btn-delete" onclick="deleteMasterRow('${r.id}')" title="Hapus Dari Data Induk">🗑️</button></td>
@@ -2691,7 +3176,7 @@ async function loadAllScan(){
   } catch (err) {
       console.error(err);
       const tbody = document.getElementById("allScanBody");
-      if(tbody) tbody.innerHTML = `<tr><td colspan="6" class="hint" style="text-align:center; color:red;">Gagal memuat data lokal: ${err.message}</td></tr>`;
+      if(tbody) tbody.innerHTML = `<tr><td colspan="7" class="hint" style="text-align:center; color:red;">Gagal memuat data lokal: ${err.message}</td></tr>`;
   }
 }
 
@@ -3308,16 +3793,23 @@ function maFmtDate(ts) {
 }
 const MA_BADGE_LABEL = { "FAST MOVING": "FAST", "SLOW MOVING": "SLOW", "DEAD STOCK": "DEAD", "BARU / BELUM TERJUAL": "BARU", "RESTOCK BARU": "RESTOCK" };
 
-async function loadMovementAnalysis() {
-  const tbody = document.getElementById("movementAnalysisBody");
-  if (!tbody) return;
-  tbody.innerHTML = `<tr><td colspan="11" class="hint" style="text-align:center;">Memproses analisa pergerakan stok...</td></tr>`;
+// Kelompokkan unit fisik satu SKU jadi "batch" (tanggal masuk + Bin) untuk rincian saat baris diklik.
+// Unit hasil Cycle Count lama (tanggal ter-reset, tidak dipertahankan) dikelompokkan terpisah sebagai "tidak diketahui".
+function maGroupBatches(units, now, DAY_MS) {
+  const map = {};
+  (units || []).forEach(u => {
+      const key = u.reset ? ("RESET|" + u.bin) : (String(u.ts || '').slice(0, 10) + "|" + u.bin);
+      if (!map[key]) map[key] = { ts: u.reset ? null : u.ts, bin: u.bin, reset: u.reset, qty: 0 };
+      map[key].qty += 1;
+  });
+  return Object.values(map)
+      .map(b => ({ ...b, ageDays: b.ts ? Math.max(0, Math.floor((now - new Date(b.ts).getTime()) / DAY_MS)) : null }))
+      .sort((a, b) => (b.ageDays === null ? -1 : b.ageDays) - (a.ageDays === null ? -1 : a.ageDays));
+}
 
-  const periodDays = parseInt(document.getElementById("maPeriodDays").value, 10) || 30;
-  const fastThreshold = parseInt(document.getElementById("maFastThreshold").value, 10) || 10;
-  const deadDays = parseInt(document.getElementById("maDeadDays").value, 10) || 90;
-
-  try {
+// Inti perhitungan Fast/Slow/Dead Stock, dipisah dari loadMovementAnalysis() supaya bisa dipakai ulang
+// oleh tab lain (Stock Opname Harian, untuk menarik daftar SKU Fast Moving) tanpa lewat DOM tabel.
+async function computeMovementAnalysis(periodDays, fastThreshold, deadDays) {
       const now = Date.now();
       const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -3328,7 +3820,7 @@ async function loadMovementAnalysis() {
       activeRows.forEach(r => {
           const sku = r.sku;
           if (!sku) return;
-          if (!stockGroups[sku]) stockGroups[sku] = { fisik: 0, bins: {}, oldestTs: null, relOldestTs: null, nama: r.nama || '', newestTs: null, scanInPeriod: 0, resetCnt: 0 };
+          if (!stockGroups[sku]) stockGroups[sku] = { fisik: 0, bins: {}, oldestTs: null, relOldestTs: null, nama: r.nama || '', newestTs: null, scanInPeriod: 0, resetCnt: 0, units: [] };
           const g = stockGroups[sku];
           g.fisik += 1;
           // Unit hasil Cycle Count lama (sebelum tanggal asli dipertahankan) punya ts = waktu CC, bukan waktu inbound
@@ -3341,6 +3833,7 @@ async function loadMovementAnalysis() {
           }
           const binU = (r.bin || '-').toUpperCase();
           g.bins[binU] = (g.bins[binU] || 0) + 1;
+          g.units.push({ ts: r.ts || null, bin: binU, reset: (r.remark === "Cycle Count Result" && !r.tsKept) });
           if (!g.nama && r.nama) g.nama = r.nama;
           if (r.ts && (!g.oldestTs || r.ts < g.oldestTs)) g.oldestTs = r.ts;
       });
@@ -3421,11 +3914,24 @@ async function loadMovementAnalysis() {
               firstInTs, lastInTs, inPeriod,
               outPeriod: move.outPeriod,
               lastOutTs: move.lastOutTs,
-              agingDays, agingSrc, category, categoryClass, bins: stock.bins
+              agingDays, agingSrc, category, categoryClass, bins: stock.bins, units: stock.units
           };
       }).sort((a, b) => b.agingDays - a.agingDays); // default: yang paling lama mengendap di atas
 
-      movementAnalysisCache = results;
+      return results;
+}
+
+async function loadMovementAnalysis() {
+  const tbody = document.getElementById("movementAnalysisBody");
+  if (!tbody) return;
+  tbody.innerHTML = `<tr><td colspan="11" class="hint" style="text-align:center;">Memproses analisa pergerakan stok...</td></tr>`;
+
+  const periodDays = parseInt(document.getElementById("maPeriodDays").value, 10) || 30;
+  const fastThreshold = parseInt(document.getElementById("maFastThreshold").value, 10) || 10;
+  const deadDays = parseInt(document.getElementById("maDeadDays").value, 10) || 90;
+
+  try {
+      movementAnalysisCache = await computeMovementAnalysis(periodDays, fastThreshold, deadDays);
       renderMovementAnalysisTable(document.getElementById("maSearchInput").value);
   } catch (err) {
       console.error(err);
@@ -3479,8 +3985,11 @@ function renderMovementAnalysisTable(query) {
   const MA_RENDER_LIMIT = 200;
   const renderRows = filtered.slice(0, MA_RENDER_LIMIT);
 
+  const now = Date.now(), DAY_MS = 24 * 60 * 60 * 1000;
+
   renderRows.forEach(d => {
       const tr = document.createElement("tr");
+      tr.className = "ma-main-row";
       const safeNama = String(d.nama).replace(/</g, "&lt;").replace(/>/g, "&gt;");
       const binKeys = Object.keys(d.bins).sort();
       const binHtml = binKeys.length === 0 ? `<span class="hint">-</span>` : binKeys.map(b => `<span class="bn">${b}=<span style="color:var(--success); font-weight:800;">${d.bins[b]}</span></span>`).join(' ');
@@ -3490,10 +3999,12 @@ function renderMovementAnalysisTable(query) {
       else if (d.agingDays >= 30) agingColor = '#b8860b';
 
       const numCell = (v, color) => v > 0 ? `<span style="color:${color}; font-weight:700;">${v}</span>` : `<span class="zero">0</span>`;
+      const batches = maGroupBatches(d.units, now, DAY_MS);
+      const isMixed = batches.length > 1; // lebih dari 1 batch -> ada campuran unit lama & baru
 
       tr.innerHTML = `
-        <td class="sku">${d.sku}</td>
-        <td class="nm" title="${safeNama.replace(/"/g, '&quot;')}">${safeNama}</td>
+        <td class="sku"><span class="ma-caret">▸</span>${d.sku}</td>
+        <td class="nm" title="${safeNama.replace(/"/g, '&quot;')}">${safeNama}${isMixed ? ` <span class="badge muted" title="Campuran ${batches.length} batch umur berbeda, klik baris untuk rincian">${batches.length} BATCH</span>` : ''}</td>
         <td class="c" style="font-weight:700;">${d.fisik}</td>
         <td class="dt grp">${maFmtDate(d.firstInTs)}</td>
         <td class="c">${numCell(d.inPeriod, 'var(--accent-hover)')}</td>
@@ -3504,7 +4015,26 @@ function renderMovementAnalysisTable(query) {
         <td class="c"><span class="badge ${d.categoryClass}" title="${d.category}">${MA_BADGE_LABEL[d.category] || d.category}</span></td>
         <td class="bin grp">${binHtml}</td>
       `;
+
+      const trDetail = document.createElement("tr");
+      trDetail.className = "ma-detail-row hidden";
+      const batchRows = batches.map(b => {
+          const ageTxt = b.ageDays === null ? `<span class="hint">tdk diketahui</span>` : `<b style="color:${b.ageDays >= 90 ? 'var(--danger)' : b.ageDays >= 30 ? '#b8860b' : 'var(--success)'}">${b.ageDays} hari</b>`;
+          const tglTxt = b.reset ? `<span class="hint" title="Hasil Cycle Count lama, tanggal asli unit tidak tersimpan">Tidak diketahui (CC lama)</span>` : maFmtDate(b.ts);
+          return `<tr><td>${tglTxt}</td><td>${b.bin}</td><td class="c" style="font-weight:700;">${b.qty}</td><td>${ageTxt}</td></tr>`;
+      }).join('');
+      trDetail.innerHTML = `<td colspan="11"><div class="ma-detail-wrap">
+          <div class="lbl">Rincian ${batches.length} batch unit untuk SKU <b>${d.sku}</b> (dikelompokkan per tanggal masuk &amp; Bin):</div>
+          <table><thead><tr><th>Tanggal Masuk</th><th>Bin</th><th>Qty</th><th>Umur</th></tr></thead><tbody>${batchRows}</tbody></table>
+      </div></td>`;
+
+      tr.addEventListener("click", () => {
+          const open = trDetail.classList.toggle("hidden") === false;
+          tr.classList.toggle("open", open);
+      });
+
       tbody.appendChild(tr);
+      tbody.appendChild(trDetail);
   });
 
   if (filtered.length > MA_RENDER_LIMIT) {
@@ -3558,9 +4088,683 @@ document.getElementById("btnExportMovementAnalysis").onclick = () => {
 };
 
 /* ============================================================
+   STOCK OPNAME HARIAN
+   Tujuan: menjaga akurasi data dengan cara menghitung fisik sebagian SKU
+   setiap hari (target harian), membandingkan dengan Qty Sistem, dan
+   mencatat selisihnya. Berbeda dari "Cycle Count Bin" (yang berbasis Bin,
+   dipakai untuk mencari Bin kosong) — tab ini berbasis SKU:
+     1. Target hari ini bisa ditarik otomatis dari SKU Fast Moving
+        (memakai ambang yang sama dengan tab Fast/Slow/Dead Stock),
+        atau ditambah manual per SKU.
+     2. Setiap SKU dihitung: masukkan Qty Fisik (+ Bin tempat ditemukan).
+        Selisih (Qty Fisik − Qty Sistem) dihitung otomatis.
+     3. Jika ada selisih, stok sistem disesuaikan (INBOUND jika fisik lebih,
+        OUTBOUND jika fisik kurang — unit yang dihapus adalah yang paling
+        lama/FIFO) dan dicatat di Tracking Movement agar tetap bisa ditelusuri.
+     4. Riwayat harian menyimpan akurasi (dari SKU yang sudah dihitung)
+        untuk dipantau tren dari hari ke hari.
+   Catatan keterbatasan: jika satu SKU dihitung ulang (recount) di hari yang
+   sama, hasil sebelumnya di hari itu ditimpa oleh hasil terbaru (bukan
+   diakumulasi) — Qty Sistem diambil ulang secara live sehingga penyesuaian
+   stoknya tetap benar, hanya catatan "berapa kali dihitung hari itu" yang
+   tidak disimpan.
+   ============================================================ */
+function opTodayStr() {
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+function opTodayLabelText() {
+  return new Date().toLocaleDateString("id-ID", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+}
+function computeStockQtyMap(scans) {
+  const map = {};
+  (scans || []).forEach(r => {
+      if (!r || r.type === 'OUT' || !r.sku) return;
+      if (!map[r.sku]) map[r.sku] = { qty: 0, nama: r.nama || '' };
+      map[r.sku].qty += 1;
+      if (!map[r.sku].nama && r.nama) map[r.sku].nama = r.nama;
+  });
+  return map;
+}
+
+// Qty Sistem Stock Opname diambil dari kolom OH (data ERP) yang sama dengan yang dipakai tab Discrepancy,
+// BUKAN dari qty fisik lokal — karena tujuannya mencocokkan fisik gudang terhadap catatan ERP.
+function opGetSystemQty(sku) {
+  const e = discrepancyOHData[String(sku || '').toUpperCase()];
+  return e ? (e.oh || 0) : 0;
+}
+function opGetOHNama(sku) {
+  const e = discrepancyOHData[String(sku || '').toUpperCase()];
+  return e ? (e.nama || '') : '';
+}
+
+// Penelusuran: temuan INBOUND/OUTBOUND yang belum tercatat sistem bisa menjelaskan sebagian/seluruh
+// selisih. OUTBOUND yang ditemukan (barang keluar tapi belum tercatat, mis. dipinjam) MENAMBAH selisih
+// (menutup kekurangan/shortage). INBOUND yang ditemukan (barang masuk tapi belum tercatat) MENGURANGI
+// selisih (menutup kelebihan/surplus).
+function opAdjustedSelisih(rawSelisih, traceType, traceQty) {
+  if (!traceType || traceQty === null || traceQty === undefined || traceQty === '' || isNaN(traceQty)) return rawSelisih;
+  const q = Number(traceQty);
+  if (traceType === 'OUTBOUND') return rawSelisih + q;
+  if (traceType === 'INBOUND') return rawSelisih - q;
+  return rawSelisih;
+}
+
+let opTargets = [], opResults = [], opAllOpname = [], opScans = [], opStockMap = {}, opMasterList = [], opHistoryMode = false, opSuggestSel = -1;
+
+async function loadOpnameTab() {
+  document.getElementById("opTodayLabel").textContent = opTodayLabelText();
+  const today = opTodayStr();
+  try {
+      const [allOpname, allScans] = await Promise.all([idbGetAllOpname(), idbGetAllScans()]);
+      opAllOpname = allOpname;
+      opTargets = allOpname.filter(o => o.kind === 'target' && o.date === today);
+      opResults = allOpname.filter(o => o.kind === 'result' && o.date === today);
+      opScans = allOpname.filter(o => o.kind === 'scan' && o.date === today);
+      opStockMap = computeStockQtyMap(allScans);
+      if (opMasterList.length === 0) opMasterList = await idbGetAllMaster();
+      renderOpTargetTable();
+      renderOpHistoryTable();
+  } catch (err) {
+      console.error(err);
+      document.getElementById("opTargetBody").innerHTML = `<tr><td colspan="10" class="hint" style="text-align:center; color:red;">Gagal memuat Stock Opname: ${err.message}</td></tr>`;
+  }
+}
+
+function opFindResult(sku) { return opResults.find(r => r.sku === sku) || null; }
+function opScansForSku(sku) { return opScans.filter(s => s.sku === sku); }
+function opLiveQty(sku) { return opScansForSku(sku).length; }
+function opLiveBins(sku) {
+  const map = {};
+  opScansForSku(sku).forEach(s => { const b = s.bin || '-'; map[b] = (map[b] || 0) + 1; });
+  return map;
+}
+
+/* ---- Pemindaian fisik: qty & bin terisi otomatis dari hasil scan ---- */
+const opScanInputEl = document.getElementById("opScanInput");
+opScanInputEl.addEventListener("keydown", async (e) => {
+  if (e.key !== "Enter") return;
+  const raw = opScanInputEl.value.trim();
+  opScanInputEl.value = "";
+  if (!raw) return;
+  const binValue = document.getElementById("opCurrentBin").value.trim().toUpperCase();
+  if (!binValue) {
+      toast("Isi Bin lokasi saat ini dahulu sebelum scan!", "bad");
+      document.getElementById("opCurrentBin").focus();
+      return;
+  }
+  const resolved = await resolveScanValue(raw, opScanInputEl);
+  if (resolved === null) return;
+  await opRegisterScan(resolved.sku, binValue, resolved.uid);
+});
+
+async function opRegisterScan(sku, bin, uid) {
+  const today = opTodayStr();
+  const resultBox = document.getElementById("opScanResult");
+  let target = opTargets.find(t => t.sku === sku);
+
+  if (!target) {
+      // SKU ditemukan fisik saat scan meski belum ada di daftar target -> otomatis ditambahkan
+      let product = await idbGetMaster(sku);
+      const nama = (product && product.nama) || opGetOHNama(sku) || (opStockMap[sku] && opStockMap[sku].nama) || '';
+      target = { id: `tgt_${today}_${sku}`, kind: 'target', date: today, sku, nama, source: 'scan', addedAt: new Date().toISOString() };
+      await idbPutOpname(target);
+      opTargets.push(target);
+      opAllOpname.push(target);
+  }
+
+  if (opFindResult(sku)) {
+      resultBox.innerHTML = `<span class="badge warning">⚠ ${sku} sudah difinalisasi hari ini</span> — klik "✏️ Ulang" dulu untuk mengoreksi.`;
+      opScanInputEl.focus();
+      return;
+  }
+
+  const scanEntry = { id: generateID(), kind: 'scan', date: today, sku, bin, uid: uid || null, ts: new Date().toISOString() };
+  await idbPutOpname(scanEntry);
+  opScans.push(scanEntry);
+  opAllOpname.push(scanEntry);
+
+  const qty = opLiveQty(sku);
+  resultBox.innerHTML = `<span class="badge good">✓ ${sku}</span> qty terhitung sekarang: <b>${qty}</b> @ ${bin}`;
+  renderOpTargetTable();
+  opScanInputEl.focus();
+}
+
+window.opResetCount = async function (sku) {
+  if (!confirm(`Reset hitungan fisik "${sku}" hari ini? Seluruh histori scan hari ini untuk SKU ini akan dihapus, lalu Anda mulai scan ulang dari 0.`)) return;
+  const toDelete = opScansForSku(sku);
+  for (const s of toDelete) { await idbDeleteOpname(s.id); }
+  const ids = new Set(toDelete.map(s => s.id));
+  opScans = opScans.filter(s => !ids.has(s.id));
+  opAllOpname = opAllOpname.filter(o => !ids.has(o.id));
+  renderOpTargetTable();
+  toast(`✓ Hitungan ${sku} direset ke 0`, "good");
+};
+
+// Buka kembali baris yang sudah difinalisasi supaya bisa dihitung ulang (mis. ada revisi hasil hitung fisik).
+// Hasil lama & seluruh bukti scan hari ini untuk SKU tsb dihapus, operator scan ulang dari 0.
+window.opStartRecount = async function (sku) {
+  if (!confirm(`Hitung ulang SKU ${sku}? Hasil sebelumnya dan seluruh bukti scan hari ini untuk SKU ini akan dihapus permanen, lalu Anda scan ulang dari 0.`)) return;
+  const r = opFindResult(sku);
+  if (r) {
+      await idbDeleteOpname(r.id);
+      opResults = opResults.filter(x => x.id !== r.id);
+      opAllOpname = opAllOpname.filter(o => o.id !== r.id);
+  }
+  const toDelete = opScansForSku(sku);
+  for (const s of toDelete) { await idbDeleteOpname(s.id); }
+  const ids = new Set(toDelete.map(s => s.id));
+  opScans = opScans.filter(s => !ids.has(s.id));
+  opAllOpname = opAllOpname.filter(o => !ids.has(o.id));
+  renderOpTargetTable();
+  toast(`Silakan scan ulang ${sku} dari awal.`, "warning");
+};
+
+window.opRemoveTarget = async function (sku) {
+  const t = opTargets.find(x => x.sku === sku);
+  if (!t) return;
+  if (!confirm(`Hapus SKU ${sku} dari target Stock Opname hari ini?`)) return;
+  await idbDeleteOpname(t.id);
+  opTargets = opTargets.filter(x => x.sku !== sku);
+  opAllOpname = opAllOpname.filter(x => x.id !== t.id);
+  renderOpTargetTable();
+};
+
+// Simpan hasil hitung: qty fisik & bin diambil dari akumulasi scan (bukan ketik manual). Data Induk untuk
+// SKU ini (lintas semua Bin) diganti dengan hasil scan opname, tanggal asli unit lama dipertahankan
+// sebisa mungkin (pool by SKU) supaya Aging tidak ter-reset — sama seperti pendekatan Cycle Count Bin.
+window.opSaveCount = async function (sku) {
+  const qtyFisik = opLiveQty(sku);
+  if (qtyFisik === 0) {
+      if (!confirm(`Qty fisik "${sku}" = 0 (belum ada unit discan). Simpan sebagai hasil "TIDAK DITEMUKAN"?`)) return;
+  }
+
+  const binsMap = opLiveBins(sku);
+  const binDisplay = Object.keys(binsMap).map(b => `${b}=${binsMap[b]}`).join(', ');
+  const qtySystem = opGetSystemQty(sku);
+  const selisih = qtyFisik - qtySystem;
+  const target = opTargets.find(t => t.sku === sku);
+  const nama = (target && target.nama) || opGetOHNama(sku) || (opStockMap[sku] && opStockMap[sku].nama) || 'N/A';
+  const today = opTodayStr();
+  const oldPhysicalQty = (opStockMap[sku] && opStockMap[sku].qty) || 0;
+  const scansForSku = opScansForSku(sku);
+
+  try {
+      const allScans = await idbGetAllScans();
+      const oldRows = allScans.filter(r => r && r.type !== 'OUT' && r.sku === sku);
+      const pool = oldRows.slice()
+          .sort((a, b) => String(a.ts || '').localeCompare(String(b.ts || '')))
+          .map(r => ({ ts: r.ts, rel: !(r.remark === "Cycle Count Result" && !r.tsKept), used: false }));
+      const takeOldTs = () => { const it = pool.find(x => !x.used); if (it) it.used = true; return it || null; };
+
+      for (const r of oldRows) { await idbDeleteScan(r.id); }
+
+      for (const s of scansForSku) {
+          const kept = takeOldTs();
+          const entry = { id: generateID(), sku, uid: s.uid || null, nama, found: true, bin: s.bin, ts: kept ? kept.ts : s.ts, type: "IN", remark: "Stock Opname Harian", sessionActive: false };
+          if (kept && kept.rel) entry.tsKept = true;
+          await idbAddScan(entry);
+      }
+
+      const delta = qtyFisik - oldPhysicalQty;
+      if (delta > 0) {
+          await recordMovement("OPNAME_" + today, "INBOUND", sku, nama, binDisplay || "-", `Stock Opname Harian: fisik lama ${oldPhysicalQty} → fisik baru ${qtyFisik} (acuan OH sistem ${qtySystem}, selisih ${selisih > 0 ? '+' : ''}${selisih})`);
+      } else if (delta < 0) {
+          await recordMovement("OPNAME_" + today, "OUTBOUND", sku, nama, binDisplay || "-", `Stock Opname Harian: fisik lama ${oldPhysicalQty} → fisik baru ${qtyFisik} (acuan OH sistem ${qtySystem}, selisih ${selisih > 0 ? '+' : ''}${selisih})`);
+      }
+
+      const resultEntry = { id: `res_${today}_${sku}`, kind: 'result', date: today, sku, nama, qtySystem, qtyFisik, selisih, bin: binDisplay || '-', ts: new Date().toISOString() };
+      await idbPutOpname(resultEntry);
+
+      opStockMap[sku] = { qty: qtyFisik, nama };
+      opResults = opResults.filter(r => r.sku !== sku);
+      opResults.push(resultEntry);
+      opAllOpname = opAllOpname.filter(o => o.id !== resultEntry.id);
+      opAllOpname.push(resultEntry);
+
+      toast(selisih === 0 ? `✓ ${sku} cocok dengan OH sistem` : `✓ ${sku} tersimpan (selisih vs OH: ${selisih > 0 ? '+' : ''}${selisih})`, "good");
+      renderOpTargetTable();
+  } catch (err) {
+      console.error(err);
+      toast("Gagal menyimpan hasil hitung: " + err.message, "bad");
+  }
+};
+
+// ---- Penelusuran (catatan temuan INBOUND/OUTBOUND penyebab selisih) ----
+// Selisih & Status dihitung ulang SECARA LIVE saat qty/tipe penelusuran diketik (sebelum disimpan),
+// supaya operator langsung melihat efeknya. Perubahan baru benar-benar tersimpan permanen saat "💾" diklik.
+window.opRecomputeSelisihDisplay = function (sku) {
+  const typeEl = document.getElementById(`opTraceType_${sku}`);
+  const qtyEl = document.getElementById(`opTraceQty_${sku}`);
+  const selCell = document.getElementById(`opSelisihCell_${sku}`);
+  const statCell = document.getElementById(`opStatusCell_${sku}`);
+  if (!selCell) return;
+
+  const traceType = typeEl ? typeEl.value : '';
+  const traceQty = qtyEl && qtyEl.value !== '' ? parseInt(qtyEl.value, 10) : null;
+
+  const res = opFindResult(sku);
+  const scanCountToday = opLiveQty(sku);
+  const hasCount = res ? true : scanCountToday > 0;
+  const rawSelisih = res ? res.selisih : (scanCountToday - opGetSystemQty(sku));
+  const adj = opAdjustedSelisih(rawSelisih, traceType, traceQty);
+  const cls = adj === 0 ? 'op-selisih-ok' : (adj > 0 ? 'op-selisih-lebih' : 'op-selisih-kurang');
+
+  selCell.className = 'c ' + (hasCount ? cls : 'hint');
+  selCell.textContent = hasCount ? (adj > 0 ? '+' + adj : String(adj)) : '-';
+
+  if (statCell) {
+      if (!hasCount) statCell.innerHTML = `<span class="op-status-pending">Belum Dihitung</span>`;
+      else if (res) statCell.innerHTML = `<span class="${cls}">${adj === 0 ? 'Cocok ✓' : (adj > 0 ? `Lebih (+${adj})` : `Kurang (${adj})`)}</span>`;
+      else statCell.innerHTML = `<span class="op-selisih-lebih" style="font-style:italic;">Sedang Dihitung...</span>`;
+  }
+};
+
+window.opSaveTrace = async function (sku) {
+  const typeEl = document.getElementById(`opTraceType_${sku}`);
+  const qtyEl = document.getElementById(`opTraceQty_${sku}`);
+  const remarkEl = document.getElementById(`opTraceRemark_${sku}`);
+  const target = opTargets.find(t => t.sku === sku);
+  if (!target || !typeEl) return;
+  target.traceType = typeEl.value || '';
+  target.traceQty = qtyEl.value !== '' ? parseInt(qtyEl.value, 10) : null;
+  target.traceRemark = (remarkEl.value || '').trim();
+  await idbPutOpname(target);
+  toast(`✓ Penelusuran ${sku} disimpan (Selisih diperbarui)`, "good");
+  renderOpTargetTable();
+};
+
+// ---- Bukti histori scan (lampiran) untuk target hari ini ----
+window.opToggleEvidence = function (sku, btnEl) {
+  const trEv = document.querySelector(`tr.op-evidence-row[data-sku="${CSS.escape(sku)}"]`);
+  if (!trEv) return;
+  const isHidden = trEv.classList.contains("hidden");
+  if (isHidden) {
+      const scans = opScansForSku(sku).slice().sort((a, b) => String(a.ts || '').localeCompare(String(b.ts || '')));
+      const rowsHtml = scans.map((s, i) => `<tr><td class="c">${i + 1}</td><td>${s.ts ? new Date(s.ts).toLocaleTimeString("id-ID") : '-'}</td><td>${s.bin || '-'}</td><td>${s.uid || '<span class="hint">-</span>'}</td></tr>`).join('');
+      trEv.innerHTML = `<td colspan="10"><div class="op-evidence-wrap">
+          <div class="hint" style="margin-bottom:6px;">📎 Bukti histori scan fisik SKU <b>${sku}</b> hari ini (${scans.length} scan) — bukti proses penghitungan fisik telah dilakukan:</div>
+          <table><thead><tr><th>#</th><th>Jam</th><th>Bin</th><th>UID</th></tr></thead><tbody>${rowsHtml || '<tr><td colspan="4" class="hint">Tidak ada data scan.</td></tr>'}</tbody></table>
+      </div></td>`;
+  }
+  trEv.classList.toggle("hidden");
+};
+
+function renderOpTargetTable() {
+  const tbody = document.getElementById("opTargetBody");
+  const done = opTargets.filter(t => opFindResult(t.sku)).length;
+  const diffCount = opResults.filter(r => {
+      const tgt = opTargets.find(x => x.sku === r.sku);
+      const adj = opAdjustedSelisih(r.selisih, tgt && tgt.traceType, tgt && tgt.traceQty);
+      return adj !== 0;
+  }).length;
+  const matchCount = opResults.length - diffCount;
+  document.getElementById("opStatTarget").textContent = opTargets.length;
+  document.getElementById("opStatDone").textContent = done;
+  document.getElementById("opStatDiff").textContent = diffCount;
+  document.getElementById("opStatAcc").textContent = opResults.length ? Math.round((matchCount / opResults.length) * 100) + "%" : "-";
+
+  if (opTargets.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="10" class="hint" style="text-align:center; padding:24px;">Belum ada target hari ini. Klik "⚡ Tambah Semua Fast Moving", cari SKU manual, atau langsung scan barcode/QR RFID di atas.</td></tr>`;
+      return;
+  }
+
+  const srcOrder = (s) => s === 'fast' ? 0 : s === 'scan' ? 1 : 2;
+  const rows = opTargets.slice().sort((a, b) => {
+      const da = opFindResult(a.sku) ? 1 : 0, db = opFindResult(b.sku) ? 1 : 0;
+      if (da !== db) return da - db;
+      if (a.source !== b.source) return srcOrder(a.source) - srcOrder(b.source);
+      return a.sku.localeCompare(b.sku);
+  });
+
+  tbody.innerHTML = "";
+  rows.forEach(t => {
+      const res = opFindResult(t.sku);
+      const qtySystem = opGetSystemQty(t.sku);
+      const nama = t.nama || opGetOHNama(t.sku) || (opStockMap[t.sku] && opStockMap[t.sku].nama) || 'N/A';
+      const safeNama = String(nama).replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const sumberBadge = t.source === 'fast' ? `<span class="badge good" title="Ditarik otomatis dari kategori Fast Moving">FAST</span>`
+          : t.source === 'scan' ? `<span class="badge transfer" title="Ditemukan otomatis saat scan fisik">SCAN</span>`
+          : `<span class="badge muted" title="Ditambahkan manual">MANUAL</span>`;
+
+      const scanCountToday = opScansForSku(t.sku).length;
+      let qtyCell, binCell, selisihCell, statusHtml, aksiCell;
+
+      // Selisih & Status memperhitungkan temuan Penelusuran (lihat opAdjustedSelisih) — bukan selisih mentah.
+      const traceTypeCur = t.traceType || '';
+      const traceQtyCur = (t.traceQty !== undefined && t.traceQty !== null) ? t.traceQty : null;
+
+      if (res) {
+          const adj = opAdjustedSelisih(res.selisih, traceTypeCur, traceQtyCur);
+          const cls = adj === 0 ? 'op-selisih-ok' : (adj > 0 ? 'op-selisih-lebih' : 'op-selisih-kurang');
+          const label = adj === 0 ? 'Cocok ✓' : (adj > 0 ? `Lebih (+${adj})` : `Kurang (${adj})`);
+          statusHtml = `<span class="${cls}">${label}</span>`;
+          qtyCell = `<td class="c" style="font-weight:700;">${res.qtyFisik}</td>`;
+          binCell = `<td>${res.bin && res.bin !== '-' ? `<span style="font-family:var(--font-mono); font-size:11px;">${res.bin}</span>` : `<span class="hint">-</span>`}</td>`;
+          selisihCell = `<td class="c ${cls}" id="opSelisihCell_${t.sku}">${adj > 0 ? '+' : ''}${adj}</td>`;
+          aksiCell = `<td class="c">
+              <button class="btn btn-ghost btn-sm" style="padding:3px 8px;" onclick="opStartRecount('${t.sku}')" title="Hitung ulang SKU ini">✏️ Ulang</button>
+              <button class="btn btn-ghost btn-sm op-evidence-btn" onclick="opToggleEvidence('${t.sku}', this)" title="Lihat bukti histori scan">📎 ${scanCountToday}</button>
+          </td>`;
+      } else {
+          const bins = opLiveBins(t.sku);
+          const binKeys = Object.keys(bins);
+          const previewSelRaw = scanCountToday - qtySystem;
+          const adj = opAdjustedSelisih(previewSelRaw, traceTypeCur, traceQtyCur);
+          statusHtml = scanCountToday > 0 ? `<span class="op-selisih-lebih" style="font-style:italic;">Sedang Dihitung...</span>` : `<span class="op-status-pending">Belum Dihitung</span>`;
+          qtyCell = `<td class="c"><span class="op-livecount ${scanCountToday === 0 ? 'zero' : ''}">${scanCountToday}</span></td>`;
+          binCell = `<td>${binKeys.length ? binKeys.map(b => `<span style="font-family:var(--font-mono); font-size:11px;">${b}=${bins[b]}</span>`).join('<br>') : `<span class="hint">-</span>`}</td>`;
+          selisihCell = `<td class="c ${scanCountToday === 0 ? 'hint' : (adj === 0 ? 'op-selisih-ok' : adj > 0 ? 'op-selisih-lebih' : 'op-selisih-kurang')}" id="opSelisihCell_${t.sku}">${scanCountToday === 0 ? '-' : (adj > 0 ? '+' : '') + adj}</td>`;
+          aksiCell = `<td class="c">
+              <button class="btn btn-accent btn-sm" style="padding:3px 8px;" onclick="opSaveCount('${t.sku}')">💾 Simpan</button>
+              ${scanCountToday > 0 ? `<button class="btn btn-ghost btn-sm" style="padding:3px 8px;" onclick="opResetCount('${t.sku}')" title="Reset hitungan, scan ulang dari 0">🔄</button>` : ''}
+              <button class="btn btn-danger btn-sm" style="padding:3px 8px;" onclick="opRemoveTarget('${t.sku}')" title="Hapus dari target">🗑️</button>
+          </td>`;
+      }
+      statusHtml = `<span id="opStatusCell_${t.sku}" style="display:contents;">${statusHtml}</span>`;
+
+      const traceType = t.traceType || '';
+      const traceQty = (t.traceQty !== undefined && t.traceQty !== null) ? t.traceQty : '';
+      const traceRemark = (t.traceRemark || '').replace(/"/g, '&quot;');
+      const traceCell = `<td>
+          <div class="op-trace-row">
+            <div class="op-trace-row1">
+              <select id="opTraceType_${t.sku}" onchange="opRecomputeSelisihDisplay('${t.sku}')">
+                <option value="" ${traceType === '' ? 'selected' : ''}>--</option>
+                <option value="INBOUND" ${traceType === 'INBOUND' ? 'selected' : ''}>INBOUND</option>
+                <option value="OUTBOUND" ${traceType === 'OUTBOUND' ? 'selected' : ''}>OUTBOUND</option>
+              </select>
+              <input type="number" min="0" id="opTraceQty_${t.sku}" placeholder="qty" value="${traceQty}" oninput="opRecomputeSelisihDisplay('${t.sku}')">
+              <button class="btn btn-ghost btn-sm" onclick="opSaveTrace('${t.sku}')" title="Simpan catatan penelusuran">💾</button>
+            </div>
+            <input type="text" id="opTraceRemark_${t.sku}" placeholder="Remark temuan (mis. peminjaman barang oleh marketing)..." value="${traceRemark}">
+          </div>
+      </td>`;
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="sku">${t.sku}</td>
+        <td class="nm" title="${safeNama}">${safeNama}</td>
+        <td class="c">${sumberBadge}</td>
+        <td class="c" style="font-weight:700;">${qtySystem}</td>
+        ${qtyCell}
+        ${traceCell}
+        ${binCell}
+        ${selisihCell}
+        <td class="c">${statusHtml}</td>
+        ${aksiCell}
+      `;
+      tbody.appendChild(tr);
+
+      if (res) {
+          const trEv = document.createElement("tr");
+          trEv.className = "op-evidence-row hidden";
+          trEv.dataset.sku = t.sku;
+          tbody.appendChild(trEv);
+      }
+  });
+}
+
+// ---- Tambah target: Fast Moving otomatis ----
+document.getElementById("btnOpAddFast").onclick = async () => {
+  toast("Menarik daftar SKU Fast Moving...", "warning");
+  try {
+      const periodDays = parseInt(document.getElementById("maPeriodDays").value, 10) || 30;
+      const fastThreshold = parseInt(document.getElementById("maFastThreshold").value, 10) || 10;
+      const deadDays = parseInt(document.getElementById("maDeadDays").value, 10) || 90;
+      const analysis = await computeMovementAnalysis(periodDays, fastThreshold, deadDays);
+      const fastSkus = analysis.filter(d => d.category === "FAST MOVING");
+      const today = opTodayStr();
+      const existingSkus = new Set(opTargets.map(t => t.sku));
+      let added = 0;
+      for (const d of fastSkus) {
+          if (existingSkus.has(d.sku)) continue;
+          const entry = { id: `tgt_${today}_${d.sku}`, kind: 'target', date: today, sku: d.sku, nama: d.nama, source: 'fast', addedAt: new Date().toISOString() };
+          await idbPutOpname(entry);
+          opTargets.push(entry);
+          opAllOpname.push(entry);
+          existingSkus.add(d.sku);
+          added++;
+      }
+      renderOpTargetTable();
+      toast(added > 0 ? `✓ ${added} SKU Fast Moving ditambahkan ke target hari ini` : "Semua SKU Fast Moving sudah ada di target hari ini", "good");
+  } catch (err) {
+      console.error(err);
+      toast("Gagal menarik SKU Fast Moving: " + err.message, "bad");
+  }
+};
+
+document.getElementById("btnOpClearTarget").onclick = async () => {
+  if (opTargets.length === 0) { toast("Target hari ini sudah kosong", ""); return; }
+  if (!confirm(`Kosongkan seluruh ${opTargets.length} target Stock Opname hari ini? Hasil yang sudah dihitung (jika ada) TIDAK dihapus/dibatalkan.`)) return;
+  const removedIds = new Set(opTargets.map(t => t.id));
+  for (const t of opTargets) { await idbDeleteOpname(t.id); }
+  opTargets = [];
+  opAllOpname = opAllOpname.filter(x => !removedIds.has(x.id));
+  renderOpTargetTable();
+  toast("✓ Target hari ini dikosongkan", "good");
+};
+
+document.getElementById("btnOpRefresh").onclick = () => loadOpnameTab();
+
+// ---- Cari & tambah SKU manual ----
+function opRenderSuggest(query) {
+  const box = document.getElementById("opSuggestBox");
+  opSuggestSel = -1;
+  if (!query || query.trim().length < 1) { box.classList.add("hidden"); box.innerHTML = ""; return; }
+  const q = query.trim().toUpperCase();
+  const seen = new Set();
+  const results = [];
+  Object.keys(opStockMap).forEach(sku => {
+      if (results.length >= 10) return;
+      const nama = opStockMap[sku].nama || '';
+      if (sku.toUpperCase().includes(q) || nama.toUpperCase().includes(q)) { results.push({ sku, nama }); seen.add(sku); }
+  });
+  opMasterList.forEach(m => {
+      if (results.length >= 10 || seen.has(m.sku)) return;
+      const nama = m.nama || '';
+      if (m.sku.toUpperCase().includes(q) || nama.toUpperCase().includes(q)) { results.push({ sku: m.sku, nama }); seen.add(m.sku); }
+  });
+  if (results.length === 0) { box.innerHTML = `<div class="op-suggest-item hint">Tidak ditemukan</div>`; box.classList.remove("hidden"); return; }
+  box.innerHTML = results.map(r => `<div class="op-suggest-item" data-sku="${r.sku.replace(/"/g, '&quot;')}" data-nama="${(r.nama || '').replace(/"/g, '&quot;')}"><span class="sk">${r.sku}</span> — <span class="nm">${r.nama || 'N/A'}</span></div>`).join("");
+  box.classList.remove("hidden");
+}
+async function opAddManualTarget(sku, nama) {
+  const today = opTodayStr();
+  if (opTargets.some(t => t.sku === sku)) { toast(`${sku} sudah ada di target hari ini`, ""); return; }
+  const entry = { id: `tgt_${today}_${sku}`, kind: 'target', date: today, sku, nama: nama || (opStockMap[sku] && opStockMap[sku].nama) || '', source: 'manual', addedAt: new Date().toISOString() };
+  await idbPutOpname(entry);
+  opTargets.push(entry);
+  opAllOpname.push(entry);
+  renderOpTargetTable();
+  toast(`✓ ${sku} ditambahkan ke target hari ini`, "good");
+}
+const opSkuSearchEl = document.getElementById("opSkuSearch");
+opSkuSearchEl.addEventListener("input", () => opRenderSuggest(opSkuSearchEl.value));
+opSkuSearchEl.addEventListener("focus", () => { if (opSkuSearchEl.value) opRenderSuggest(opSkuSearchEl.value); });
+opSkuSearchEl.addEventListener("keydown", (e) => {
+  const box = document.getElementById("opSuggestBox");
+  const items = Array.from(box.querySelectorAll(".op-suggest-item[data-sku]"));
+  if (e.key === "ArrowDown") { e.preventDefault(); opSuggestSel = Math.min(opSuggestSel + 1, items.length - 1); items.forEach((it, i) => it.classList.toggle("hi", i === opSuggestSel)); }
+  else if (e.key === "ArrowUp") { e.preventDefault(); opSuggestSel = Math.max(opSuggestSel - 1, 0); items.forEach((it, i) => it.classList.toggle("hi", i === opSuggestSel)); }
+  else if (e.key === "Enter") {
+      e.preventDefault();
+      const pick = opSuggestSel >= 0 ? items[opSuggestSel] : items[0];
+      if (pick) { opAddManualTarget(pick.dataset.sku, pick.dataset.nama); opSkuSearchEl.value = ""; box.classList.add("hidden"); }
+  } else if (e.key === "Escape") { box.classList.add("hidden"); }
+});
+document.getElementById("opSuggestBox").addEventListener("click", (e) => {
+  const item = e.target.closest(".op-suggest-item[data-sku]");
+  if (!item) return;
+  opAddManualTarget(item.dataset.sku, item.dataset.nama);
+  opSkuSearchEl.value = "";
+  document.getElementById("opSuggestBox").classList.add("hidden");
+});
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".op-searchbox")) document.getElementById("opSuggestBox").classList.add("hidden");
+});
+
+// ---- Riwayat harian ----
+function opComputeHistorySummary() {
+  const byDate = {};
+  const targetByDateSku = {};
+  opAllOpname.forEach(o => { if (o.kind === 'target') targetByDateSku[o.date + '|' + o.sku] = o; });
+  opAllOpname.forEach(o => {
+      if (!byDate[o.date]) byDate[o.date] = { date: o.date, target: 0, done: 0, match: 0, items: [] };
+      const g = byDate[o.date];
+      if (o.kind === 'target') g.target++;
+      else if (o.kind === 'result') {
+          g.done++;
+          const tgt = targetByDateSku[o.date + '|' + o.sku];
+          const adjSelisih = opAdjustedSelisih(o.selisih, tgt && tgt.traceType, tgt && tgt.traceQty);
+          if (adjSelisih === 0) g.match++;
+          g.items.push({ ...o, adjSelisih, traceType: (tgt && tgt.traceType) || '', traceQty: tgt ? tgt.traceQty : null, traceRemark: (tgt && tgt.traceRemark) || '' });
+      }
+  });
+  return Object.values(byDate).sort((a, b) => b.date.localeCompare(a.date));
+}
+function opFmtDateLong(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString("id-ID", { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+// Bukti scan untuk SKU pada tanggal riwayat tertentu (bukan hari ini) — ditampilkan lewat dialog ringkas.
+window.opShowHistEvidence = function (date, sku) {
+  const scans = opAllOpname.filter(o => o.kind === 'scan' && o.date === date && o.sku === sku)
+      .slice().sort((a, b) => String(a.ts || '').localeCompare(String(b.ts || '')));
+  if (!scans.length) { alert(`Tidak ada data bukti scan untuk ${sku} pada tanggal ini.`); return; }
+  const lines = scans.map((s, i) => `${i + 1}. ${s.ts ? new Date(s.ts).toLocaleString("id-ID") : '-'} — Bin: ${s.bin || '-'}${s.uid ? ' — UID: ' + s.uid : ''}`);
+  alert(`Bukti Scan Fisik — SKU ${sku} (${opFmtDateLong(date)})\nTotal: ${scans.length} unit discan\n\n${lines.join('\n')}`);
+};
+
+// Hapus seluruh riwayat (target + hasil + bukti scan) untuk satu tanggal.
+window.opDeleteHistoryDay = async function (date, evt) {
+  if (evt) evt.stopPropagation();
+  const isToday = date === opTodayStr();
+  const msg = isToday
+      ? `Tanggal ini adalah HARI INI. Menghapus akan mengosongkan seluruh target, hasil, dan bukti scan opname hari ini yang sedang berjalan. Lanjutkan?`
+      : `Hapus seluruh riwayat Stock Opname tanggal ${opFmtDateLong(date)}? Ini termasuk target, hasil, dan bukti scan hari itu. Tindakan ini permanen.`;
+  if (!confirm(msg)) return;
+  const toDelete = opAllOpname.filter(o => o.date === date);
+  for (const o of toDelete) { await idbDeleteOpname(o.id); }
+  const ids = new Set(toDelete.map(o => o.id));
+  opAllOpname = opAllOpname.filter(o => !ids.has(o.id));
+  if (isToday) {
+      opTargets = []; opResults = []; opScans = [];
+      renderOpTargetTable();
+  }
+  renderOpHistoryTable();
+  toast(`✓ Riwayat tanggal ${date} dihapus`, "good");
+};
+
+function renderOpHistoryTable() {
+  const tbody = document.getElementById("opHistoryBody");
+  const summary = opComputeHistorySummary();
+  if (summary.length === 0) { tbody.innerHTML = `<tr><td colspan="7" class="hint" style="text-align:center; padding:24px;">Belum ada riwayat Stock Opname.</td></tr>`; return; }
+  tbody.innerHTML = "";
+  summary.forEach(g => {
+      const acc = g.done ? Math.round((g.match / g.done) * 100) : null;
+      const diff = g.done - g.match;
+      const tr = document.createElement("tr");
+      tr.className = "op-hist-row";
+      tr.innerHTML = `
+        <td style="font-weight:700;">${opFmtDateLong(g.date)}</td>
+        <td class="c">${g.target}</td>
+        <td class="c">${g.done}</td>
+        <td class="c" style="color:var(--success); font-weight:700;">${g.match}</td>
+        <td class="c" style="color:${diff > 0 ? 'var(--danger)' : 'var(--text-muted)'}; font-weight:700;">${diff}</td>
+        <td>${acc === null ? '<span class="hint">-</span>' : `<span class="op-acc-bar"><span style="width:${acc}%; background:${acc >= 95 ? 'var(--success)' : acc >= 80 ? 'var(--warning)' : 'var(--danger)'};"></span></span>${acc}%`}</td>
+        <td class="c"><button class="btn btn-danger btn-sm" style="padding:3px 8px;" onclick="opDeleteHistoryDay('${g.date}', event)" title="Hapus seluruh riwayat tanggal ini">🗑️</button></td>
+      `;
+      const trDetail = document.createElement("tr");
+      trDetail.className = "op-hist-detail hidden";
+      const itemRows = g.items.slice().sort((a, b) => a.sku.localeCompare(b.sku)).map(it => {
+          const scanCnt = opAllOpname.filter(o => o.kind === 'scan' && o.date === g.date && o.sku === it.sku).length;
+          const safeSku = it.sku.replace(/'/g, "\\'");
+          const adjCls = it.adjSelisih === 0 ? 'op-selisih-ok' : it.adjSelisih > 0 ? 'op-selisih-lebih' : 'op-selisih-kurang';
+          const traceHtml = it.traceType ? `<span class="badge ${it.traceType === 'OUTBOUND' ? 'transfer' : 'good'}">${it.traceType}${it.traceQty != null ? ' ' + it.traceQty : ''}</span>` : `<span class="hint">-</span>`;
+          const remarkHtml = it.traceRemark ? String(it.traceRemark).replace(/</g, '&lt;') : `<span class="hint">-</span>`;
+          return `
+          <tr><td>${it.sku}</td><td>${(it.nama || 'N/A').replace(/</g, '&lt;')}</td>
+          <td class="c">${it.qtySystem}</td><td class="c">${it.qtyFisik}</td>
+          <td class="c ${adjCls}">${it.adjSelisih > 0 ? '+' : ''}${it.adjSelisih}</td>
+          <td class="c">${it.bin || '-'}</td>
+          <td class="c">${traceHtml}</td>
+          <td>${remarkHtml}</td>
+          <td class="c"><button class="btn btn-ghost btn-sm op-evidence-btn" onclick="opShowHistEvidence('${g.date}', '${safeSku}')" title="Lihat bukti histori scan">📎 ${scanCnt}</button></td></tr>`;
+      }).join('');
+      trDetail.innerHTML = `<td colspan="7"><div class="op-hist-wrap">
+          <table class="op-hist-table"><thead><tr><th>SKU</th><th>Nama Barang</th><th class="c">Qty Sistem</th><th class="c">Qty Fisik</th><th class="c">Selisih</th><th class="c">Bin</th><th class="c">Penelusuran</th><th>Remark</th><th class="c">Bukti</th></tr></thead><tbody>${itemRows || '<tr><td colspan="9" class="hint">Tidak ada SKU yang dihitung tanggal ini.</td></tr>'}</tbody></table>
+      </div></td>`;
+      tr.addEventListener("click", (e) => { if (e.target.closest('button')) return; trDetail.classList.toggle("hidden"); });
+      tbody.appendChild(tr);
+      tbody.appendChild(trDetail);
+  });
+}
+document.getElementById("btnOpToggleHistory").onclick = () => {
+  opHistoryMode = !opHistoryMode;
+  document.getElementById("opTargetView").classList.toggle("hidden", opHistoryMode);
+  document.getElementById("opHistoryView").classList.toggle("hidden", !opHistoryMode);
+  document.getElementById("btnOpToggleHistory").textContent = opHistoryMode ? "🎯 Target Hari Ini" : "📜 Riwayat";
+  if (opHistoryMode) renderOpHistoryTable();
+};
+
+document.getElementById("btnOpExport").onclick = () => {
+  if (opTargets.length === 0 && opAllOpname.length === 0) { toast("Belum ada data Stock Opname untuk diexport", ""); return; }
+  const wb = XLSX.utils.book_new();
+  const todayRows = opTargets.map(t => {
+      const res = opFindResult(t.sku);
+      const qtySystem = opGetSystemQty(t.sku);
+      const liveQty = opScansForSku(t.sku).length;
+      return {
+          "SKU": t.sku, "Nama Barang": t.nama || opGetOHNama(t.sku) || (opStockMap[t.sku] && opStockMap[t.sku].nama) || 'N/A',
+          "Sumber": t.source === 'fast' ? 'Fast Moving' : (t.source === 'scan' ? 'Scan Otomatis' : 'Manual'),
+          "Qty Sistem (OH)": qtySystem,
+          "Qty Fisik": res ? res.qtyFisik : liveQty,
+          "Selisih": res ? res.selisih : (liveQty ? liveQty - qtySystem : ""),
+          "Bin Ditemukan": res ? (res.bin || "-") : (Object.keys(opLiveBins(t.sku)).join(", ") || ""),
+          "Status": res ? (res.selisih === 0 ? "Cocok" : (res.selisih > 0 ? "Lebih" : "Kurang")) : (liveQty ? "Sedang Dihitung" : "Belum Dihitung"),
+          "Penelusuran Tipe": t.traceType || "",
+          "Penelusuran Qty": (t.traceQty !== undefined && t.traceQty !== null) ? t.traceQty : "",
+          "Penelusuran Remark": t.traceRemark || "",
+      };
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(todayRows), "Opname Hari Ini");
+
+  const summary = opComputeHistorySummary();
+  const wsHist = summary.map(g => ({
+      "Tanggal": g.date, "Target": g.target, "Dihitung": g.done, "Cocok": g.match, "Selisih": g.done - g.match,
+      "Akurasi (%)": g.done ? Math.round((g.match / g.done) * 100) : ""
+  }));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(wsHist), "Riwayat Harian");
+
+  const targetByDateSkuExp = {};
+  opAllOpname.forEach(o => { if (o.kind === 'target') targetByDateSkuExp[o.date + '|' + o.sku] = o; });
+  const allResults = opAllOpname.filter(o => o.kind === 'result').sort((a, b) => b.date.localeCompare(a.date) || a.sku.localeCompare(b.sku));
+  const wsDetail = allResults.map(r => {
+      const tgt = targetByDateSkuExp[r.date + '|' + r.sku];
+      const adj = opAdjustedSelisih(r.selisih, tgt && tgt.traceType, tgt && tgt.traceQty);
+      return {
+          "Tanggal": r.date, "SKU": r.sku, "Nama Barang": r.nama, "Qty Sistem (OH)": r.qtySystem, "Qty Fisik": r.qtyFisik,
+          "Selisih Awal": r.selisih, "Penelusuran Tipe": (tgt && tgt.traceType) || "", "Penelusuran Qty": (tgt && tgt.traceQty != null) ? tgt.traceQty : "",
+          "Selisih Akhir": adj, "Penelusuran Remark": (tgt && tgt.traceRemark) || "", "Bin": r.bin || "-"
+      };
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(wsDetail), "Detail Semua Hasil");
+
+  const allScanEvidence = opAllOpname.filter(o => o.kind === 'scan').sort((a, b) => b.date.localeCompare(a.date) || String(a.ts || '').localeCompare(String(b.ts || '')));
+  const wsEvidence = allScanEvidence.map(s => ({ "Tanggal": s.date, "Jam": s.ts ? new Date(s.ts).toLocaleString("id-ID") : "-", "SKU": s.sku, "Bin": s.bin || "-", "UID": s.uid || "-" }));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(wsEvidence), "Bukti Scan (Lampiran)");
+
+  XLSX.writeFile(wb, `Stock_Opname_Harian_${opTodayStr()}.xlsx`);
+  toast("✓ Export berhasil", "good");
+};
+
+/* ============================================================
    DASHBOARD REPORT (KPI + Chart + Galeri Foto untuk presentasi ke Owner)
    ============================================================ */
 let dashCharts = {}; // simpan instance Chart.js supaya bisa di-destroy sebelum digambar ulang saat Refresh
+let dashReportCache = null; // snapshot data terakhir dari loadDashboardReport(), dipakai saat Export Excel
 const DASH_RACKS = ['A','B','C','D','E','F','G','H'];
 
 /**
@@ -3619,7 +4823,7 @@ document.getElementById("fileDashLogo").addEventListener("change", async (e) => 
   }
 });
 
-document.getElementById("btnPrintDashboard").onclick = () => window.print();
+document.getElementById("btnPrintDashboard").onclick = () => exportDashboardReportExcel();
 document.getElementById("btnRefreshDashboard").onclick = () => loadDashboardReport();
 
 async function loadDashboardReport() {
@@ -3639,11 +4843,13 @@ async function loadDashboardReport() {
       const allBinCodes = new Set([...masterBins, ...Object.keys(binQty)]);
 
       // ---- KPI ----
-      const skuQtyMap = {}; // sku -> qty
+      const skuQtyMap = {}; // sku -> { qty, nama }
       const binsUsed = new Set();
       activeRows.forEach(r => {
           if (!r.sku) return;
-          skuQtyMap[r.sku] = (skuQtyMap[r.sku] || 0) + 1;
+          if (!skuQtyMap[r.sku]) skuQtyMap[r.sku] = { qty: 0, nama: r.nama || '' };
+          skuQtyMap[r.sku].qty += 1;
+          if (!skuQtyMap[r.sku].nama && r.nama) skuQtyMap[r.sku].nama = r.nama;
           if (r.bin && r.bin !== '-') binsUsed.add(r.bin.toUpperCase());
       });
       const totalSku = Object.keys(skuQtyMap).length;
@@ -3711,12 +4917,20 @@ async function loadDashboardReport() {
           datasets: [{ data: [catCounts["FAST MOVING"], catCounts["SLOW MOVING"], catCounts["DEAD STOCK"], catCounts["BARU / BELUM TERJUAL"], catCounts["RESTOCK BARU"]], backgroundColor: ['#4caf82', '#d9a256', '#e07a7a', '#9aa7b5', '#5c3ebf'] }]
       });
 
-      // ---- Chart 3: Top 10 SKU by Qty ----
-      const topSkus = Object.entries(skuQtyMap).sort((a, b) => b[1] - a[1]).slice(0, 10);
+      // ---- Chart 3: Top 10 SKU by Qty (label = SKU + Nama Barang, angka Qty selalu tampil di ujung bar) ----
+      const truncLbl = (str, n) => { str = String(str || '').trim(); return str.length > n ? str.slice(0, n - 1) + '…' : str; };
+      const topSkus = Object.entries(skuQtyMap).sort((a, b) => b[1].qty - a[1].qty).slice(0, 10);
       renderDashChart('chartTopSku', 'bar', {
-          labels: topSkus.map(x => x[0]),
-          datasets: [{ label: 'Qty', data: topSkus.map(x => x[1]), backgroundColor: '#5b9bd5' }]
-      }, { indexAxis: 'y', scales: { x: { beginAtZero: true, ticks: { precision: 0, callback: (v) => formatAccounting(v) } } } });
+          labels: topSkus.map(([sku, info]) => `${sku} - ${truncLbl(info.nama, 28) || 'TIDAK DIKENALI'}`),
+          datasets: [{ label: 'Qty', data: topSkus.map(([, info]) => info.qty), backgroundColor: '#5b9bd5' }]
+      }, {
+          indexAxis: 'y',
+          layout: { padding: { right: 42 } },
+          scales: {
+              x: { beginAtZero: true, ticks: { precision: 0, callback: (v) => formatAccounting(v) } },
+              y: { ticks: { autoSkip: false, font: { size: 10.5 } } }
+          }
+      }, [maQtyValuePlugin]);
 
       // ---- Chart 4: Distribusi Stok per Rak (A-H, sisanya digabung "Lainnya") ----
       const rakQty = {}; DASH_RACKS.forEach(r => rakQty[r] = 0);
@@ -3734,13 +4948,80 @@ async function loadDashboardReport() {
           datasets: [{ data: rakData.length ? rakData : [1], backgroundColor: DASH_CHART_COLORS }]
       });
 
+      // Simpan snapshot data untuk tombol Export Excel
+      dashReportCache = {
+          generatedAt: new Date(),
+          kpi: { totalSku, totalQty, binsUsed: binsUsed.size, inbound30, outbound30, emptyBinCount, deadCount, diffCount },
+          topSkus: topSkus.map(([sku, info]) => ({ sku, nama: info.nama || 'TIDAK DIKENALI', qty: info.qty })),
+          catCounts,
+          rak: rakLabels.map((r, i) => ({ rak: r, qty: rakData[i] })),
+          trend: days.map((d, i) => ({ tanggal: d, inbound: inboundSeries[i], outbound: outboundSeries[i] }))
+      };
+
   } catch (err) {
       console.error(err);
       toast("Gagal memuat Dashboard Report.", "bad");
   }
 }
 
-function renderDashChart(canvasId, type, data, extraOptions) {
+function exportDashboardReportExcel() {
+  if (!dashReportCache) { toast("Data dashboard belum dimuat. Klik Refresh dulu.", ""); return; }
+  const d = dashReportCache;
+  const wb = XLSX.utils.book_new();
+
+  const wsKpi = XLSX.utils.json_to_sheet([
+      { "KPI": "Total SKU Aktif", "Nilai": d.kpi.totalSku },
+      { "KPI": "Total Qty Stok", "Nilai": d.kpi.totalQty },
+      { "KPI": "Bin Terpakai", "Nilai": d.kpi.binsUsed },
+      { "KPI": "Inbound (30 Hari)", "Nilai": d.kpi.inbound30 },
+      { "KPI": "Outbound (30 Hari)", "Nilai": d.kpi.outbound30 },
+      { "KPI": "Bin Kosong", "Nilai": d.kpi.emptyBinCount },
+      { "KPI": "Dead Stock SKU", "Nilai": d.kpi.deadCount },
+      { "KPI": "SKU Selisih", "Nilai": d.kpi.diffCount },
+  ]);
+  XLSX.utils.book_append_sheet(wb, wsKpi, "Ringkasan KPI");
+
+  const wsTop = XLSX.utils.json_to_sheet(d.topSkus.map((x, i) => ({ "Peringkat": i + 1, "SKU": x.sku, "Nama Barang": x.nama, "Qty Stok": x.qty })));
+  XLSX.utils.book_append_sheet(wb, wsTop, "Top 10 SKU");
+
+  const catLabelMap = { "FAST MOVING": "Fast Moving", "SLOW MOVING": "Slow Moving", "DEAD STOCK": "Dead Stock", "BARU / BELUM TERJUAL": "Baru / Belum Terjual", "RESTOCK BARU": "Restock Baru" };
+  const wsCat = XLSX.utils.json_to_sheet(Object.keys(catLabelMap).map(k => ({ "Kategori": catLabelMap[k], "Jumlah SKU": d.catCounts[k] || 0 })));
+  XLSX.utils.book_append_sheet(wb, wsCat, "Kategori Stok");
+
+  const wsRak = XLSX.utils.json_to_sheet(d.rak.map(x => ({ "Rak": x.rak, "Qty": x.qty })));
+  XLSX.utils.book_append_sheet(wb, wsRak, "Distribusi per Rak");
+
+  const wsTrend = XLSX.utils.json_to_sheet(d.trend.map(x => ({ "Tanggal": x.tanggal, "Inbound": x.inbound, "Outbound": x.outbound })));
+  XLSX.utils.book_append_sheet(wb, wsTrend, "Tren 14 Hari");
+
+  XLSX.writeFile(wb, `Dashboard_Report_${d.generatedAt.toISOString().slice(0, 10)}.xlsx`);
+}
+
+// Plugin Chart.js: gambar nilai Qty langsung di ujung tiap bar, supaya angkanya selalu terlihat
+// tanpa perlu hover (dipakai khusus chart Top 10 SKU, bar horizontal / indexAxis:'y').
+const maQtyValuePlugin = {
+  id: 'maQtyValueLabels',
+  afterDatasetsDraw(chart) {
+    const { ctx } = chart;
+    const textColor = (getComputedStyle(document.documentElement).getPropertyValue('--text-main') || '#333').trim() || '#333';
+    chart.data.datasets.forEach((dataset, dsIndex) => {
+      const meta = chart.getDatasetMeta(dsIndex);
+      meta.data.forEach((bar, i) => {
+        const value = dataset.data[i];
+        if (value === undefined || value === null) return;
+        ctx.save();
+        ctx.fillStyle = textColor;
+        ctx.font = '700 11px var(--font-sans, sans-serif)';
+        ctx.textBaseline = 'middle';
+        ctx.textAlign = 'left';
+        ctx.fillText(formatAccounting(value), bar.x + 6, bar.y);
+        ctx.restore();
+      });
+    });
+  }
+};
+
+function renderDashChart(canvasId, type, data, extraOptions, customPlugins) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
 
@@ -3778,7 +5059,8 @@ function renderDashChart(canvasId, type, data, extraOptions) {
                   return label + formatAccounting(val);
               } } }
           }
-      }, extraOptions || {})
+      }, extraOptions || {}),
+      plugins: customPlugins || []
   });
 }
 
@@ -3791,6 +5073,7 @@ document.getElementById("btnExportAllScan").onclick = async ()=>{
     "Waktu Masuk": r.ts ? new Date(r.ts).toLocaleString("id-ID") : "-",
     "Lokasi Bin": r.bin || "-",
     "SKU": r.sku,
+    "UID": r.uid || "-",
     "Nama Barang": r.nama || "TIDAK DIKENALI"
   }));
   
@@ -3935,8 +5218,10 @@ async function loadMovements(filterSku = "", startDate = "", endDate = "") {
         const safeRemark = r.remark ? r.remark.replace(/</g, "&lt;").replace(/>/g, "&gt;") : '';
         const safeDocNo = r.docNo ? String(r.docNo).replace(/</g, "&lt;").replace(/>/g, "&gt;") : '';
         
+        const isOpnameMove = String(r.ref_id || '').startsWith('OPNAME_');
         let typeBadge = `<span class="badge">${r.type}</span>`;
-        if(r.type === 'INBOUND') typeBadge = `<span class="badge good">INBOUND</span>`;
+        if(isOpnameMove && (r.type === 'INBOUND' || r.type === 'OUTBOUND')) typeBadge = `<span class="badge transfer" title="Penyesuaian dari Stock Opname Harian (Physical Inventory)">SO (PI)</span>`;
+        else if(r.type === 'INBOUND') typeBadge = `<span class="badge good">INBOUND</span>`;
         else if(r.type === 'OUTBOUND') typeBadge = `<span class="badge out">OUTBOUND</span>`;
         else if(r.type === 'SALES') typeBadge = `<span class="badge warning">SALES</span>`;
         else if(r.type === 'RETUR') typeBadge = `<span class="badge warning">RETUR</span>`;
@@ -4566,8 +5851,9 @@ btnPrintQR.onclick = () => {
 (async function init(){
   try {
     idb = await openIDB();
-    await loadScanLogFromIDB();
+    renderInboundLog();
     await loadOutboundLogFromIDB();
+    await primeRfidCache();
   } catch (e) {
     console.error("Gagal membuka database lokal (IndexedDB):", e);
     toast("Peringatan: Gagal membuka database lokal.", "warning");
