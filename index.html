@@ -4306,11 +4306,17 @@ window.opSaveCount = async function (sku) {
           await idbAddScan(entry);
       }
 
+      // Dicatat SEBANYAK unit selisihnya (bukan 1 baris ringkasan) karena seluruh perhitungan lain di
+      // aplikasi ini (Fast/Slow/Dead Stock, Discrepancy, dll) menghitung movement berdasarkan JUMLAH BARIS,
+      // bukan angka di dalam teks remark — supaya SO (PI) di Tracking Movement & analisa lain akurat.
       const delta = qtyFisik - oldPhysicalQty;
-      if (delta > 0) {
-          await recordMovement("OPNAME_" + today, "INBOUND", sku, nama, binDisplay || "-", `Stock Opname Harian: fisik lama ${oldPhysicalQty} → fisik baru ${qtyFisik} (acuan OH sistem ${qtySystem}, selisih ${selisih > 0 ? '+' : ''}${selisih})`);
-      } else if (delta < 0) {
-          await recordMovement("OPNAME_" + today, "OUTBOUND", sku, nama, binDisplay || "-", `Stock Opname Harian: fisik lama ${oldPhysicalQty} → fisik baru ${qtyFisik} (acuan OH sistem ${qtySystem}, selisih ${selisih > 0 ? '+' : ''}${selisih})`);
+      if (delta !== 0) {
+          const moveType = delta > 0 ? "INBOUND" : "OUTBOUND";
+          const moveRemark = `Stock Opname Harian: fisik lama ${oldPhysicalQty} → fisik baru ${qtyFisik} (acuan OH sistem ${qtySystem}, selisih ${selisih > 0 ? '+' : ''}${selisih})`;
+          const qtyAbs = Math.abs(delta);
+          for (let i = 0; i < qtyAbs; i++) {
+              await recordMovement("OPNAME_" + today, moveType, sku, nama, binDisplay || "-", moveRemark);
+          }
       }
 
       const resultEntry = { id: `res_${today}_${sku}`, kind: 'result', date: today, sku, nama, qtySystem, qtyFisik, selisih, bin: binDisplay || '-', ts: new Date().toISOString() };
@@ -4534,15 +4540,18 @@ document.getElementById("btnOpAddFast").onclick = async () => {
   }
 };
 
+// Hanya membersihkan target yang BELUM dihitung. Target yang sudah final (punya hasil) dibiarkan,
+// supaya data Penelusuran yang tersimpan di record target itu (dan ikut dipakai Riwayat) tidak hilang.
 document.getElementById("btnOpClearTarget").onclick = async () => {
-  if (opTargets.length === 0) { toast("Target hari ini sudah kosong", ""); return; }
-  if (!confirm(`Kosongkan seluruh ${opTargets.length} target Stock Opname hari ini? Hasil yang sudah dihitung (jika ada) TIDAK dihapus/dibatalkan.`)) return;
-  const removedIds = new Set(opTargets.map(t => t.id));
-  for (const t of opTargets) { await idbDeleteOpname(t.id); }
-  opTargets = [];
+  const pending = opTargets.filter(t => !opFindResult(t.sku));
+  if (pending.length === 0) { toast("Tidak ada target yang belum dihitung untuk dikosongkan", ""); return; }
+  if (!confirm(`Kosongkan ${pending.length} target yang BELUM dihitung hari ini? Target yang sudah selesai dihitung beserta catatan Penelusurannya TIDAK akan terhapus.`)) return;
+  const removedIds = new Set(pending.map(t => t.id));
+  for (const t of pending) { await idbDeleteOpname(t.id); }
+  opTargets = opTargets.filter(t => !removedIds.has(t.id));
   opAllOpname = opAllOpname.filter(x => !removedIds.has(x.id));
   renderOpTargetTable();
-  toast("✓ Target hari ini dikosongkan", "good");
+  toast(`✓ ${pending.length} target yang belum dihitung telah dikosongkan`, "good");
 };
 
 document.getElementById("btnOpRefresh").onclick = () => loadOpnameTab();
