@@ -4158,7 +4158,7 @@ async function loadOpnameTab() {
   try {
       const [allOpname, allScans] = await Promise.all([idbGetAllOpname(), idbGetAllScans()]);
       opAllOpname = allOpname;
-      opTargets = allOpname.filter(o => o.kind === 'target' && o.date === today);
+      opTargets = allOpname.filter(o => o.kind === 'target' && o.date === today && !o.hidden);
       opResults = allOpname.filter(o => o.kind === 'result' && o.date === today);
       opScans = allOpname.filter(o => o.kind === 'scan' && o.date === today);
       opStockMap = computeStockQtyMap(allScans);
@@ -4171,6 +4171,26 @@ async function loadOpnameTab() {
   }
 }
 
+// Tambah/aktifkan target hari ini. Jika record target untuk SKU ini sudah ada tapi disembunyikan
+// (setelah "Kosongkan Target"), aktifkan kembali record lama supaya Penelusuran & riwayatnya tidak tertimpa.
+async function opUpsertTarget(sku, nama, source) {
+  const today = opTodayStr();
+  const id = `tgt_${today}_${sku}`;
+  let t = opAllOpname.find(o => o.id === id);
+  if (t) {
+      if (t.hidden) {
+          t.hidden = false;
+          await idbPutOpname(t);
+          if (!opTargets.some(x => x.id === id)) opTargets.push(t);
+      }
+      return t;
+  }
+  t = { id, kind: 'target', date: today, sku, nama: nama || '', source, addedAt: new Date().toISOString() };
+  await idbPutOpname(t);
+  opTargets.push(t);
+  opAllOpname.push(t);
+  return t;
+}
 function opFindResult(sku) { return opResults.find(r => r.sku === sku) || null; }
 function opScansForSku(sku) { return opScans.filter(s => s.sku === sku); }
 function opLiveQty(sku) { return opScansForSku(sku).length; }
@@ -4207,10 +4227,7 @@ async function opRegisterScan(sku, bin, uid) {
       // SKU ditemukan fisik saat scan meski belum ada di daftar target -> otomatis ditambahkan
       let product = await idbGetMaster(sku);
       const nama = (product && product.nama) || opGetOHNama(sku) || (opStockMap[sku] && opStockMap[sku].nama) || '';
-      target = { id: `tgt_${today}_${sku}`, kind: 'target', date: today, sku, nama, source: 'scan', addedAt: new Date().toISOString() };
-      await idbPutOpname(target);
-      opTargets.push(target);
-      opAllOpname.push(target);
+      target = await opUpsertTarget(sku, nama, 'scan');
   }
 
   if (opFindResult(sku)) {
@@ -4398,17 +4415,19 @@ window.opToggleEvidence = function (sku, btnEl) {
 
 function renderOpTargetTable() {
   const tbody = document.getElementById("opTargetBody");
+  const visSkus = new Set(opTargets.map(t => t.sku));
+  const visResults = opResults.filter(r => visSkus.has(r.sku));
   const done = opTargets.filter(t => opFindResult(t.sku)).length;
-  const diffCount = opResults.filter(r => {
+  const diffCount = visResults.filter(r => {
       const tgt = opTargets.find(x => x.sku === r.sku);
       const adj = opAdjustedSelisih(r.selisih, tgt && tgt.traceType, tgt && tgt.traceQty);
       return adj !== 0;
   }).length;
-  const matchCount = opResults.length - diffCount;
+  const matchCount = visResults.length - diffCount;
   document.getElementById("opStatTarget").textContent = opTargets.length;
   document.getElementById("opStatDone").textContent = done;
   document.getElementById("opStatDiff").textContent = diffCount;
-  document.getElementById("opStatAcc").textContent = opResults.length ? Math.round((matchCount / opResults.length) * 100) + "%" : "-";
+  document.getElementById("opStatAcc").textContent = visResults.length ? Math.round((matchCount / visResults.length) * 100) + "%" : "-";
 
   if (opTargets.length === 0) {
       tbody.innerHTML = `<tr><td colspan="10" class="hint" style="text-align:center; padding:24px;">Belum ada target hari ini. Klik "⚡ Tambah Semua Fast Moving", cari SKU manual, atau langsung scan barcode/QR RFID di atas.</td></tr>`;
@@ -4525,10 +4544,7 @@ document.getElementById("btnOpAddFast").onclick = async () => {
       let added = 0;
       for (const d of fastSkus) {
           if (existingSkus.has(d.sku)) continue;
-          const entry = { id: `tgt_${today}_${d.sku}`, kind: 'target', date: today, sku: d.sku, nama: d.nama, source: 'fast', addedAt: new Date().toISOString() };
-          await idbPutOpname(entry);
-          opTargets.push(entry);
-          opAllOpname.push(entry);
+          await opUpsertTarget(d.sku, d.nama, 'fast');
           existingSkus.add(d.sku);
           added++;
       }
@@ -4540,18 +4556,17 @@ document.getElementById("btnOpAddFast").onclick = async () => {
   }
 };
 
-// Hanya membersihkan target yang BELUM dihitung. Target yang sudah final (punya hasil) dibiarkan,
-// supaya data Penelusuran yang tersimpan di record target itu (dan ikut dipakai Riwayat) tidak hilang.
+// Mengosongkan DAFTAR target di layar saja (target disembunyikan, bukan dihapus). Hasil hitung, Penelusuran,
+// bukti scan, dan Riwayat harian tetap tersimpan utuh — baik untuk target yang sudah maupun belum dihitung.
 document.getElementById("btnOpClearTarget").onclick = async () => {
-  const pending = opTargets.filter(t => !opFindResult(t.sku));
-  if (pending.length === 0) { toast("Tidak ada target yang belum dihitung untuk dikosongkan", ""); return; }
-  if (!confirm(`Kosongkan ${pending.length} target yang BELUM dihitung hari ini? Target yang sudah selesai dihitung beserta catatan Penelusurannya TIDAK akan terhapus.`)) return;
-  const removedIds = new Set(pending.map(t => t.id));
-  for (const t of pending) { await idbDeleteOpname(t.id); }
-  opTargets = opTargets.filter(t => !removedIds.has(t.id));
-  opAllOpname = opAllOpname.filter(x => !removedIds.has(x.id));
+  if (opTargets.length === 0) { toast("Daftar target hari ini sudah kosong", ""); return; }
+  if (!confirm(`Kosongkan ${opTargets.length} target dari daftar hari ini? Hasil hitung, Penelusuran, bukti scan, dan Riwayat TETAP tersimpan.`)) return;
+  const n = opTargets.length;
+  for (const t of opTargets) { t.hidden = true; await idbPutOpname(t); }
+  opTargets = [];
   renderOpTargetTable();
-  toast(`✓ ${pending.length} target yang belum dihitung telah dikosongkan`, "good");
+  renderOpHistoryTable();
+  toast(`✓ ${n} target dikosongkan dari daftar (riwayat tetap tersimpan)`, "good");
 };
 
 document.getElementById("btnOpRefresh").onclick = () => loadOpnameTab();
@@ -4581,10 +4596,7 @@ function opRenderSuggest(query) {
 async function opAddManualTarget(sku, nama) {
   const today = opTodayStr();
   if (opTargets.some(t => t.sku === sku)) { toast(`${sku} sudah ada di target hari ini`, ""); return; }
-  const entry = { id: `tgt_${today}_${sku}`, kind: 'target', date: today, sku, nama: nama || (opStockMap[sku] && opStockMap[sku].nama) || '', source: 'manual', addedAt: new Date().toISOString() };
-  await idbPutOpname(entry);
-  opTargets.push(entry);
-  opAllOpname.push(entry);
+  await opUpsertTarget(sku, nama || (opStockMap[sku] && opStockMap[sku].nama) || '', 'manual');
   renderOpTargetTable();
   toast(`✓ ${sku} ditambahkan ke target hari ini`, "good");
 }
@@ -5128,6 +5140,10 @@ document.getElementById("fileUploadScan").addEventListener("change", async (e) =
         
         const skuVal = skuKey ? String(r[skuKey]).trim() : null;
         if(!skuVal) continue;
+        // Kolom UID (hasil export Data Induk): "-" / kosong berarti unit tanpa UID
+        const uidKey = keys.find(k=>{ const kk = k.trim().toLowerCase(); return kk === "uid" || kk.includes("rfid") || kk === "uid rfid"; });
+        let uidVal = uidKey ? String(r[uidKey]).trim().toUpperCase() : "";
+        if (uidVal === "-" || uidVal === "N/A") uidVal = "";
         const binVal = binKey ? String(r[binKey]).trim().toUpperCase() : "-";
         if (binVal && binVal !== "-") uploadedBins.add(binVal);
         
@@ -5141,6 +5157,7 @@ document.getElementById("fileUploadScan").addEventListener("change", async (e) =
         const entry = {
           id: generateID(),
           sku: skuVal,
+          uid: uidVal || null,
           nama: product ? product.nama : "Tidak Dikenali",
           found: !!product,
           bin: binVal,
