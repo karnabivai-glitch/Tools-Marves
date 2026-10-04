@@ -8,8 +8,6 @@
 <!-- ============================================================
      LIBRARIES
      ============================================================ -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/firebase-app-compat.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/firebase-firestore-compat.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.3/chart.umd.min.js" onerror="this.dataset.failed='1'"></script>
@@ -389,6 +387,36 @@
 </head>
 <body>
 
+<style>
+  body.role-restricted #btnCloudSettings, body.role-restricted #btnCancelSync,
+  body.role-restricted #dashboardPrintArea button[onclick*="fileDashLogo"] { display:none !important; }
+  #loginGate { position:fixed; inset:0; z-index:99999; display:flex; align-items:center; justify-content:center; padding:16px;
+    background:linear-gradient(135deg,#27476e,#5b8fc9); font-family:inherit; }
+  #loginGate .lg-card { background:var(--bg-card,#fff); color:var(--text-main,#222); width:100%; max-width:380px; border-radius:14px; padding:26px 22px; box-shadow:0 12px 40px rgba(0,0,0,.35); }
+  #loginGate h2 { margin:0 0 4px; font-size:20px; } #loginGate .lg-sub { font-size:12px; opacity:.7; margin-bottom:18px; }
+  #loginGate .lg-btn { display:flex; align-items:center; gap:12px; width:100%; text-align:left; padding:13px 14px; margin-bottom:10px; border:1px solid var(--border,#d5dbe3);
+    border-radius:10px; background:var(--bg-input,#f5f7fa); color:inherit; cursor:pointer; font-size:14px; font-weight:700; }
+  #loginGate .lg-btn:hover { border-color:var(--accent,#5b9bd5); }
+  #loginGate .lg-btn small { display:block; font-weight:400; opacity:.65; font-size:11px; }
+  #loginGate .lg-ico { font-size:22px; }
+  #loginGate #lgPassRow { display:none; margin:2px 0 6px; }
+  #loginGate #lgPass { width:100%; box-sizing:border-box; padding:11px; border:1px solid var(--border,#d5dbe3); border-radius:8px; font-size:14px; margin-bottom:8px; }
+  #loginGate #lgErr { color:#d9534f; font-size:12px; min-height:16px; margin-bottom:6px; }
+</style>
+<div id="loginGate">
+  <div class="lg-card">
+    <h2>INVENTORY<span style="color:var(--accent,#5b9bd5)">WMS</span></h2>
+    <div class="lg-sub">Pilih peran untuk melanjutkan</div>
+    <button class="lg-btn" id="lgAdmin"><span class="lg-ico">🔐</span><span>Admin<small></small></span></button>
+    <div id="lgPassRow">
+      <input type="password" id="lgPass" placeholder="Password Administrator" autocomplete="off">
+      <div id="lgErr"></div>
+      <button class="btn btn-accent" id="lgPassGo" style="width:100%;">Masuk sebagai Admin</button>
+    </div>
+    <button class="lg-btn" id="lgDash"><span class="lg-ico">🖥️</span><span>Dashboard Report<small></small></span></button>
+    <button class="lg-btn" id="lgSearch"><span class="lg-ico">🔎</span><span>Pencarian Barang<small></small></span></button>
+  </div>
+</div>
 <div class="shell-bar">
   <div class="shell-left">
     <span class="shell-icon" id="btnToggleSidebar" title="Buka/Tutup Sidebar">▤</span>
@@ -397,6 +425,11 @@
     <span class="shell-module">Warehouse Management</span>
   </div>
   <div class="shell-right">
+    <span id="syncQueueBadge" style="font-size:11px; opacity:0.85; margin-right:8px;"></span>
+    <span class="shell-icon" id="btnCancelSync" title="Batalkan &amp; bersihkan antrean sinkron yang belum terkirim" style="cursor:pointer; margin-right:10px; display:none;">🛑</span>
+    <span class="shell-icon" id="btnCloudSettings" title="Pengaturan Cloud (URL &amp; Token Supabase)" style="cursor:pointer; margin-right:10px;">⚙️</span>
+    <span id="roleBadge" style="font-size:10px; font-weight:800; background:rgba(255,255,255,.22); padding:3px 8px; border-radius:10px; margin-right:8px; letter-spacing:.5px;"></span>
+    <span class="shell-icon" id="btnLogout" title="Keluar / Ganti Peran" style="cursor:pointer; margin-right:10px;">🚪</span>
     <span>Marves Gudang RTS</span>
     <span class="shell-avatar">WH</span>
   </div>
@@ -424,7 +457,7 @@
       <div class="nav-group">
         <div class="nav-group-title">Monitoring <span>▼</span></div>
         <div class="nav-group-items">
-          <button class="nav-item" id="navSearchTab">🔎 Pencarian Riwayat</button>
+          <button class="nav-item" id="navSearchTab">🔎 Pencarian Barang</button>
           <button class="nav-item" id="navPivot">📊 Rekap Pivot Sesi</button>
           <button class="nav-item" id="navMovement">📜 Tracking Movement</button>
           <button class="nav-item" id="navHistoryCCTF">📜 History CC & Transfer</button>
@@ -553,6 +586,7 @@
               <select id="returChannel" class="input-sm hidden" style="margin-bottom: 10px; font-weight: bold; color: var(--warning);">
                  <option value="LIVE">Channel Retur: LIVE</option>
                  <option value="METRO">Channel Retur: METRO</option>
+                 <option value="BIASA">Channel Retur: BIASA</option>
               </select>
               <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                 <input id="binInput" class="bin-input input-sm" type="text" placeholder="Lokasi Bin (Opsional)" autocomplete="off" style="margin-bottom: 0; flex: 1;">
@@ -632,6 +666,13 @@
               <input id="outRemarkInput" class="bin-input input-sm" type="text" placeholder="Remark / Catatan (Cth: SO-999)" autocomplete="off">
               <input id="outScanInput" class="scan-input" type="text" placeholder="Tembak barcode keluar..." autocomplete="off">
               <div id="outScanResult"></div>
+            </div>
+            <div class="card" id="salesUploadCard" style="margin: 12px 0 0 0;">
+              <h3 class="card-header">📦 Upload Data Sales (Potong Stok via RFID)</h3>
+              <div style="font-size:11px; color:var(--text-muted); margin-bottom:8px; line-height:1.45;">Upload Excel report sales. Tiap <b>RFID Code</b> dicari di Data Induk, lalu unit itu dipotong dari bin tempat ia tersimpan. Ada pratinjau dulu sebelum stok dipotong.</div>
+              <input type="file" id="salesFile" accept=".xlsx,.xls,.csv" style="display:none;">
+              <button class="btn btn-accent" id="btnSalesPick" style="width:100%;">📂 Pilih File Sales &amp; Pratinjau</button>
+              <div id="salesPreview" style="margin-top:10px;"></div>
             </div>
           </div>
 
@@ -885,7 +926,7 @@
       <section id="tab-pivot" class="hidden">
         <div class="card" style="height: 100%; display: flex; flex-direction: column; margin-bottom: 0;">
           <h3 class="card-header">Rekap Pivot Sesi Aktif</h3>
-          <div class="hint" style="margin-bottom:12px;">Tabel ini hanya menghitung kalkulasi data yang sedang Anda scan (Masuk dan Keluar) pada sesi yang sedang berjalan.</div>
+          <div class="hint" style="margin-bottom:12px;">Tabel ini hanya menghitung hasil scan yang masih berada di Staging. Setelah Eksekusi Inbound atau Batal &amp; Bersihkan Staging, rekap ini otomatis kosong.</div>
           <div class="btn-row">
             <button class="btn btn-accent btn-sm" id="btnExportPivot">⬇️ Export Laporan Pivot (Format Rapi)</button>
           </div>
@@ -1000,7 +1041,8 @@
             <div class="toolbar-spacer"></div>
             <span class="toolbar-count">Log: <b id="statMoveQty">0</b></span>
             <button class="btn btn-ghost btn-sm" id="btnExportMovements" title="Export Excel Tracking">⬇️ Export</button>
-            <button class="btn btn-danger btn-sm" id="btnClearMovements" title="Bersihkan Log Tracking Lokal">🗑️</button>
+            <button class="btn btn-danger btn-sm" id="btnClearMovements" title="Bersihkan log TRANSFER saja (Inbound/Outbound/Sales/Retur/Delete tetap disimpan)">🗑️ Transfer</button>
+            <button class="btn btn-danger btn-sm" id="btnClearMovementsAll" title="Hapus SEMUA Movement Log — Lokal &amp; Cloud (Google Sheets)">🗑️ Semua (Cloud)</button>
           </div>
           
           <div class="scroll-table fill">
@@ -1247,6 +1289,41 @@
              </div>
           </div>
 
+          <!-- ===== Stock Opname Harian ===== -->
+          <h3 class="card-header" style="margin: 8px 0 10px;">📋 Stock Opname Harian</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 16px;">
+             <div class="stat-card" style="margin:0; border-bottom: 3px solid var(--accent);">
+                <div class="num" id="dashOpKpiToday" style="color:var(--accent);">0</div>
+                <div class="lbl">SKU Selesai Opname Hari Ini</div>
+             </div>
+             <div class="stat-card" style="margin:0; border-bottom: 3px solid var(--success);">
+                <div class="num" id="dashOpKpiAkurasi" style="color:var(--success);">0</div>
+                <div class="lbl">Akurasi Opname (30 Hari)</div>
+             </div>
+             <div class="stat-card" style="margin:0; border-bottom: 3px solid var(--danger);">
+                <div class="num" id="dashOpKpiDiff" style="color:var(--danger);">0</div>
+                <div class="lbl">SKU Selisih (30 Hari)</div>
+             </div>
+             <div class="stat-card" style="margin:0; border-bottom: 3px solid var(--warning);">
+                <div class="num" id="dashOpKpiNet" style="color:var(--warning);">0</div>
+                <div class="lbl">Net Selisih Unit (30 Hari)</div>
+             </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+             <div class="card" style="margin:0;">
+                <h3 class="card-header">Tren Opname: Sesuai vs Selisih (14 Hari)</h3>
+                <div style="position:relative; height:260px;"><canvas id="chartOpTrend"></canvas></div>
+             </div>
+             <div class="card" style="margin:0;">
+                <h3 class="card-header">Komposisi Hasil Opname (30 Hari)</h3>
+                <div style="position:relative; height:260px;"><canvas id="chartOpComp"></canvas></div>
+             </div>
+             <div class="card" style="margin:0; grid-column: 1 / -1;">
+                <h3 class="card-header">Top 10 SKU Selisih Opname (30 Hari)</h3>
+                <div style="position:relative; height:300px;"><canvas id="chartOpTop"></canvas></div>
+             </div>
+          </div>
+
         </div>
       </section>
 
@@ -1287,14 +1364,14 @@
             </div>
             <div class="stat-card" style="border-bottom: 3px solid var(--success); padding: 24px; margin: 0; flex: 1;">
               <div class="num" id="statMasterCloud" style="color: var(--success); font-size: 36px;">0</div>
-              <div class="lbl" style="font-size: 12px;">Total Master SKU (Firestore/Cloud)</div>
+              <div class="lbl" style="font-size: 12px;">Total Master SKU (Google Sheets/Cloud)</div>
             </div>
           </div>
           <div class="hint" id="masterSyncStatus" style="text-align: center; margin-top: -8px;"></div>
 
           <div class="card" style="margin: 0;">
             <h3 class="card-header">Sinkronisasi Cloud</h3>
-            <div class="hint" style="margin-bottom: 16px;">Satu-satunya fitur yang terhubung ke Cloud. Tarik data master produk terbaru dari Firestore.</div>
+            <div class="hint" style="margin-bottom: 16px;">Satu-satunya fitur yang terhubung ke Cloud. Tarik data master produk terbaru dari Google Sheets.</div>
             <button class="btn btn-ghost" style="width:100%" id="btnPullMaster">⬇️ Tarik Master Data Cloud ke Lokal</button>
           </div>
           
@@ -1317,7 +1394,7 @@
             <div class="hint" style="margin-bottom: 16px;">Tindakan ini permanen dan dilindungi password Administrator. Hapus Lokal dan Hapus Cloud terpisah satu sama lain.</div>
             <div class="btn-row">
               <button class="btn btn-danger btn-sm" id="btnClearMasterLocal" style="flex:1;">🗑️ Clear SKU Lokal</button>
-              <button class="btn btn-danger btn-sm" id="btnClearMasterCloud" style="flex:1;">🗑️ Clear SKU Cloud (Firestore)</button>
+              <button class="btn btn-danger btn-sm" id="btnClearMasterCloud" style="flex:1;">🗑️ Clear SKU Cloud (Sheets)</button>
             </div>
           </div>
 
@@ -1484,23 +1561,115 @@ function parseIdDate(dateStr) {
   return null;
 }
 
-// Hanya Master Data yang menggunakan Cloud
-const firebaseConfig = {
-  apiKey: "AIzaSyATHrEKneLilCcYwnRgzbPZoFH2R9o9AR4",
-  authDomain: "tools-marves.firebaseapp.com",
-  projectId: "tools-marves",
-  storageBucket: "tools-marves.firebasestorage.app",
-  messagingSenderId: "495279296896",
-  appId: "1:495279296896:web:995bc769a5e90e8adc7165"
-};
+/* ============================================================
+   KONEKSI CLOUD (Supabase + Google Sheets)
+   Menggantikan Firestore. Semua data (Master, Scan, Movement, Opname,
+   RFID Map) kini disinkron ke Google Sheets lewat Web App Apps Script.
+   URL & Token diatur lewat tombol ⚙️ di shell-bar (localStorage, per browser).
+   ============================================================ */
+const COL_MASTER = "master"; // nama tabel/sheet master di backend GAS
+const SYNC_TABLES = ["master", "rfidmap", "scanlog", "movementlog", "opname"];
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const COL_MASTER = "master_produk";
+// Ambil hanya "https://xxxx.supabase.co" dari teks apa pun yang ditempel (buang /rest/v1/, spasi, dsb.)
+function sbBase_(u){
+  u = String(u || "").trim();
+  if(u && !/^https?:\/\//i.test(u)) u = "https://" + u;
+  try { return new URL(u).origin; } catch(e){ return u.replace(/\/+$/, ""); }
+}
+// Password Administrator (dipakai login Admin & semua konfirmasi admin). Ganti di sini saja.
+const ADMIN_PASSWORD = "z5z563";
+const CLOUD_CFG = {
+  url: localStorage.getItem("gas_url") || "",
+  token: localStorage.getItem("gas_token") || "",
+  key: localStorage.getItem("sb_key") || ""   // Supabase anon/publishable key
+};
+function saveCloudCfg(url, token, key){
+  CLOUD_CFG.url = (url || "").trim();
+  CLOUD_CFG.token = (token || "").trim();
+  localStorage.setItem("gas_url", CLOUD_CFG.url);
+  localStorage.setItem("gas_token", CLOUD_CFG.token);
+  CLOUD_CFG.key = (key || "").trim();
+  localStorage.setItem("sb_key", CLOUD_CFG.key);
+}
+
+// Timeout per jenis permintaan. Tanpa timeout, satu request Apps Script yang "menggantung"
+// membuat syncBusy macet selamanya sehingga antrean tidak pernah terkirim lagi.
+const CLOUD_TIMEOUT_MS = { ping: 20000, pull: 30000, pullAll: 30000, batch: 90000 };
+const CLOUD_RETRYABLE_CODES = { NETWORK: 1, BAD_RESPONSE: 1, TIMEOUT: 1 };
+const CLOUD_RETRYABLE_MSG = /lock|busy|sibuk|too many|terlalu banyak|rate|quota|unavailable/i;
+function sleep_(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+async function cloudApiOnce_(action, payload, extSignal){
+  const body = { p_action: action, p_token: CLOUD_CFG.token, p_payload: payload || {} };
+  const ctrl = new AbortController();
+  let timedOut = false;
+  const timer = setTimeout(() => { timedOut = true; ctrl.abort(); }, CLOUD_TIMEOUT_MS[action] || 30000);
+  const onExtAbort = () => ctrl.abort();
+  if(extSignal){ if(extSignal.aborted) ctrl.abort(); else extSignal.addEventListener("abort", onExtAbort); }
+  const mkTimeout = () => { const e = new Error("Server Supabase terlalu lama merespons (timeout)."); e.code = "TIMEOUT"; return e; };
+  try{
+    let res;
+    try{
+      res = await fetch(sbBase_(CLOUD_CFG.url) + "/rest/v1/rpc/wms_api", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "apikey": CLOUD_CFG.key },
+        body: JSON.stringify(body),
+        signal: ctrl.signal
+      });
+    }catch(networkErr){
+      if(timedOut) throw mkTimeout();
+      if(networkErr && networkErr.name === "AbortError") throw networkErr; // dibatalkan pengguna
+      // Catatan: saat Apps Script kelebihan beban / kena kuota, Google membalas halaman error tanpa
+      // header CORS, dan browser melaporkannya sebagai "Failed to fetch" (mirip offline).
+      const e = new Error("Tidak bisa menghubungi server Supabase (" +
+        (navigator.onLine === false ? "perangkat offline" : "server sibuk/menolak koneksi") + ").");
+      e.code = "NETWORK"; throw e;
+    }
+    let txt;
+    try{ txt = await res.text(); }
+    catch(readErr){
+      if(timedOut) throw mkTimeout();
+      if(readErr && readErr.name === "AbortError") throw readErr;
+      const e = new Error("Respon dari server Apps Script terputus."); e.code = "NETWORK"; throw e;
+    }
+    let data;
+    try{ data = JSON.parse(txt); }
+    catch(parseErr){
+      const snippet = String(txt || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 90);
+      const e = new Error("Respon server Apps Script tidak valid (HTTP " + res.status + ")" + (snippet ? ": " + snippet : "") + " — cek URL / deployment.");
+      e.code = "BAD_RESPONSE"; throw e;
+    }
+    if(!data.ok){ const e = new Error(data.error || data.message || "Gagal memproses permintaan."); e.code = data.code || "ERR"; throw e; }
+    return data;
+  } finally {
+    clearTimeout(timer);
+    if(extSignal) extSignal.removeEventListener("abort", onExtAbort);
+  }
+}
+
+// Semua operasi ke server bersifat idempoten (put/del/clear berdasarkan key, pull berdasarkan
+// cursor), jadi aman diulang otomatis bila gagal sementara (jaringan, server sibuk, timeout).
+async function cloudApi(action, payload, signal, opts){
+  if(!CLOUD_CFG.url){ const e = new Error("URL Supabase belum diatur. Klik ⚙️ di pojok kanan atas."); e.code = "NO_CFG"; throw e; }
+  const maxTry = ((opts && opts.retries != null) ? opts.retries : 2) + 1;
+  let lastErr;
+  for(let i = 0; i < maxTry; i++){
+    try{
+      return await cloudApiOnce_(action, payload, signal);
+    }catch(err){
+      lastErr = err;
+      if(err && err.name === "AbortError") throw err;
+      const retryable = CLOUD_RETRYABLE_CODES[err.code] || (err.code === "ERR" && CLOUD_RETRYABLE_MSG.test(err.message || ""));
+      if(!retryable || i === maxTry - 1) throw err;
+      await sleep_(700 * Math.pow(3, i) + Math.random() * 300);
+    }
+  }
+  throw lastErr;
+}
 
 let idb;
 const IDB_NAME = "scan_wms_db";
-const IDB_VERSION = 5; // v5: tambah object store "rfidmap" untuk pemetaan RFID_CODE (UID) -> SKU
+const IDB_VERSION = 6; // v6: tambah object store "syncqueue" untuk antrean sinkron ke Supabase
 
 function openIDB(){
   return new Promise((resolve, reject)=>{
@@ -1512,10 +1681,404 @@ function openIDB(){
       if(!database.objectStoreNames.contains("movementlog")) database.createObjectStore("movementlog", { keyPath: "id" });
       if(!database.objectStoreNames.contains("opname")) database.createObjectStore("opname", { keyPath: "id" });
       if(!database.objectStoreNames.contains("rfidmap")) database.createObjectStore("rfidmap", { keyPath: "code" });
+      if(!database.objectStoreNames.contains("syncqueue")) database.createObjectStore("syncqueue", { keyPath: "qid", autoIncrement: true });
     };
     req.onsuccess = (e)=>resolve(e.target.result);
     req.onerror = (e)=>reject(e);
   });
+}
+
+/* ------------------------------------------------------------
+   ANTREAN SINKRON (outbox pattern)
+   Setiap tulis/hapus data operasional tetap instan ke IndexedDB
+   (tidak menunggu jaringan), lalu dicatat di sini untuk dikirim ke
+   Supabase di belakang layar oleh flushSyncQueue().
+   key/data boleh berupa satu nilai atau array (untuk operasi bulk).
+   ------------------------------------------------------------ */
+function idbEnqueueSync(table, op, keyOrKeys, dataOrRows){
+  return new Promise((resolve)=>{
+    const tx = idb.transaction("syncqueue", "readwrite");
+    tx.objectStore("syncqueue").add({
+      table, op,
+      key: keyOrKeys === undefined ? null : keyOrKeys,
+      data: dataOrRows === undefined ? null : dataOrRows,
+      ts: Date.now()
+    });
+    tx.oncomplete = ()=>{ scheduleFlushSoon(); resolve(); };
+  });
+}
+// Begitu ada perubahan (scan, transfer bin, dll), kirim ke Cloud SEGERA — tidak menunggu
+// timer periodik 20 detik. Di-debounce sebentar (400ms) supaya beberapa scan beruntun tidak
+// memicu banyak request terpisah, cukup satu setelah "jeda" aktivitas.
+let flushDebounceTimer = null;
+function scheduleFlushSoon(){
+  if(flushDebounceTimer) clearTimeout(flushDebounceTimer);
+  flushDebounceTimer = setTimeout(()=>{ flushDebounceTimer = null; flushSyncQueue(); }, 400);
+}
+function idbGetSyncQueue(limit){
+  return new Promise((resolve)=>{
+    const tx = idb.transaction("syncqueue", "readonly");
+    const req = tx.objectStore("syncqueue").getAll(null, limit || undefined);
+    req.onsuccess = ()=>resolve(req.result || []);
+    req.onerror = ()=>resolve([]);
+  });
+}
+function idbCountSyncQueue(){
+  return new Promise((resolve)=>{
+    const tx = idb.transaction("syncqueue", "readonly");
+    const req = tx.objectStore("syncqueue").count();
+    req.onsuccess = ()=>resolve(req.result || 0);
+    req.onerror = ()=>resolve(0);
+  });
+}
+function idbDeleteSyncQueueIds(qids){
+  return new Promise((resolve)=>{
+    if(!qids || !qids.length) return resolve();
+    const tx = idb.transaction("syncqueue", "readwrite");
+    const store = tx.objectStore("syncqueue");
+    qids.forEach(id => store.delete(id));
+    tx.oncomplete = ()=>resolve();
+    tx.onerror = tx.onabort = ()=>resolve(); // jangan sampai promise menggantung selamanya
+  });
+}
+// Buang SELURUH antrean sinkron yang belum terkirim (dipakai oleh tombol "Batalkan Sinkron").
+function idbClearSyncQueueAll(){
+  return new Promise((resolve)=>{
+    const tx = idb.transaction("syncqueue", "readwrite");
+    tx.objectStore("syncqueue").clear();
+    tx.oncomplete = ()=>resolve();
+  });
+}
+
+// Tulis/hapus langsung ke IndexedDB TANPA masuk antrean sinkron.
+// Dipakai HANYA oleh pullFromCloud() saat menerapkan data yang datang
+// dari server, supaya tidak terjadi kirim-balik yang tidak perlu.
+function idbRawPut(table, obj){
+  return new Promise((resolve)=>{
+    const tx = idb.transaction(table, "readwrite");
+    tx.objectStore(table).put(obj);
+    tx.oncomplete = ()=>resolve();
+  });
+}
+function idbRawDelete(table, key){
+  return new Promise((resolve)=>{
+    const tx = idb.transaction(table, "readwrite");
+    tx.objectStore(table).delete(key);
+    tx.oncomplete = ()=>resolve();
+  });
+}
+function idbClearLocalOnly_(table){
+  return new Promise((resolve)=>{
+    const tx = idb.transaction(table, "readwrite");
+    tx.objectStore(table).clear();
+    tx.oncomplete = ()=>resolve();
+  });
+}
+
+let syncBusy = false;
+let syncBusySince = 0;
+let syncDirty = false;          // ada permintaan flush yang masuk saat flush lain masih berjalan
+let flushFailCount = 0;
+let flushRetryTimer = null;
+let currentSyncAbort = null;
+
+// Status sinkron untuk indikator di sidebar (sebelumnya kegagalan tarik data tidak terlihat sama sekali).
+const syncState = { pushErr: null, pullErr: null, lastPull: 0, lastPush: 0 };
+function fmtClock_(ms){
+  const d = new Date(ms);
+  const p = n => String(n).padStart(2, "0");
+  return p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds());
+}
+function renderConn_(){
+  if(!CLOUD_CFG.url) return;
+  let ok = true, text, detail = "";
+  if(syncState.pushErr){
+    ok = false; text = syncState.pushErr.cancelled ? "Sinkron dibatalkan" : "Gagal kirim ke Cloud — mencoba lagi";
+    detail = syncState.pushErr.msg || "";
+  } else if(syncState.pullErr){
+    ok = false; text = "Gagal tarik data Cloud — mencoba lagi";
+    detail = syncState.pullErr.msg || "";
+  } else {
+    const last = Math.max(syncState.lastPull, syncState.lastPush);
+    text = last ? "Tersambung • sinkron " + fmtClock_(last) : "Tersambung ke Supabase";
+    detail = "Klik untuk sinkron sekarang";
+  }
+  setConn(ok, text);
+  const dot = document.getElementById("connDot"), txt = document.getElementById("connText");
+  if(dot) dot.title = detail; if(txt) txt.title = detail;
+}
+
+// Antrean dikirim per potongan kecil. Permintaan yang terlalu besar (mis. ribuan baris sekaligus)
+// lambat diproses Apps Script dan gampang timeout, lalu SELURUHNYA diulang dari nol.
+const SYNC_BATCH_SIZE = 400;          // maks entri antrean yang dibaca per putaran
+const SYNC_MAX_OPS_PER_REQ = 200;     // maks operasi per satu request HTTP
+const SYNC_MAX_ROWS_PER_REQ = 1500;   // maks baris/kunci per satu request HTTP
+function chunkArray_(arr, n){
+  const out = [];
+  for(let i = 0; i < arr.length; i += n) out.push(arr.slice(i, i + n));
+  return out;
+}
+// Ubah entri antrean menjadi daftar request berurutan. qid sebuah entri baru dihapus dari antrean
+// setelah request yang memuat potongan TERAKHIR entri itu sukses (urutan put/del/clear tetap terjaga).
+function buildSyncRequests_(items){
+  const reqs = [];
+  let cur = { ops: [], qids: [], weight: 0 };
+  const flushCur = () => { if(cur.ops.length || cur.qids.length) reqs.push(cur); cur = { ops: [], qids: [], weight: 0 }; };
+  for(const it of items){
+    let units;
+    if(it.op === "clear"){
+      units = [{ op: "clear", table: it.table }];
+    } else if(it.op === "del"){
+      const keys = Array.isArray(it.key) ? it.key : [it.key];
+      units = chunkArray_(keys, SYNC_MAX_ROWS_PER_REQ).map(k => ({ op: "del", table: it.table, keys: k }));
+    } else {
+      const rows = Array.isArray(it.data) ? it.data : [it.data];
+      units = chunkArray_(rows, SYNC_MAX_ROWS_PER_REQ).map(r => ({ op: "put", table: it.table, rows: r }));
+    }
+    if(!units.length){ cur.qids.push(it.qid); continue; }
+    units.forEach((u, idx) => {
+      const w = u.rows ? u.rows.length : (u.keys ? u.keys.length : 1);
+      if(cur.ops.length && (cur.weight + w > SYNC_MAX_ROWS_PER_REQ || cur.ops.length >= SYNC_MAX_OPS_PER_REQ)) flushCur();
+      cur.ops.push(u); cur.weight += w;
+      if(idx === units.length - 1) cur.qids.push(it.qid);
+    });
+  }
+  flushCur();
+  return reqs;
+}
+
+function scheduleFlushRetry_(){
+  flushFailCount++;
+  const delay = Math.min(30000, 2000 * Math.pow(2, flushFailCount - 1)); // 2s, 4s, 8s ... maks 30s
+  if(flushRetryTimer) clearTimeout(flushRetryTimer);
+  flushRetryTimer = setTimeout(() => { flushRetryTimer = null; flushSyncQueue(); }, delay);
+}
+
+async function flushSyncQueue(){
+  if(!CLOUD_CFG.url) return;
+  if(syncBusy){
+    if(Date.now() - syncBusySince < 180000){ syncDirty = true; return; }
+    syncBusy = false; // pengaman: flush sebelumnya macet > 3 menit, lepaskan kuncinya
+  }
+  syncBusy = true; syncBusySince = Date.now(); syncDirty = false;
+  if(flushRetryTimer){ clearTimeout(flushRetryTimer); flushRetryTimer = null; }
+  let failed = false;
+  try{
+    // Baca ulang antrean sampai benar-benar kosong, supaya scan yang masuk SAAT flush berjalan
+    // ikut terkirim sekarang juga (bukan menunggu timer berikutnya).
+    while(true){
+      const items = await idbGetSyncQueue(SYNC_BATCH_SIZE);
+      if(!items.length) break;
+      for(const rq of buildSyncRequests_(items)){
+        if(rq.ops.length){
+          currentSyncAbort = new AbortController();
+          await cloudApi("batch", { ops: rq.ops }, currentSyncAbort.signal);
+          currentSyncAbort = null;
+        }
+        await idbDeleteSyncQueueIds(rq.qids);
+        updateSyncBadge();
+      }
+    }
+    syncState.pushErr = null; syncState.lastPush = Date.now(); flushFailCount = 0;
+  }catch(err){
+    currentSyncAbort = null;
+    failed = true;
+    if(err && err.name === "AbortError"){
+      syncState.pushErr = { cancelled: true, msg: "Sinkron dibatalkan" };
+    } else {
+      console.error("Gagal sinkron ke cloud:", err);
+      syncState.pushErr = { msg: (err && err.message) || String(err), code: err && err.code };
+      if(!(err && err.code === "NO_CFG")) scheduleFlushRetry_();
+    }
+  }finally{
+    syncBusy = false;
+    renderConn_();
+    updateSyncBadge();
+    if(syncDirty && !failed) setTimeout(flushSyncQueue, 50);
+  }
+}
+async function updateSyncBadge(){
+  const el = document.getElementById("syncQueueBadge");
+  const cancelBtn = document.getElementById("btnCancelSync");
+  if(!idb) return;
+  try{
+    const n = await idbCountSyncQueue();
+    if(el) el.textContent = n > 0 ? `⏳ ${n} menunggu sinkron` : "";
+    if(cancelBtn) cancelBtn.style.display = n > 0 ? "inline-block" : "none";
+  }catch(e){ /* abaikan */ }
+}
+// Batalkan proses sinkron yang sedang berjalan (best-effort) & buang seluruh antrean lokal
+// yang belum terkirim, supaya tidak terus dicoba ulang secara otomatis.
+// CATATAN: jika Supabase sudah mulai memproses permintaan sebelumnya, proses di
+// server TIDAK ikut berhenti hanya karena koneksi dari sini dibatalkan — server tetap
+// menyelesaikan apa yang sedang dikerjakannya. Tombol ini menghentikan PENGIRIMAN BERIKUTNYA.
+function cancelSync(){
+  if(currentSyncAbort){ try{ currentSyncAbort.abort(); }catch(e){} }
+  if(flushRetryTimer){ clearTimeout(flushRetryTimer); flushRetryTimer = null; }
+  flushFailCount = 0; syncState.pushErr = null;
+  return idbClearSyncQueueAll().then(()=>{
+    updateSyncBadge();
+    toast("Antrean sinkron lokal dibersihkan.", "warning");
+  });
+}
+function initSyncControls(){
+  const btn = document.getElementById("btnCancelSync");
+  if(!btn) return;
+  btn.onclick = () => {
+    if(!confirm("Batalkan & bersihkan antrean sinkron yang BELUM terkirim ke Cloud?\n\nCatatan: kalau ada permintaan yang SEDANG diproses di server (Supabase) saat ini, permintaan itu tetap akan selesai di sisi server walau dibatalkan di sini. Kalau ada data yang sudah kadung masuk ke Sheet dan tidak diinginkan, hapus manual lewat tombol \"Clear SKU Cloud\" (untuk Master) atau bersihkan langsung di Google Sheets.")) return;
+    cancelSync();
+  };
+}
+
+// Tarik perubahan dari server untuk satu tabel & terapkan ke IndexedDB lokal.
+// Dipakai agar data konsisten di semua perangkat/browser (multi-device).
+// Mengembalikan jumlah baris yang diterapkan.
+// Terapkan satu HALAMAN hasil pull (bisa ribuan baris) dalam SATU transaksi IndexedDB,
+// bukan satu transaksi per baris — ini yang paling menentukan cepat/lambatnya data
+// muncul saat aplikasi dibuka pertama kali di perangkat/browser baru.
+function idbApplyPulledRows_(table, rows){
+  return new Promise((resolve, reject)=>{
+    const tx = idb.transaction(table, "readwrite");
+    const store = tx.objectStore(table);
+    rows.forEach(row => {
+      try{ if(row.d) store.delete(row.k); else store.put(row.v); }
+      catch(rowErr){ console.warn("Baris hasil tarik dilewati:", table, rowErr); } // satu baris rusak tidak boleh menghentikan semuanya
+    });
+    tx.oncomplete = ()=>resolve();
+    // Kalau transaksi gagal, jangan diam-diam lanjut: cursor tidak boleh maju, supaya baris ini ditarik ulang.
+    tx.onerror = tx.onabort = ()=>reject(tx.error || new Error("Gagal menulis data hasil tarik ke database lokal"));
+  });
+}
+async function pullFromCloud(table){
+  const sinceKey = "sync_since_" + table;
+  const epochKey = "sync_epoch_" + table;
+  let since = Number(localStorage.getItem(sinceKey) || 0);
+  let epoch = localStorage.getItem(epochKey) || "";
+  let total = 0;
+  while(true){
+    const res = await cloudApi("pull", { table, since, epoch, limit: 5000 });
+    if(res.reset){
+      // Tabel pernah di-clear di server sejak sinkron terakhir: kosongkan cache lokal dulu.
+      await idbClearLocalOnly_(table);
+      since = 0;
+    }
+    if(res.rows.length){
+      await idbApplyPulledRows_(table, res.rows);
+      total += res.rows.length;
+    }
+    since = res.next;
+    epoch = res.epoch;
+    localStorage.setItem(sinceKey, String(since));
+    localStorage.setItem(epochKey, epoch);
+    if(!res.more) break;
+  }
+  return total;
+}
+let pullBusy = false;
+let pullBusySince = 0;
+let pullFailCount = 0;
+async function pullAllFromCloud(showToast){
+  if(!CLOUD_CFG.url) return;
+  if(pullBusy){
+    if(Date.now() - pullBusySince < 180000) return; // sudah ada tarikan berjalan: jangan menumpuk request
+    pullBusy = false;
+  }
+  pullBusy = true; pullBusySince = Date.now();
+  try{
+    for(let round = 0; round < 500; round++){
+      const cursors = {};
+      SYNC_TABLES.forEach(t => {
+        cursors[t] = {
+          since: Number(localStorage.getItem("sync_since_" + t) || 0),
+          epoch: localStorage.getItem("sync_epoch_" + t) || ""
+        };
+      });
+      const res = await cloudApi("pullAll", { cursors, limit: 5000 });
+      let anyMore = false, roundChanged = false, rfidChanged = false;
+      for(const t of SYNC_TABLES){
+        const r = res.results && res.results[t];
+        if(!r) continue;
+        if(r.reset){ await idbClearLocalOnly_(t); roundChanged = true; if(t === "rfidmap") rfidChanged = true; }
+        if(r.rows && r.rows.length){ await idbApplyPulledRows_(t, r.rows); roundChanged = true; if(t === "rfidmap") rfidChanged = true; }
+        localStorage.setItem("sync_since_" + t, String(r.next));
+        localStorage.setItem("sync_epoch_" + t, r.epoch);
+        if(r.more) anyMore = true;
+      }
+      // Hanya muat ulang cache & tampilan kalau memang ada data baru. Sebelumnya ini dijalankan di
+      // SETIAP siklus (getAll seluruh tabel RFID + render ulang dashboard/grafik), membuat UI berat.
+      if(rfidChanged) await primeRfidCache();
+      if(roundChanged) refreshCurrentTabView();
+      if(!anyMore) break; // masih ada halaman lanjutan (data banyak/pertama kali) -> ulangi
+    }
+    syncState.pullErr = null; syncState.lastPull = Date.now(); pullFailCount = 0;
+  }catch(err){
+    pullFailCount++;
+    console.error("Gagal menarik data cloud:", err);
+    syncState.pullErr = { msg: (err && err.message) || String(err), code: err && err.code };
+    if(showToast) toast("Gagal menarik data cloud: " + syncState.pullErr.msg, "bad");
+  }finally{
+    pullBusy = false;
+    renderConn_();
+  }
+}
+
+// Penjadwal tarik data: request berikutnya baru dijadwalkan SETELAH request sebelumnya selesai.
+// (Versi lama memakai setInterval 8 detik: kalau Apps Script butuh > 8 detik, request menumpuk,
+//  melewati batas 30 eksekusi bersamaan Apps Script, lalu semuanya gagal / "Failed to fetch".)
+const POLL_VISIBLE_MS = 4000;    // jeda antar tarikan saat aplikasi sedang dilihat
+const POLL_HIDDEN_MS = 45000;    // jeda saat tab di background
+let pollTimer = null;
+function schedulePoll_(delay){
+  if(pollTimer) clearTimeout(pollTimer);
+  pollTimer = setTimeout(async () => {
+    pollTimer = null;
+    try{ if(navigator.onLine !== false) await pullAllFromCloud(false); }catch(e){ /* sudah ditangani di dalam */ }
+    const base = document.visibilityState === "visible" ? POLL_VISIBLE_MS : POLL_HIDDEN_MS;
+    const wait = pullFailCount ? Math.min(30000, base * Math.pow(2, Math.min(pullFailCount, 4))) : base;
+    schedulePoll_(wait);
+  }, delay);
+}
+function syncNow_(){
+  if(!CLOUD_CFG.url){ toast("Atur URL Supabase dulu (klik ⚙️).", "warning"); return; }
+  toast("Sinkron sekarang...", "warning");
+  flushFailCount = 0;
+  flushSyncQueue().then(() => pullAllFromCloud(true));
+}
+function startSyncLoops_(){
+  setInterval(() => { if(!syncBusy && !flushRetryTimer) flushSyncQueue(); }, 15000); // jaring pengaman (murah kalau antrean kosong)
+  window.addEventListener("online", () => { flushFailCount = 0; pullFailCount = 0; flushSyncQueue(); schedulePoll_(0); });
+  window.addEventListener("offline", () => { setConn(false, "Perangkat offline — data tetap tersimpan lokal"); });
+  // Begitu tab dibuka/difokuskan lagi, langsung tarik update terbaru.
+  document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible") schedulePoll_(0); });
+  const connTxt = document.getElementById("connText"), connDot = document.getElementById("connDot");
+  [connTxt, connDot].forEach(el => { if(el){ el.style.cursor = "pointer"; el.addEventListener("click", syncNow_); } });
+  schedulePoll_(POLL_VISIBLE_MS);
+}
+
+// Pengaturan Cloud: URL Web App (.../exec) & API Token, disimpan per browser.
+function initCloudSettings(){
+  const btn = document.getElementById("btnCloudSettings");
+  if(!btn) return;
+  btn.onclick = () => {
+    const url = prompt("URL Project Supabase (contoh: https://xxxx.supabase.co):", CLOUD_CFG.url);
+    if(url === null) return;
+    const key = prompt("Supabase anon / publishable key:", CLOUD_CFG.key);
+    if(key === null) return;
+    const token = prompt("Token bersama (yang Anda isi di tabel wms_config):", CLOUD_CFG.token);
+    if(token === null) return;
+    saveCloudCfg(url, token, key);
+    toast("✓ Pengaturan cloud disimpan, mencoba menyambung...", "good");
+    cloudApi("ping").then(()=>{
+      setConn(true, "Tersambung ke Supabase");
+      pullAllFromCloud(true).then(()=>toast("✓ Data terbaru dari Cloud sudah ditarik", "good"));
+      flushSyncQueue();
+      if(typeof refreshMasterStats === "function") refreshMasterStats();
+    }).catch(err=>{
+      console.error(err);
+      setConn(false, "Gagal terhubung");
+      toast("Gagal terhubung ke Supabase: " + err.message, "bad");
+    });
+  };
 }
 
 /* ============================================================
@@ -1532,7 +2095,7 @@ function idbPutRfidBulk(list){
     let i = 0;
     function nextChunk(){
       const slice = list.slice(i, i + CHUNK);
-      if(!slice.length) return resolve();
+      if(!slice.length){ idbEnqueueSync("rfidmap", "put", list.map(x=>x.code), list).then(resolve); return; }
       const tx = idb.transaction("rfidmap", "readwrite");
       const store = tx.objectStore("rfidmap");
       slice.forEach(item => store.put(item));
@@ -1561,7 +2124,7 @@ function idbClearRfid(){
   return new Promise((resolve)=>{
     const tx = idb.transaction("rfidmap", "readwrite");
     tx.objectStore("rfidmap").clear();
-    tx.oncomplete = ()=>resolve();
+    tx.oncomplete = ()=>{ idbEnqueueSync("rfidmap", "clear").then(resolve); };
   });
 }
 
@@ -1722,7 +2285,7 @@ document.getElementById("fileRfidMap").addEventListener("change", (e) => {
 
 document.getElementById("btnClearRfidMap").onclick = async () => {
   const pass = prompt("Masukkan Password Administrator untuk menghapus seluruh pemetaan RFID:");
-  if(pass !== "admin123"){
+  if(pass !== ADMIN_PASSWORD){
     if(pass !== null) toast("Password salah! Akses ditolak.", "bad");
     return;
   }
@@ -1739,7 +2302,7 @@ function idbPutMasterBulk(items){
     const tx = idb.transaction("master", "readwrite");
     const store = tx.objectStore("master");
     items.forEach(it=>store.put(it));
-    tx.oncomplete = ()=>resolve();
+    tx.oncomplete = ()=>{ idbEnqueueSync("master", "put", items.map(x=>x.sku), items).then(resolve); };
   });
 }
 function idbGetMaster(sku){
@@ -1775,14 +2338,14 @@ function idbAddScan(entry){
   return new Promise((resolve)=>{
     const tx = idb.transaction("scanlog", "readwrite");
     tx.objectStore("scanlog").put(entry);
-    tx.oncomplete = ()=>resolve();
+    tx.oncomplete = ()=>{ idbEnqueueSync("scanlog", "put", entry.id, entry).then(resolve); };
   });
 }
 function idbDeleteScan(id){
   return new Promise((resolve)=>{
     const tx = idb.transaction("scanlog", "readwrite");
     tx.objectStore("scanlog").delete(id);
-    tx.oncomplete = ()=>resolve();
+    tx.oncomplete = ()=>{ idbEnqueueSync("scanlog", "del", id).then(resolve); };
   });
 }
 function idbGetAllScans(){
@@ -1796,7 +2359,7 @@ function idbClearScans(){
   return new Promise((resolve)=>{
     const tx = idb.transaction("scanlog", "readwrite");
     tx.objectStore("scanlog").clear();
-    tx.oncomplete = ()=>resolve();
+    tx.oncomplete = ()=>{ idbEnqueueSync("scanlog", "clear").then(resolve); };
   });
 }
 function idbClearSession(){
@@ -1804,13 +2367,15 @@ function idbClearSession(){
     const rows = await idbGetAllScans();
     const tx = idb.transaction("scanlog", "readwrite");
     const store = tx.objectStore("scanlog");
+    const changed = [];
     rows.forEach(r => {
       if (r && r.sessionActive !== false) {
          r.sessionActive = false; 
          store.put(r);
+         changed.push(r);
       }
     });
-    tx.oncomplete = ()=>resolve();
+    tx.oncomplete = ()=>{ (changed.length ? idbEnqueueSync("scanlog", "put", changed.map(x=>x.id), changed) : Promise.resolve()).then(resolve); };
   });
 }
 
@@ -1818,7 +2383,44 @@ function idbAddMovement(entry){
   return new Promise((resolve)=>{
     const tx = idb.transaction("movementlog", "readwrite");
     tx.objectStore("movementlog").put(entry);
-    tx.oncomplete = ()=>resolve();
+    tx.oncomplete = ()=>{ idbEnqueueSync("movementlog", "put", entry.id, entry).then(resolve); };
+  });
+}
+// Versi bulk untuk import massal (ribuan baris): tulis ke IndexedDB per potongan kecil
+// (supaya UI tidak macet), tapi HANYA SATU antrean sinkron untuk seluruh data —
+// bukan satu per baris. Ini yang membuat import Excel besar tidak lagi lambat.
+function idbAddScanBulk(list){
+  return new Promise((resolve, reject)=>{
+    if(!list || !list.length) return resolve();
+    const CHUNK = 2000;
+    let i = 0;
+    function nextChunk(){
+      const slice = list.slice(i, i + CHUNK);
+      if(!slice.length){ idbEnqueueSync("scanlog", "put", list.map(x=>x.id), list).then(resolve); return; }
+      const tx = idb.transaction("scanlog", "readwrite");
+      const store = tx.objectStore("scanlog");
+      slice.forEach(item => store.put(item));
+      tx.oncomplete = ()=>{ i += CHUNK; nextChunk(); };
+      tx.onerror = ()=>reject(tx.error);
+    }
+    nextChunk();
+  });
+}
+function idbAddMovementBulk(list){
+  return new Promise((resolve, reject)=>{
+    if(!list || !list.length) return resolve();
+    const CHUNK = 2000;
+    let i = 0;
+    function nextChunk(){
+      const slice = list.slice(i, i + CHUNK);
+      if(!slice.length){ idbEnqueueSync("movementlog", "put", list.map(x=>x.id), list).then(resolve); return; }
+      const tx = idb.transaction("movementlog", "readwrite");
+      const store = tx.objectStore("movementlog");
+      slice.forEach(item => store.put(item));
+      tx.oncomplete = ()=>{ i += CHUNK; nextChunk(); };
+      tx.onerror = ()=>reject(tx.error);
+    }
+    nextChunk();
   });
 }
 function idbGetAllMovements(){
@@ -1832,7 +2434,7 @@ function idbClearMovements(){
   return new Promise((resolve)=>{
     const tx = idb.transaction("movementlog", "readwrite");
     tx.objectStore("movementlog").clear();
-    tx.oncomplete = ()=>resolve();
+    tx.oncomplete = ()=>{ idbEnqueueSync("movementlog", "clear").then(resolve); };
   });
 }
 
@@ -1840,14 +2442,14 @@ function idbPutOpname(entry){
   return new Promise((resolve)=>{
     const tx = idb.transaction("opname", "readwrite");
     tx.objectStore("opname").put(entry);
-    tx.oncomplete = ()=>resolve();
+    tx.oncomplete = ()=>{ idbEnqueueSync("opname", "put", entry.id, entry).then(resolve); };
   });
 }
 function idbDeleteOpname(id){
   return new Promise((resolve)=>{
     const tx = idb.transaction("opname", "readwrite");
     tx.objectStore("opname").delete(id);
-    tx.oncomplete = ()=>resolve();
+    tx.oncomplete = ()=>{ idbEnqueueSync("opname", "del", id).then(resolve); };
   });
 }
 function idbGetAllOpname(){
@@ -1918,11 +2520,13 @@ const tabNames = [
   { id: "qrcode", nav: "navQRCode", tab: "tab-qrcode" }
 ];
 
+let currentActiveTab = "scan";
 function switchTab(activeId) {
+  currentActiveTab = activeId;
   if (activeId === "allscan" || activeId === "bincl") {
       if (!sessionStorage.getItem("admin_unlocked")) {
           const pass = prompt("Masukkan Password Administrator untuk mengakses Data Induk & Konfigurasi:");
-          if (pass === "admin123") {
+          if (pass === ADMIN_PASSWORD) {
               sessionStorage.setItem("admin_unlocked", "true");
               document.getElementById("navAllScan").classList.remove("locked");
               document.getElementById("navAllScan").innerHTML = "🌍 Data Induk (Unlocked)";
@@ -1977,6 +2581,46 @@ function switchTab(activeId) {
   if(activeId === "discrepancy") loadDiscrepancy();
   if(activeId === "movementanalysis") loadMovementAnalysis();
   if(activeId === "dashboardreport") loadDashboardReport();
+}
+
+// Dipanggil otomatis setelah sinkron dari Cloud (awal buka & tiap sinkron berkala), supaya
+// tab yang SEDANG DIBUKA langsung menampilkan data terbaru dari perangkat lain — tanpa perlu
+// pindah tab atau refresh manual. Tab entri data (scan/outbound/cyclecount/transferbin/qrcode)
+// SENGAJA tidak disentuh di sini supaya fokus input barcode/RFID yang sedang dipakai tidak
+// terganggu oleh refresh otomatis.
+function refreshCurrentTabView(){
+  try{
+    switch(currentActiveTab){
+      case "opname": loadOpnameTab(); break;
+      case "pivot": loadPivot(); break;
+      case "search":
+        performAdvSearch(document.getElementById("advSearchInput").value);
+        refreshBinOverviewStats();
+        break;
+      case "allscan": loadAllScan(); break;
+      case "bincl": loadBinCL(); break;
+      case "rfidmap": loadRfidMapTab(); break;
+      case "movement":
+        loadMovements(
+          document.getElementById("moveSearchSku").value,
+          document.getElementById("moveStartDate").value,
+          document.getElementById("moveEndDate").value
+        );
+        break;
+      case "historycctf":
+        loadHistoryCCTF(
+          document.getElementById("cctfSearchSku").value,
+          document.getElementById("cctfStartDate").value,
+          document.getElementById("cctfEndDate").value
+        );
+        break;
+      case "master": refreshMasterStats(); break;
+      case "discrepancy": loadDiscrepancy(); break;
+      case "movementanalysis": loadMovementAnalysis(); break;
+      case "dashboardreport": loadDashboardReport(); break;
+      default: break; // scan/outbound/cyclecount/transferbin/qrcode: dibiarkan, jaga fokus input
+    }
+  }catch(e){ console.error("refreshCurrentTabView gagal:", e); }
 }
 
 document.getElementById("navScan").onclick = () => switchTab("scan");
@@ -2053,9 +2697,9 @@ async function handleScan(sku, uid){
   let product = await idbGetMaster(sku);
   if(!product){
     try{
-      const doc = await db.collection(COL_MASTER).doc(sku).get();
-      if(doc.exists){
-        product = { sku, nama: doc.data().nama || "" };
+      const res = await cloudApi("get", { table: COL_MASTER, key: sku });
+      if(res.row){
+        product = { sku, nama: res.row.nama || "" };
         await idbPutMasterBulk([product]); 
       }
     }catch(err){}
@@ -2106,7 +2750,7 @@ document.getElementById("btnExecInbound").onclick = async () => {
       if (scanResult) scanResult.innerHTML = "";
       if(!document.getElementById("tab-search").classList.contains("hidden")) renderBinOverview();
       if(!document.getElementById("tab-allscan").classList.contains("hidden")) loadAllScan();
-      if(!document.getElementById("tab-pivot").classList.contains("hidden")) loadPivot();
+      loadPivot();
       toast(`✓ ${count} item Inbound berhasil dieksekusi ke Data Induk`, "good");
   } catch (err) {
       console.error(err);
@@ -2257,6 +2901,7 @@ document.getElementById("btnClearScan").onclick = ()=>{
   renderInboundLog();
   const scanResult = document.getElementById("scanResult");
   if(scanResult) scanResult.innerHTML = "";
+  loadPivot();
   toast("✓ Staging Inbound dibersihkan", "good");
 };
 
@@ -2297,8 +2942,8 @@ async function handleCCScan(sku, uid) {
   let product = await idbGetMaster(sku);
   if(!product){
     try{
-      const doc = await db.collection(COL_MASTER).doc(sku).get();
-      if(doc.exists){ product = { sku, nama: doc.data().nama || "" }; await idbPutMasterBulk([product]); }
+      const res = await cloudApi("get", { table: COL_MASTER, key: sku });
+      if(res.row){ product = { sku, nama: res.row.nama || "" }; await idbPutMasterBulk([product]); }
     }catch(err){}
   }
 
@@ -2559,7 +3204,7 @@ document.getElementById("btnExecTransfer").onclick = async () => {
           await new Promise((res) => {
               const tx = idb.transaction("scanlog", "readwrite");
               tx.objectStore("scanlog").put(target);
-              tx.oncomplete = res;
+              tx.oncomplete = () => { idbEnqueueSync("scanlog", "put", target.id, target).then(res); };
           });
 
           await recordMovement(target.id, "TRANSFER", item.sku, item.nama, `${item.fromBin} -> ${item.toBin}`, "Transfer Bin (Batch)");
@@ -2630,7 +3275,7 @@ document.getElementById("btnAutoTransferBin").onclick = async () => {
           await new Promise((res) => {
               const tx = idb.transaction("scanlog", "readwrite");
               tx.objectStore("scanlog").put(item);
-              tx.oncomplete = res;
+              tx.oncomplete = () => { idbEnqueueSync("scanlog", "put", item.id, item).then(res); };
           });
           await recordMovement(item.id, "TRANSFER", item.sku, item.nama, `${fromBin} -> ${toBin}`, "Transfer Otomatis (Seluruh Isi Bin)");
           successCount++;
@@ -2780,7 +3425,7 @@ async function performAdvSearch(query) {
 /* ============================================================
    5.5) OVERVIEW & MANAJEMEN BIN (Create / Delete, Password Protected)
    ============================================================ */
-const BIN_ADMIN_PASSWORD = "admin123";
+const BIN_ADMIN_PASSWORD = ADMIN_PASSWORD;
 let masterBins = JSON.parse(localStorage.getItem('masterBins') || '[]');
 function saveMasterBins() { localStorage.setItem('masterBins', JSON.stringify(masterBins)); }
 
@@ -2969,7 +3614,7 @@ window.processTransfer = async function(sku, oldBin) {
     await new Promise((res)=>{
         const tx = idb.transaction("scanlog", "readwrite");
         tx.objectStore("scanlog").put(target);
-        tx.oncomplete = res;
+        tx.oncomplete = () => { idbEnqueueSync("scanlog", "put", target.id, target).then(res); };
     });
     
     await recordMovement(target.id, "TRANSFER", sku, target.nama, `${oldBin} -> ${finalBin}`, "Transfer Bin");
@@ -2984,7 +3629,7 @@ window.processTransfer = async function(sku, oldBin) {
    ============================================================ */
 async function loadPivot(){
   try {
-      const inRows = await getActiveSessionScans(); 
+      const inRows = sessionInboundScans.slice(); // hanya data Staging Inbound yang sedang di-scan
       const pivotMap = {};
       const deactivatedBins = JSON.parse(localStorage.getItem('deactivatedBins') || '[]');
 
@@ -3035,7 +3680,7 @@ async function loadPivot(){
 }
 
 document.getElementById("btnExportPivot").onclick = async ()=>{
-  const inRows = await getActiveSessionScans();
+  const inRows = sessionInboundScans.slice(); // hanya data Staging Inbound yang sedang di-scan
   if(inRows.length === 0 && sessionOutboundScans.length === 0){ toast("Belum ada data di sesi ini", ""); return; }
 
   const pivotMap = {};
@@ -3315,7 +3960,7 @@ async function renameSkuInDataInduk(oldSku, newSku, bin, qty) {
           await new Promise((res) => {
               const tx = idb.transaction("scanlog", "readwrite");
               tx.objectStore("scanlog").put(row);
-              tx.oncomplete = res;
+              tx.oncomplete = () => { idbEnqueueSync("scanlog", "put", row.id, row).then(res); };
           });
       }
 
@@ -3671,8 +4316,8 @@ async function processDiscrepancyAction(sku, actionType) {
               try {
                   let product = await idbGetMaster(sku);
                   if (!product) {
-                      const doc = await db.collection(COL_MASTER).doc(sku).get();
-                      if (doc.exists) product = { sku, nama: doc.data().nama || "" };
+                      const res = await cloudApi("get", { table: COL_MASTER, key: sku });
+                      if (res.row) product = { sku, nama: res.row.nama || "" };
                   }
                   if (product && product.nama) namaProduk = product.nama;
               } catch (e) { /* offline, lanjut tanpa nama */ }
@@ -4969,6 +5614,69 @@ async function loadDashboardReport() {
           datasets: [{ data: rakData.length ? rakData : [1], backgroundColor: DASH_CHART_COLORS }]
       });
 
+      // ---- Stock Opname Harian: KPI + 3 chart ----
+      const opAll = (await idbGetAllOpname()).filter(Boolean);
+      const opTgt = {}; opAll.filter(o => o.kind === 'target').forEach(t => { opTgt[t.id] = t; });
+      const ymd = (ms) => { const x = new Date(ms); return x.getFullYear() + "-" + String(x.getMonth() + 1).padStart(2, "0") + "-" + String(x.getDate()).padStart(2, "0"); };
+      const opRes = opAll.filter(o => o.kind === 'result' && o.date).map(r => {
+          const tg = opTgt[`tgt_${r.date}_${r.sku}`];
+          const adj = (typeof opAdjustedSelisih === 'function') ? opAdjustedSelisih(r.selisih, tg && tg.traceType, tg && tg.traceQty) : r.selisih;
+          return { date: r.date, sku: r.sku, nama: r.nama || '', bin: r.bin || '-', qtySystem: r.qtySystem, qtyFisik: r.qtyFisik, adj: Number(adj) || 0 };
+      });
+      const opToday = ymd(now), opFrom30 = ymd(now - 29 * DAY_MS);
+      const op30 = opRes.filter(r => r.date >= opFrom30 && r.date <= opToday);
+      const opTodayDone = opRes.filter(r => r.date === opToday).length;
+      const opTodayTarget = opAll.filter(o => o.kind === 'target' && o.date === opToday && !o.hidden).length;
+      const opDiff30 = op30.filter(r => r.adj !== 0).length;
+      const opMatch30 = op30.length - opDiff30;
+      const opNet30 = op30.reduce((a, r) => a + r.adj, 0);
+      const opAkurasi = op30.length ? Math.round((opMatch30 / op30.length) * 1000) / 10 : null;
+      document.getElementById("dashOpKpiToday").textContent = formatAccounting(opTodayDone) + (opTodayTarget ? " / " + formatAccounting(opTodayTarget) : "");
+      document.getElementById("dashOpKpiAkurasi").textContent = opAkurasi === null ? "-" : opAkurasi + "%";
+      document.getElementById("dashOpKpiDiff").textContent = formatAccounting(opDiff30);
+      document.getElementById("dashOpKpiNet").textContent = (opNet30 > 0 ? "+" : "") + formatAccounting(opNet30);
+
+      const opDays = [], opMatchSeries = [], opDiffSeries = [];
+      for (let i = 13; i >= 0; i--) {
+          const key = ymd(now - i * DAY_MS);
+          opDays.push(new Date(now - i * DAY_MS).toLocaleDateString("id-ID", { day: '2-digit', month: '2-digit' }));
+          const dayRes = opRes.filter(r => r.date === key);
+          opDiffSeries.push(dayRes.filter(r => r.adj !== 0).length);
+          opMatchSeries.push(dayRes.filter(r => r.adj === 0).length);
+      }
+      renderDashChart('chartOpTrend', 'bar', {
+          labels: opDays,
+          datasets: [
+              { label: 'Sesuai', data: opMatchSeries, backgroundColor: '#4caf82' },
+              { label: 'Selisih', data: opDiffSeries, backgroundColor: '#e07a7a' }
+          ]
+      }, { scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, ticks: { precision: 0, callback: (v) => formatAccounting(v) } } } });
+
+      const opLebih = op30.filter(r => r.adj > 0).length, opKurang = op30.filter(r => r.adj < 0).length;
+      const opCompData = [opMatch30, opLebih, opKurang];
+      renderDashChart('chartOpComp', 'doughnut', {
+          labels: op30.length ? ['Sesuai', 'Lebih (+)', 'Kurang (-)'] : ['Belum ada data'],
+          datasets: [{ data: op30.length ? opCompData : [1], backgroundColor: op30.length ? ['#4caf82', '#d9a256', '#e07a7a'] : ['#8a9aa8'] }]
+      });
+
+      const opSkuAgg = {};
+      op30.filter(r => r.adj !== 0).forEach(r => {
+          if (!opSkuAgg[r.sku]) opSkuAgg[r.sku] = { nama: r.nama, abs: 0, net: 0 };
+          opSkuAgg[r.sku].abs += Math.abs(r.adj); opSkuAgg[r.sku].net += r.adj;
+      });
+      const opTop = Object.entries(opSkuAgg).sort((a, b) => b[1].abs - a[1].abs).slice(0, 10);
+      renderDashChart('chartOpTop', 'bar', {
+          labels: opTop.map(([sku, info]) => `${sku} - ${truncLbl(info.nama, 28) || 'TIDAK DIKENALI'}`),
+          datasets: [{ label: 'Total Selisih (unit)', data: opTop.map(([, info]) => info.abs), backgroundColor: '#e07a7a' }]
+      }, {
+          indexAxis: 'y',
+          layout: { padding: { right: 42 } },
+          scales: {
+              x: { beginAtZero: true, ticks: { precision: 0, callback: (v) => formatAccounting(v) } },
+              y: { ticks: { autoSkip: false, font: { size: 10.5 } } }
+          }
+      }, [maQtyValuePlugin]);
+
       // Simpan snapshot data untuk tombol Export Excel
       dashReportCache = {
           generatedAt: new Date(),
@@ -4976,7 +5684,13 @@ async function loadDashboardReport() {
           topSkus: topSkus.map(([sku, info]) => ({ sku, nama: info.nama || 'TIDAK DIKENALI', qty: info.qty })),
           catCounts,
           rak: rakLabels.map((r, i) => ({ rak: r, qty: rakData[i] })),
-          trend: days.map((d, i) => ({ tanggal: d, inbound: inboundSeries[i], outbound: outboundSeries[i] }))
+          trend: days.map((d, i) => ({ tanggal: d, inbound: inboundSeries[i], outbound: outboundSeries[i] })),
+          opname: {
+              kpi: { selesaiHariIni: opTodayDone, targetHariIni: opTodayTarget, akurasi: opAkurasi, skuSelisih: opDiff30, netSelisih: opNet30, totalSkuDiopname: op30.length },
+              trend: opDays.map((d, i) => ({ tanggal: d, sesuai: opMatchSeries[i], selisih: opDiffSeries[i] })),
+              top: opTop.map(([sku, info]) => ({ sku, nama: info.nama || 'TIDAK DIKENALI', total: info.abs, net: info.net })),
+              detail: op30.slice().sort((a, b) => b.date.localeCompare(a.date))
+          }
       };
 
   } catch (err) {
@@ -5015,6 +5729,20 @@ function exportDashboardReportExcel() {
   const wsTrend = XLSX.utils.json_to_sheet(d.trend.map(x => ({ "Tanggal": x.tanggal, "Inbound": x.inbound, "Outbound": x.outbound })));
   XLSX.utils.book_append_sheet(wb, wsTrend, "Tren 14 Hari");
 
+  if (d.opname) {
+      const o = d.opname;
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([
+          { "KPI": "SKU Selesai Opname Hari Ini", "Nilai": o.kpi.selesaiHariIni },
+          { "KPI": "SKU Target Opname Hari Ini", "Nilai": o.kpi.targetHariIni },
+          { "KPI": "Akurasi Opname 30 Hari (%)", "Nilai": o.kpi.akurasi === null ? "-" : o.kpi.akurasi },
+          { "KPI": "SKU Diopname (30 Hari)", "Nilai": o.kpi.totalSkuDiopname },
+          { "KPI": "SKU Selisih (30 Hari)", "Nilai": o.kpi.skuSelisih },
+          { "KPI": "Net Selisih Unit (30 Hari)", "Nilai": o.kpi.netSelisih },
+      ]), "Opname Ringkasan");
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(o.trend.map(x => ({ "Tanggal": x.tanggal, "Sesuai": x.sesuai, "Selisih": x.selisih }))), "Opname Tren 14 Hari");
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(o.top.map((x, i) => ({ "Peringkat": i + 1, "SKU": x.sku, "Nama Barang": x.nama, "Total Selisih (unit)": x.total, "Net Selisih": x.net }))), "Opname Top Selisih");
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(o.detail.map(x => ({ "Tanggal": x.date, "SKU": x.sku, "Nama Barang": x.nama, "Bin": x.bin, "Qty Sistem": x.qtySystem, "Qty Fisik": x.qtyFisik, "Selisih": x.adj }))), "Opname Detail 30 Hari");
+  }
   XLSX.writeFile(wb, `Dashboard_Report_${d.generatedAt.toISOString().slice(0, 10)}.xlsx`);
 }
 
@@ -5121,23 +5849,30 @@ document.getElementById("btnClearAllScan").onclick = async ()=>{
 document.getElementById("fileUploadScan").addEventListener("change", async (e) => {
   const file = e.target.files[0];
   if(!file) return;
-  toast("Memproses file ke lokal...", "warning");
+  toast("Memproses file...", "warning");
   const reader = new FileReader();
   reader.onload = async (evt) => {
     try {
       const wb = XLSX.read(evt.target.result, { type: "array" });
       const ws = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(ws, { defval: "" });
-      let successCount = 0;
       const uploadedBins = new Set();
-      
+
+      // Ambil Master SEKALI ke Map di memori, bukan idbGetMaster() per baris —
+      // untuk 30-40 ribuan baris ini yang paling menghemat waktu (ribuan transaksi
+      // IndexedDB berulang jadi cukup satu pembacaan).
+      const masterMap = new Map((await idbGetAllMaster()).map(p => [p.sku, p]));
+
+      const scanEntries = [];
+      const moveEntries = [];
+
       for(let r of rows) {
         if(!r) continue;
         const keys = Object.keys(r);
         const skuKey = keys.find(k=>k.trim().toLowerCase() === "sku" || k.trim().toLowerCase().includes("sku"));
         const binKey = keys.find(k=>k.trim().toLowerCase().includes("bin"));
         const waktuKey = keys.find(k=>k.trim().toLowerCase() === "waktu scan" || k.trim().toLowerCase() === "waktu masuk" || k.trim().toLowerCase().includes("waktu") || k.trim().toLowerCase().includes("time") || k.trim().toLowerCase().includes("tanggal"));
-        
+
         const skuVal = skuKey ? String(r[skuKey]).trim() : null;
         if(!skuVal) continue;
         // Kolom UID (hasil export Data Induk): "-" / kosong berarti unit tanpa UID
@@ -5146,30 +5881,32 @@ document.getElementById("fileUploadScan").addEventListener("change", async (e) =
         if (uidVal === "-" || uidVal === "N/A") uidVal = "";
         const binVal = binKey ? String(r[binKey]).trim().toUpperCase() : "-";
         if (binVal && binVal !== "-") uploadedBins.add(binVal);
-        
+
         let finalTs = new Date().toISOString();
         if(waktuKey && r[waktuKey]) {
             let parsedDate = parseIdDate(r[waktuKey]);
             if (parsedDate) finalTs = parsedDate;
         }
 
-        let product = await idbGetMaster(skuVal);
-        const entry = {
-          id: generateID(),
-          sku: skuVal,
-          uid: uidVal || null,
+        const product = masterMap.get(skuVal);
+        const id = generateID();
+        scanEntries.push({
+          id, sku: skuVal, uid: uidVal || null,
           nama: product ? product.nama : "Tidak Dikenali",
-          found: !!product,
-          bin: binVal,
-          ts: finalTs, 
-          type: "IN",
-          sessionActive: false 
-        };
-        await idbAddScan(entry);
-        await recordMovement(entry.id, "INBOUND", skuVal, product ? product.nama : "-", binVal, "Batch Upload Excel");
-        successCount++;
+          found: !!product, bin: binVal, ts: finalTs,
+          type: "IN", sessionActive: false
+        });
+        moveEntries.push({
+          id: generateMoveID(), ref_id: id, type: "INBOUND",
+          sku: skuVal, nama: product ? product.nama : "-", bin: binVal,
+          remark: "Batch Upload Excel", docNo: "", ts: finalTs
+        });
       }
-      
+
+      await idbAddScanBulk(scanEntries);
+      await idbAddMovementBulk(moveEntries);
+      const successCount = scanEntries.length;
+
       // Daftarkan otomatis setiap Bin baru dari file upload ke Master Bin (Pencarian Riwayat),
       // supaya Bin tersebut tetap tampil (qty otomatis 0 & berwarna merah) walau stoknya nanti habis.
       if (uploadedBins.size > 0) {
@@ -5179,11 +5916,12 @@ document.getElementById("fileUploadScan").addEventListener("change", async (e) =
           });
           if (binsChanged) saveMasterBins();
       }
-      
+
       document.getElementById("fileUploadScan").value = "";
-      allScanRenderLimit = 200; 
+      allScanRenderLimit = 200;
       await loadAllScan();
-      toast(`✓ Berhasil import ${successCount} data ke lokal`, "good");
+      toast(`✓ ${successCount} data tersimpan ke Lokal, sedang disinkron ke Cloud...`, "good");
+      flushSyncQueue();
     } catch (err) {
       console.error(err);
       toast("Gagal memproses file upload", "bad");
@@ -5308,8 +6046,8 @@ async function showSkuSummary(rawSku) {
       try {
           let product = await idbGetMaster(sku);
           if (!product) {
-              const doc = await db.collection(COL_MASTER).doc(sku).get();
-              if (doc.exists) product = { sku, nama: doc.data().nama || "" };
+              const res = await cloudApi("get", { table: COL_MASTER, key: sku });
+              if (res.row) product = { sku, nama: res.row.nama || "" };
           }
           if (product && product.nama) nama = product.nama;
       } catch (e) { /* offline / master tidak ditemukan, lanjut fallback dari histori */ }
@@ -5401,13 +6139,28 @@ document.getElementById("btnExportMovements").onclick = async ()=>{
 };
 
 document.getElementById("btnClearMovements").onclick = async ()=>{
-  if(!confirm("Hapus seluruh Tracking Log Lokal secara permanen?")) return;
+  if(!confirm("Hapus catatan TRANSFER pada Tracking Log (Lokal & Cloud)? Inbound/Outbound/Sales/Retur/Delete tetap disimpan.")) return;
   const rows = await idbGetAllMovements();
   const nonMoveRows = rows.filter(r => r && !['INBOUND', 'OUTBOUND', 'SALES', 'RETUR', 'DELETE'].includes(r.type));
-  await idbClearMovements();
-  for(let r of nonMoveRows) { await idbAddMovement(r); }
+  await idbClearMovements(); // juga mengosongkan Movement Log di Cloud (Google Sheets)
+  for(let r of nonMoveRows) { await idbAddMovement(r); } // tulis ulang yang perlu disimpan (ikut disinkron lagi ke Cloud)
   loadMovements();
-  toast("Log dibersihkan", "good");
+  toast("✓ Log Transfer dibersihkan (Lokal & Cloud)", "good");
+};
+
+document.getElementById("btnClearMovementsAll").onclick = async () => {
+  const pass = prompt("Masukkan Password Administrator untuk menghapus SEMUA Movement Log (Lokal & Cloud):");
+  if (pass === null) return;
+  if (pass !== ADMIN_PASSWORD) { toast("Password salah! Akses ditolak.", "bad"); return; }
+  if (!confirm("⚠️ Ini akan menghapus SELURUH Movement Log di Lokal DAN Cloud (Google Sheets) secara PERMANEN untuk semua perangkat. Lanjutkan?")) return;
+  try{
+    await idbClearMovements();
+    loadMovements();
+    toast("✓ Seluruh Movement Log (Lokal & Cloud) dihapus", "good");
+  }catch(err){
+    console.error(err);
+    toast("Gagal menghapus Movement Log: " + err.message, "bad");
+  }
 };
 
 /* ============================================================
@@ -5586,20 +6339,14 @@ document.getElementById("btnUploadMaster").onclick = async ()=>{
 
   try{
     for(let i = 0; i < parsedMaster.length; i += CHUNK){
-      const chunk = parsedMaster.slice(i, i + CHUNK);
-      const batch = db.batch();
-      chunk.forEach(item=>{
-        if(!item) return;
-        const docId = item.sku.replace(/[\/]/g, "-"); 
-        const ref = db.collection(COL_MASTER).doc(docId);
-        batch.set(ref, { nama: item.nama, sku: item.sku, updatedAt: new Date().toISOString() }, { merge: true });
-      });
-      await batch.commit();
+      const chunk = parsedMaster.slice(i, i + CHUNK).filter(Boolean);
+      const items = chunk.map(c=>({ sku: c.sku, nama: c.nama }));
+      await idbPutMasterBulk(items); // tersimpan lokal & otomatis masuk antrean sinkron ke Google Sheets
       done += chunk.length;
       progress.style.width = Math.round((done / parsedMaster.length) * 100) + "%";
-      await idbPutMasterBulk(chunk.map(c=>({ sku: c.sku, nama: c.nama })));
     }
-    toast(`✓ ${parsedMaster.length} produk tersimpan ke Firestore & Lokal`, "good");
+    toast(`✓ ${parsedMaster.length} produk tersimpan ke Lokal, sedang disinkron ke Cloud...`, "good");
+    flushSyncQueue();
     refreshMasterStats();
   }catch(err){
     console.error(err);
@@ -5612,22 +6359,8 @@ document.getElementById("btnUploadMaster").onclick = async ()=>{
 document.getElementById("btnPullMaster").onclick = async ()=>{
   toast("Sedang menarik master produk dari Cloud...", "warning");
   try{
-    await idbClearMaster();
-    let count = 0;
-    let lastDoc = null;
-    const PAGE = 500;
-    while(true){
-      let q = db.collection(COL_MASTER).orderBy(firebase.firestore.FieldPath.documentId()).limit(PAGE);
-      if(lastDoc) q = q.startAfter(lastDoc);
-      const snap = await q.get();
-      if(snap.empty) break;
-      const items = snap.docs.map(d=>({ sku: d.data().sku || d.id, nama: d.data().nama || "" }));
-      await idbPutMasterBulk(items);
-      count += items.length;
-      lastDoc = snap.docs[snap.docs.length - 1];
-      if(snap.docs.length < PAGE) break;
-    }
-    toast(`✓ ${count} produk berhasil di-cache ke lokal`, "good");
+    const count = await pullFromCloud("master");
+    toast(count > 0 ? `✓ ${count} perubahan produk ditarik dari Cloud` : "✓ Lokal sudah sesuai dengan Cloud (tidak ada perubahan baru)", "good");
     refreshMasterStats();
   }catch(err){
     console.error(err);
@@ -5647,22 +6380,13 @@ async function refreshMasterStats(){
   const syncStatus = document.getElementById("masterSyncStatus");
   let cloudErr = null;
   try{
-      // Aggregate count query - tidak perlu download semua dokumen, cukup hitungannya saja.
-      const snap = await db.collection(COL_MASTER).count().get();
-      cloud = snap.data().count;
+      const res = await cloudApi("count", { table: COL_MASTER });
+      cloud = res.count;
       if(statCloud) statCloud.textContent = cloud;
   } catch(e) {
-      console.warn("Aggregate count() gagal/tidak didukung, mencoba metode fallback:", e);
-      try{
-          // Fallback: query manual & hitung jumlah dokumen (khusus dukungan browser/SDK/rules yang tidak izinkan count()).
-          const snap2 = await db.collection(COL_MASTER).get();
-          cloud = snap2.size;
-          if(statCloud) statCloud.textContent = cloud;
-      } catch(e2) {
-          console.error(e2);
-          cloudErr = e2.message || String(e2);
-          if(statCloud) statCloud.textContent = "N/A";
-      }
+      console.error(e);
+      cloudErr = e.message || String(e);
+      if(statCloud) statCloud.textContent = "N/A";
   }
 
   if(syncStatus) {
@@ -5679,8 +6403,8 @@ async function refreshMasterStats(){
 document.getElementById("btnClearMasterLocal").onclick = async () => {
   const pass = prompt("Masukkan Password Administrator untuk menghapus SKU Lokal:");
   if (pass === null) return;
-  if (pass !== "admin123") { toast("Password salah! Akses ditolak.", "bad"); return; }
-  if (!confirm("Hapus SEMUA Master SKU di Cache Lokal (browser ini saja)?\n\nData di Firestore Cloud TIDAK akan terhapus, dan bisa ditarik ulang kapan saja lewat 'Tarik Master Data Cloud ke Lokal'.")) return;
+  if (pass !== ADMIN_PASSWORD) { toast("Password salah! Akses ditolak.", "bad"); return; }
+  if (!confirm("Hapus SEMUA Master SKU di Cache Lokal (browser ini saja)?\n\nData di Cloud (Google Sheets) TIDAK akan terhapus, dan bisa ditarik ulang kapan saja lewat 'Tarik Master Data Cloud ke Lokal'.")) return;
 
   try {
       await idbClearMaster();
@@ -5693,10 +6417,10 @@ document.getElementById("btnClearMasterLocal").onclick = async () => {
 };
 
 document.getElementById("btnClearMasterCloud").onclick = async () => {
-  const pass = prompt("Masukkan Password Administrator untuk menghapus SKU di Cloud (Firestore):");
+  const pass = prompt("Masukkan Password Administrator untuk menghapus SKU di Cloud (Google Sheets):");
   if (pass === null) return;
-  if (pass !== "admin123") { toast("Password salah! Akses ditolak.", "bad"); return; }
-  if (!confirm("⚠️ PERINGATAN: Ini akan menghapus SEMUA Master SKU di Firestore Cloud secara PERMANEN untuk SEMUA pengguna aplikasi ini, bukan hanya di browser Anda.\n\nTindakan ini tidak bisa dibatalkan. Lanjutkan?")) return;
+  if (pass !== ADMIN_PASSWORD) { toast("Password salah! Akses ditolak.", "bad"); return; }
+  if (!confirm("⚠️ PERINGATAN: Ini akan menghapus SEMUA Master SKU di Google Sheets Cloud secara PERMANEN untuk SEMUA pengguna aplikasi ini, bukan hanya di browser Anda.\n\nTindakan ini tidak bisa dibatalkan. Lanjutkan?")) return;
   if (!confirm("Konfirmasi sekali lagi: Anda yakin ingin menghapus seluruh Master SKU di Cloud?")) return;
 
   const btn = document.getElementById("btnClearMasterCloud");
@@ -5704,18 +6428,12 @@ document.getElementById("btnClearMasterCloud").onclick = async () => {
   toast("Menghapus Master SKU di Cloud...", "warning");
 
   try {
-      let totalDeleted = 0;
-      while (true) {
-          const snap = await db.collection(COL_MASTER).limit(450).get();
-          if (snap.empty) break;
-          const batch = db.batch();
-          snap.docs.forEach(doc => batch.delete(doc.ref));
-          await batch.commit();
-          totalDeleted += snap.docs.length;
-          if (snap.docs.length < 450) break;
-      }
+      await cloudApi("clear", { table: COL_MASTER });
+      localStorage.removeItem("sync_since_" + COL_MASTER);
+      localStorage.removeItem("sync_epoch_" + COL_MASTER);
+      await idbClearMaster();
       await refreshMasterStats();
-      toast(`✓ ${totalDeleted} Master SKU di Cloud berhasil dihapus.`, "good");
+      toast("✓ Master SKU di Cloud (dan cache lokal) berhasil dihapus.", "good");
   } catch (err) {
       console.error(err);
       toast("Gagal menghapus Master SKU di Cloud: " + err.message, "bad");
@@ -5885,16 +6603,203 @@ btnPrintQR.onclick = () => {
     toast("Peringatan: Gagal membuka database lokal.", "warning");
   }
 
-  try {
-    await db.collection(COL_MASTER).limit(1).get();
-    setConn(true, "Terhubung ke Firestore");
-    refreshMasterStats();
-  } catch(e) {
-    console.error("Gagal konek Firestore:", e);
-    setConn(false, "Mode Lokal Offline Aktif");
+  initCloudSettings();
+  initSyncControls();
+  updateSyncBadge();
+
+  // Timer sinkron dimulai LEBIH DULU dan sinkron awal berjalan di belakang layar. Sebelumnya init
+  // menunggu (await) ping ke server: kalau ping menggantung, timer sinkron tidak pernah aktif.
+  startSyncLoops_();
+  if(!CLOUD_CFG.url){
+    setConn(false, "Klik ⚙️ untuk atur URL Supabase");
+  } else {
+    (async () => {
+      try {
+        await cloudApi("ping");
+        setConn(true, "Tersambung ke Supabase");
+        await flushSyncQueue();
+        await pullAllFromCloud(false); // sudah memanggil refreshCurrentTabView() sendiri bila ada data baru
+        refreshMasterStats();
+      } catch(e) {
+        console.error("Gagal konek Supabase:", e);
+        setConn(false, "Belum tersambung — mencoba lagi otomatis");
+      }
+    })();
   }
 
   scanInput.focus();
+})();
+
+/* ============ UPLOAD SALES: potong Data Induk berdasarkan RFID Code ============ */
+(function initSalesUpload(){
+  const fileEl = document.getElementById("salesFile"), pickBtn = document.getElementById("btnSalesPick"), box = document.getElementById("salesPreview");
+  if(!fileEl || !pickBtn) return;
+  let plan = null; // { found:[], missing:[] }
+  const esc = (v) => String(v == null ? "" : v).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const normCode = (v) => { const raw = String(v == null ? "" : v).trim(); return (extractRfidCode(raw) || raw).toUpperCase(); };
+
+  pickBtn.onclick = () => { fileEl.value = ""; fileEl.click(); };
+  fileEl.onchange = () => { const f = fileEl.files[0]; if(f) readSales(f); };
+
+  function readSales(file){
+    box.innerHTML = '<span class="hint">Membaca file & mencocokkan RFID...</span>';
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      try {
+        const wb = XLSX.read(evt.target.result, { type: "array" });
+        const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: "" });
+        const hi = rows.findIndex(r => r.some(c => /rfid/i.test(String(c))));
+        if(hi === -1){ box.innerHTML = '<span style="color:var(--danger)">Kolom "RFID Code" tidak ditemukan di file.</span>'; return; }
+        const head = rows[hi].map(c => String(c).trim().toLowerCase());
+        const col = (re) => head.findIndex(h => re.test(h));
+        const cRfid = col(/rfid/), cSku = col(/^sku$/), cInv = col(/invoice/), cTkt = col(/ticket/), cType = col(/sales\s*type/);
+        const data = rows.slice(hi + 1).filter(r => String(r[cRfid] || "").trim());
+
+        const all = (await idbGetAllScans()).filter(r => r && r.type !== "OUT" && r.uid);
+        const byUid = {}; all.forEach(r => { const k = String(r.uid).trim().toUpperCase(); if(!byUid[k]) byUid[k] = r; });
+
+        const seen = new Set(), found = [], missing = [];
+        for(const r of data){
+          const code = normCode(r[cRfid]);
+          const meta = { rfid: code, skuFile: String(r[cSku] || "").trim(), invoice: String(r[cInv] || "").trim(), ticket: String(r[cTkt] || "").trim(), salesType: String(r[cType] || "").trim() };
+          if(seen.has(code)){ missing.push({ ...meta, alasan: "Duplikat di file (RFID sama muncul lagi)" }); continue; }
+          seen.add(code);
+          const row = byUid[code];
+          if(row){
+            const warn = meta.skuFile && String(row.sku).trim().toUpperCase() !== meta.skuFile.toUpperCase();
+            found.push({ ...meta, row, warn });
+          } else {
+            let mp = RFID_MAP[code] || await idbGetRfid(code);
+            missing.push({ ...meta, alasan: mp ? `RFID terdaftar (SKU ${mp.sku}) tapi tidak ada di Data Induk (belum inbound / sudah keluar)` : "RFID tidak terdaftar & tidak ada di Data Induk" });
+          }
+        }
+        plan = { found, missing, fileName: file.name };
+        renderPlan();
+      } catch(e){ console.error(e); box.innerHTML = '<span style="color:var(--danger)">Gagal membaca file: ' + esc(e.message) + '</span>'; }
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function renderPlan(){
+    const f = plan.found, m = plan.missing, warns = f.filter(x => x.warn).length;
+    const fRows = f.slice(0, 50).map(x => `<tr><td>${esc(x.rfid)}</td><td>${esc(x.row.sku)}</td><td><span class="badge muted">${esc(x.row.bin || "-")}</span></td><td>${esc(x.invoice)}</td>${x.warn ? '<td title="SKU di file berbeda dengan SKU di Data Induk">⚠</td>' : "<td></td>"}</tr>`).join("");
+    const mRows = m.slice(0, 50).map(x => `<tr><td>${esc(x.rfid)}</td><td>${esc(x.skuFile)}</td><td>${esc(x.alasan)}</td></tr>`).join("");
+    box.innerHTML = `
+      <div style="display:flex; gap:8px; margin-bottom:8px;">
+        <div class="stat-card" style="margin:0; flex:1;"><div class="num" style="color:var(--success)">${f.length}</div><div class="lbl">Akan dipotong</div></div>
+        <div class="stat-card" style="margin:0; flex:1; border-bottom:3px solid var(--danger);"><div class="num" style="color:var(--danger)">${m.length}</div><div class="lbl">Tidak cocok</div></div>
+      </div>
+      ${warns ? `<div class="hint" style="color:var(--warning); margin-bottom:6px;">⚠ ${warns} unit: SKU di file berbeda dengan SKU di Data Induk (tetap dipotong berdasarkan RFID).</div>` : ""}
+      ${f.length ? `<div style="max-height:170px; overflow:auto; margin-bottom:8px;"><table class="table-sm" style="width:100%; font-size:11px;"><thead><tr><th>RFID</th><th>SKU</th><th>Bin</th><th>Invoice</th><th></th></tr></thead><tbody>${fRows}</tbody></table>${f.length > 50 ? `<div class="hint">…dan ${f.length - 50} lainnya</div>` : ""}</div>` : ""}
+      ${m.length ? `<div style="max-height:150px; overflow:auto; margin-bottom:8px;"><table class="table-sm" style="width:100%; font-size:11px;"><thead><tr><th>RFID</th><th>SKU file</th><th>Alasan</th></tr></thead><tbody>${mRows}</tbody></table>${m.length > 50 ? `<div class="hint">…dan ${m.length - 50} lainnya (lihat laporan Excel)</div>` : ""}</div>` : ""}
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn btn-accent" id="btnSalesGo" ${f.length ? "" : "disabled"}>✅ Potong Stok Sekarang (${f.length} unit)</button>
+        <button class="btn" id="btnSalesCancel">Batal</button>
+      </div>`;
+    document.getElementById("btnSalesCancel").onclick = () => { plan = null; box.innerHTML = ""; };
+    document.getElementById("btnSalesGo").onclick = executeSales;
+  }
+
+  async function executeSales(){
+    if(!plan || !plan.found.length) return;
+    if(!confirm(`Potong ${plan.found.length} unit dari Data Induk berdasarkan RFID? Tindakan ini menghapus unit dari bin-nya.`)) return;
+    const btn = document.getElementById("btnSalesGo"); btn.disabled = true;
+    const done = [], failed = [];
+    for(let i = 0; i < plan.found.length; i++){
+      const x = plan.found[i];
+      btn.textContent = `Memproses ${i + 1} / ${plan.found.length}...`;
+      try {
+        const remark = ["SALES", x.salesType, x.invoice ? "INV " + x.invoice : "", x.ticket ? "TKT " + x.ticket : ""].filter(Boolean).join(" | ");
+        await idbDeleteScan(x.row.id);
+        await recordMovement(x.row.id, "OUTBOUND", x.row.sku, x.row.nama, x.row.bin, remark);
+        done.push(x);
+      } catch(e){ console.error(e); failed.push({ ...x, alasan: "Gagal memproses: " + e.message }); }
+    }
+    const report = [
+      ...done.map(x => ({ Status: "DIPOTONG", RFID: x.rfid, SKU: x.row.sku, Nama: x.row.nama || "", Bin: x.row.bin || "-", Invoice: x.invoice, Ticket: x.ticket, "Sales Type": x.salesType, Keterangan: x.warn ? "SKU file berbeda dengan Data Induk" : "" })),
+      ...plan.missing.concat(failed).map(x => ({ Status: "TIDAK DIPOTONG", RFID: x.rfid, SKU: x.skuFile, Nama: "", Bin: "", Invoice: x.invoice, Ticket: x.ticket, "Sales Type": x.salesType, Keterangan: x.alasan }))
+    ];
+    plan = null;
+    box.innerHTML = `<div class="result found"><div class="nama"><b>${done.length}</b> unit berhasil dipotong dari Data Induk${failed.length ? `, <b style="color:var(--danger)">${failed.length}</b> gagal` : ""}.</div>
+      <div style="margin-top:8px;"><button class="btn btn-accent" id="btnSalesReport">⬇ Unduh Laporan Hasil (Excel)</button></div></div>`;
+    document.getElementById("btnSalesReport").onclick = () => {
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(report), "Hasil Upload Sales");
+      XLSX.writeFile(wb, `Hasil_Upload_Sales_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    };
+    toast(`✓ Sales: ${done.length} unit dipotong dari Data Induk`, "good");
+  }
+})();
+
+/* ============ LOGIN & PERAN (Admin / Dashboard / Pencarian) ============ */
+(function initRoleLogin(){
+  const ROLE_TABS = { admin: null, dashboard: ["dashboardreport"], search: ["search"] };
+  const ROLE_LABEL = { admin: "ADMIN", dashboard: "DASHBOARD", search: "PENCARIAN" };
+  const gate = document.getElementById("loginGate");
+  const getRole = () => sessionStorage.getItem("wms_role") || "";
+  const allows = (id) => { const r = getRole(); if(!(r in ROLE_TABS)) return false; const a = ROLE_TABS[r]; return a === null || a.includes(id); };
+
+  // Peran Dashboard/Pencarian: sidebar otomatis tertutup & konten selebar layar.
+  // (Tidak menyentuh pengaturan sidebar milik Admin yang tersimpan di localStorage.)
+  function forceFull(){
+    const sb = document.querySelector(".sidebar"); if(sb) sb.classList.add("collapsed");
+    const sc = document.querySelector(".section-container"); if(sc) sc.classList.add("wide");
+    const ca = document.querySelector(".content-area"); if(ca) ca.classList.add("tight");
+  }
+
+  // Semua pindah tab (menu, kode internal) wajib lolos pemeriksaan peran.
+  const origSwitch = switchTab;
+  switchTab = function(id){
+    if(!allows(id)){ toast("Akses ditolak untuk peran ini.", "bad"); return; }
+    const res = origSwitch(id);
+    if(getRole() !== "admin") forceFull(); // switchTab asli mengatur ulang lebar, jadi paksa lagi
+    return res;
+  };
+
+  function applyRole(role){
+    sessionStorage.setItem("wms_role", role);
+    const a = ROLE_TABS[role], admin = (role === "admin");
+    tabNames.forEach(t => { const n = document.getElementById(t.nav); if(n) n.style.display = (a === null || a.includes(t.id)) ? "" : "none"; });
+    document.querySelectorAll(".nav-group").forEach(g => {
+      g.style.display = Array.from(g.querySelectorAll(".nav-item")).some(i => i.style.display !== "none") ? "" : "none";
+    });
+    document.body.classList.toggle("role-restricted", !admin);
+    document.getElementById("roleBadge").textContent = ROLE_LABEL[role];
+    if(admin){
+      sessionStorage.setItem("admin_unlocked", "true"); // menu terkunci terbuka karena sudah login admin
+      const n1 = document.getElementById("navAllScan"), n2 = document.getElementById("navBinCL");
+      if(n1){ n1.classList.remove("locked"); n1.innerHTML = "🌍 Data Induk (Unlocked)"; }
+      if(n2){ n2.classList.remove("locked"); n2.innerHTML = "🏷️ Data Bin CL (Unlocked)"; }
+    } else {
+      sessionStorage.removeItem("admin_unlocked");
+    }
+    gate.style.display = "none";
+    origSwitch(admin ? "scan" : a[0]);
+    if(!admin) forceFull();
+  }
+
+  function tryAdmin(){
+    const inp = document.getElementById("lgPass");
+    if(inp.value === ADMIN_PASSWORD){ inp.value = ""; document.getElementById("lgErr").textContent = ""; applyRole("admin"); }
+    else { document.getElementById("lgErr").textContent = "Password salah."; inp.select(); }
+  }
+  document.getElementById("lgAdmin").onclick = () => {
+    document.getElementById("lgPassRow").style.display = "block";
+    document.getElementById("lgPass").focus();
+  };
+  document.getElementById("lgPassGo").onclick = tryAdmin;
+  document.getElementById("lgPass").addEventListener("keydown", e => { if(e.key === "Enter") tryAdmin(); });
+  document.getElementById("lgDash").onclick = () => applyRole("dashboard");
+  document.getElementById("lgSearch").onclick = () => applyRole("search");
+  document.getElementById("btnLogout").onclick = () => {
+    if(!confirm("Keluar dan kembali ke layar login?")) return;
+    sessionStorage.removeItem("wms_role"); sessionStorage.removeItem("admin_unlocked");
+    location.reload();
+  };
+
+  // Muat ulang halaman (F5) tetap di peran yang sama selama tab masih terbuka.
+  const saved = getRole();
+  if(saved in ROLE_TABS) applyRole(saved);
 })();
 </script>
 </body>
