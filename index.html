@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Enterprise WMS - Barcode Scanner</title>
+<title>INVENTORY WMS</title>
 
 <!-- ============================================================
      LIBRARIES
@@ -420,7 +420,7 @@
 <div class="shell-bar">
   <div class="shell-left">
     <span class="shell-icon" id="btnToggleSidebar" title="Buka/Tutup Sidebar">▤</span>
-    <span>SCAN<span style="color:#8fc4ff;">WMS</span></span>
+    <span>INVENTORY<span style="color:#8fc4ff;">WMS</span></span>
     <span class="shell-sep">|</span>
     <span class="shell-module">Warehouse Management</span>
   </div>
@@ -948,7 +948,7 @@
           <div class="hint" style="margin-bottom: 12px;">Cari stok aktif yang ada di Data Induk. Anda bisa langsung melakukan Transfer Bin atau Sales dari tabel ini.</div>
           
           <div style="display: flex; gap: 12px; margin-bottom: 12px; align-items: center; flex-wrap: wrap;">
-              <input type="text" id="advSearchInput" class="input-sm" placeholder="Mulai ketik SKU / Nama / Bin..." autocomplete="off" style="flex:1; min-width: 200px;">
+              <input type="text" id="advSearchInput" class="input-sm" placeholder="Mulai ketik SKU / UID / Nama / Bin..." autocomplete="off" style="flex:1; min-width: 200px;">
               <div style="display: flex; align-items: center; gap: 8px; background: var(--bg-input); border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px;">
                   <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: bold;">Ditemukan:</span>
                   <span class="num" id="advSearchQty" style="font-size: 16px; font-weight: 800; color: var(--accent);">0</span>
@@ -981,9 +981,9 @@
           
           <div class="scroll-table" style="flex: 1;">
             <table>
-              <thead><tr><th>Waktu Masuk</th><th>Bin Terkini</th><th>SKU</th><th>Nama Barang</th><th>Remark</th><th style="text-align:center;">Aksi Eksekusi</th></tr></thead>
+              <thead><tr><th>Waktu Masuk</th><th>Bin Terkini</th><th>SKU</th><th>UID</th><th>Nama Barang</th><th>Remark</th><th style="text-align:center;">Aksi Eksekusi</th></tr></thead>
               <tbody id="advSearchBody">
-                <tr><td colspan="6" class="hint" style="text-align:center;">Gunakan kolom pencarian di atas</td></tr>
+                <tr><td colspan="7" class="hint" style="text-align:center;">Gunakan kolom pencarian di atas</td></tr>
               </tbody>
             </table>
           </div>
@@ -2164,8 +2164,9 @@ async function resolveScanValue(raw, focusEl){
     if(focusEl) focusEl.focus();
     return null;
   }
-  const sku = input.trim().toUpperCase();
-  let product = await idbGetMaster(sku);
+  const skuIn = input.trim().toUpperCase();
+  let product = await idbGetMaster(skuIn);
+  const sku = (product && product.sku) || skuIn; // tulis persis seperti di Master
   const nama = product ? (product.nama || '') : '';
   await idbPutRfidBulk([{ code, sku, nama }]);
   RFID_MAP[code] = { sku, nama };
@@ -2308,8 +2309,23 @@ function idbPutMasterBulk(items){
 function idbGetMaster(sku){
   return new Promise((resolve)=>{
     const tx = idb.transaction("master", "readonly");
-    const req = tx.objectStore("master").get(sku);
-    req.onsuccess = ()=>resolve(req.result || null);
+    const store = tx.objectStore("master");
+    const req = store.get(sku);
+    req.onerror = ()=>resolve(null);
+    req.onsuccess = ()=>{
+      if(req.result){ resolve(req.result); return; }
+      // Tidak ketemu persis -> cocokkan tanpa membedakan huruf besar/kecil dan spasi tepi
+      const want = String(sku == null ? "" : sku).trim().toUpperCase();
+      if(!want){ resolve(null); return; }
+      const cur = store.openCursor();
+      cur.onerror = ()=>resolve(null);
+      cur.onsuccess = ()=>{
+        const c = cur.result;
+        if(!c){ resolve(null); return; }
+        if(String(c.key).trim().toUpperCase() === want){ resolve(c.value); return; }
+        c.continue();
+      };
+    };
   });
 }
 function idbGetAllMaster(){
@@ -2705,6 +2721,7 @@ async function handleScan(sku, uid){
     }catch(err){}
   }
 
+  if(product && product.sku) sku = product.sku; // samakan dengan tulisan SKU di Master (huruf besar/kecil)
   const binValue = binInput.value.trim().toUpperCase() || "-";
   const docNoValue = docNoInput.value.trim().toUpperCase();
   const typeValue = inboundType.value; 
@@ -2947,6 +2964,7 @@ async function handleCCScan(sku, uid) {
     }catch(err){}
   }
 
+  if(product && product.sku) sku = product.sku; // samakan dengan tulisan SKU di Master
   const resultBox = document.getElementById("ccScanResult");
   if(product){
     resultBox.innerHTML = `<div class="result found">
@@ -3326,13 +3344,13 @@ async function performAdvSearch(query) {
       
       if (!q) {
          if (myRequestId !== advSearchRequestId) return;
-         tbody.innerHTML = `<tr><td colspan="6" class="hint" style="text-align:center;">Gunakan kolom pencarian di atas</td></tr>`;
+         tbody.innerHTML = `<tr><td colspan="7" class="hint" style="text-align:center;">Gunakan kolom pencarian di atas</td></tr>`;
          statFind.textContent = "0";
          if (binStatsContainer) binStatsContainer.innerHTML = `<span class="hint" style="font-size:11px;">Belum ada pencarian</span>`;
          return;
       }
       
-      tbody.innerHTML = `<tr><td colspan="6" class="hint" style="text-align:center;">Mencari...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" class="hint" style="text-align:center;">Mencari...</td></tr>`;
 
       const allRows = await idbGetAllScans();
       if (myRequestId !== advSearchRequestId) return; // ada pencarian baru yang menyusul, batalkan render hasil lama ini
@@ -3345,7 +3363,8 @@ async function performAdvSearch(query) {
           !deactivatedBins.includes(r.bin || '-') && 
           ((r.sku && r.sku.toLowerCase().includes(q)) ||
            (r.nama && r.nama.toLowerCase().includes(q)) ||
-           (r.bin && r.bin.toLowerCase().includes(q)))
+           (r.bin && r.bin.toLowerCase().includes(q)) ||
+           (r.uid && String(r.uid).toLowerCase().includes(q)))
       );
 
       statFind.textContent = matched.length;
@@ -3382,7 +3401,7 @@ async function performAdvSearch(query) {
       tbody.innerHTML = "";
 
       if (matched.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="6" class="hint" style="text-align:center;">Data tidak ditemukan di Stok Aktif</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="7" class="hint" style="text-align:center;">Data tidak ditemukan di Stok Aktif</td></tr>`;
           return;
       }
 
@@ -3400,6 +3419,7 @@ async function performAdvSearch(query) {
             <td>${jam}</td>
             <td style="font-weight:bold;">${r.bin || '-'}</td>
             <td class="sku">${r.sku} <button class="btn-copy" onclick="copyToClipboard('${r.sku}')" style="padding: 2px 4px; font-size: 9px; margin-left: 4px;">Copy</button></td>
+            <td>${r.uid ? `<span class="sku" title="Kode RFID/UID unit ini">${String(r.uid).replace(/</g, "&lt;").replace(/>/g, "&gt;")}</span>` : '<span class="hint">-</span>'}</td>
             <td>${safeNama}</td>
             <td>${remarkCell}</td>
             <td style="white-space:nowrap; text-align:center;">
@@ -3412,13 +3432,13 @@ async function performAdvSearch(query) {
 
       if (matched.length > 500) {
           const tr = document.createElement("tr");
-          tr.innerHTML = `<td colspan="6" class="hint" style="text-align:center;">Menampilkan 500 item teratas...</td>`;
+          tr.innerHTML = `<td colspan="7" class="hint" style="text-align:center;">Menampilkan 500 item teratas...</td>`;
           tbody.appendChild(tr);
       }
   } catch (err) {
       console.error(err);
       const tbody = document.getElementById("advSearchBody");
-      if(tbody) tbody.innerHTML = `<tr><td colspan="6" class="hint" style="text-align:center; color:red;">Pencarian gagal: ${err.message}</td></tr>`;
+      if(tbody) tbody.innerHTML = `<tr><td colspan="7" class="hint" style="text-align:center; color:red;">Pencarian gagal: ${err.message}</td></tr>`;
   }
 }
 
@@ -3474,7 +3494,7 @@ async function showFilteredBinsOverview(filterFn, emptyMessage, loadingMessage, 
       const tbody = document.getElementById("advSearchBody");
       const statFind = document.getElementById("advSearchQty");
       if (statFind) statFind.textContent = "0";
-      if (tbody) tbody.innerHTML = `<tr><td colspan="6" class="hint" style="text-align:center;">${tableMessage}</td></tr>`;
+      if (tbody) tbody.innerHTML = `<tr><td colspan="7" class="hint" style="text-align:center;">${tableMessage}</td></tr>`;
 
       if (!container) return;
       if (matchedBins.length === 0) {
@@ -4866,7 +4886,10 @@ opScanInputEl.addEventListener("keydown", async (e) => {
 async function opRegisterScan(sku, bin, uid) {
   const today = opTodayStr();
   const resultBox = document.getElementById("opScanResult");
-  let target = opTargets.find(t => t.sku === sku);
+  { const _p = await idbGetMaster(sku); if (_p && _p.sku) sku = _p.sku; }
+  let target = opTargets.find(t => t.sku === sku)
+            || opTargets.find(t => String(t.sku).trim().toUpperCase() === String(sku).trim().toUpperCase());
+  if (target) sku = target.sku;
 
   if (!target) {
       // SKU ditemukan fisik saat scan meski belum ada di daftar target -> otomatis ditambahkan
